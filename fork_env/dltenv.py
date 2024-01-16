@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 import numpy as np
@@ -9,6 +10,7 @@ class Dlt:
     """
     A distributed ledger technology characterized by its block time
     """
+
     def __init__(self, miners: dict[int, Miner], block_propagation_time: float):
         self.miners: dict[int, Miner] = miners
         self.block_propagation_time: float = block_propagation_time
@@ -21,20 +23,28 @@ class Dlt:
         for miner in self.miners.values():
             miner.mine_first_block()
         # sort mining times
-        sorted_mining_times = sorted([miner.last_mining_time for miner in self.miners.values() if miner.last_mining_time is not None])
+        sorted_mining_times = sorted(
+            [
+                miner.last_mining_time
+                for miner in self.miners.values()
+                if miner.last_mining_time is not None
+            ]
+        )
         time_diff = sorted_mining_times[1] - sorted_mining_times[0]
         self.last_mining_time = sorted_mining_times[0]
         if time_diff < self.block_propagation_time:
-            print("Fork occurs")
+            # logging info "fork created"
+            logging.info("fork created")
             return True
-        else:
-            return False
+        return False
+
 
 @dataclass
 class Miner:
     """
     A miner characterized by its id and hash rate
     """
+
     id: int
     hash_rate: float
     last_mining_time: float | None = None
