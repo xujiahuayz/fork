@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages]
+find = {}
+
+[project]
+name = "fork_env"
+version = "0.0.1" 
+readme = "README.md"
+requires-python = ">=3.11.3"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "requests",
+    "matplotlib",
+    "seaborn",
+]
+
+[project.optional-dependencies]
+dev = ["pylint", "black", "pytest"]
+
+[tool.black]
+line-length = 88
+target_version = ['py36']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         
+    | \.git          
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py       
+)
+'''

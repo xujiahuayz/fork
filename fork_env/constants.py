@@ -1,0 +1,2 @@
+
+SUM_HASH_RATE= 1/600
