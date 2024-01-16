@@ -1,3 +1,4 @@
+from joblib import Parallel, delayed
 from typing import Callable
 
 import numpy as np
@@ -19,22 +20,32 @@ def simulate_fork(
     return fork_exists, dlt.last_mining_time
 
 
-def simulate_fork_repeat(repeat: int, **kwargs) -> list[tuple[bool, float | None]]:
+def simulate_fork_repeat(repeat: int, **kwargs):
     """
-    simulate a fork repeat times and return the results
+    Simulate a fork repeat times and return the results using Joblib for parallel processing.
     """
-    n = kwargs["n"]
-    hash_distribution = kwargs["hash_distribution"]
-    block_propagation_time = kwargs["block_propagation_time"]
-    results = []
-    for _ in range(repeat):
-        fork_exists, last_mining_time = simulate_fork(
-            n=n,
-            hash_distribution=hash_distribution,
-            block_propagation_time=block_propagation_time,
-        )
-        results.append((fork_exists, last_mining_time))
+    results = Parallel(n_jobs=-1)(
+        delayed(simulate_fork)(**kwargs) for _ in range(repeat)
+    )
     return results
+
+
+# def simulate_fork_repeat(repeat: int, **kwargs) -> list[tuple[bool, float | None]]:
+#     """
+#     simulate a fork repeat times and return the results
+#     """
+#     n = kwargs["n"]
+#     hash_distribution = kwargs["hash_distribution"]
+#     block_propagation_time = kwargs["block_propagation_time"]
+#     results = []
+#     for _ in range(repeat):
+#         fork_exists, last_mining_time = simulate_fork(
+#             n=n,
+#             hash_distribution=hash_distribution,
+#             block_propagation_time=block_propagation_time,
+#         )
+#         results.append((fork_exists, last_mining_time))
+#     return results
 
 
 def get_fork_rate(repeat: int, **kwargs) -> float:

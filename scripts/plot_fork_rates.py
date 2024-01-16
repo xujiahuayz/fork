@@ -1,4 +1,5 @@
 from itertools import product
+import time
 import numpy as np
 from scipy.stats import lomax
 
@@ -14,6 +15,8 @@ block_propagation_times = [0.87, 7.12, 8.7, 10_000]
 # get distributions and block propagation times combinations
 combinations = product(distributions, block_propagation_times)
 
+
+start_time = time.time()
 rates = []
 for distribution, block_propagation_time in combinations:
     rate = get_fork_rate(
@@ -30,3 +33,5 @@ for distribution, block_propagation_time in combinations:
             "rate": rate,
         }
     )
+time_taken = time.time() - start_time
+print(f"Time taken: {time_taken}")
