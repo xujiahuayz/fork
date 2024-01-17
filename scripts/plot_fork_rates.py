@@ -6,10 +6,13 @@ from matplotlib import pyplot as plt
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 
 # load rates from json
-with open(DATA_FOLDER / "rates1e7.json", "r") as f:
+with open(DATA_FOLDER / "rates1e6.json", "r") as f:
     rates = json.load(f)
 # for each block propagation time, plot the fork rate as y-axis and n as x-axis for each distribution as line type
 df = pd.DataFrame(rates)
+
+# export df to excel
+# df.to_excel(DATA_FOLDER / "rates1e7.xlsx")
 for block_propagation_time in df["block_propagation_time"].unique():
     df_block_propagation_time = df[
         df["block_propagation_time"] == block_propagation_time
@@ -23,6 +26,8 @@ for block_propagation_time in df["block_propagation_time"].unique():
             df_distribution["rate"],
             label=f"{distribution}, {block_propagation_time}",
         )
+        # set y axis limits
+        # plt.ylim(0, 0.018)
     plt.legend()
     plt.xlabel("n")
     plt.ylabel("fork rate")
