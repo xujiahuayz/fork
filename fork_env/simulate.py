@@ -1,9 +1,7 @@
-from joblib import Parallel, delayed
 from typing import Callable
 
-import numpy as np
+from joblib import Parallel, delayed
 
-from fork_env.constants import SUM_HASH_RATE
 from fork_env.dltenv import Dlt, Miner
 
 
@@ -11,8 +9,6 @@ def simulate_fork(
     n: int, hash_distribution: Callable, block_propagation_time: float
 ) -> tuple[bool, float | None]:
     hash_rates = hash_distribution(n)
-    # hash_rates = SUM_HASH_RATE * hash_rates / np.sum(hash_rates)
-
     miners = {i: Miner(id=i, hash_rate=hash_rates[i]) for i in range(n)}
 
     dlt = Dlt(miners=miners, block_propagation_time=block_propagation_time)

@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 
 # load rates from json
-with open(DATA_FOLDER / "rates1e6.json", "r") as f:
+with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
     rates = json.load(f)
 # for each block propagation time, plot the fork rate as y-axis and n as x-axis for each distribution as line type
 df = pd.DataFrame(rates)
