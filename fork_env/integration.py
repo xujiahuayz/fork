@@ -49,6 +49,10 @@ def fork_rate(
     **kwargs,
 ) -> float:
 
+    pdf_exp.cache_clear()
+    pdf_log_normal.cache_clear()
+    pdf_lomax.cache_clear()
+
     pdf = pdf_dict[dist]
 
     def az(
@@ -103,9 +107,9 @@ def fork_rate(
 if __name__ == "__main__":
 
     result = fork_rate(
-        proptime=8.7,
+        proptime=0.87,
         sum_lambda=SUM_HASH_RATE,
-        n=2,
+        n=28,
         dist="exp",
         epsrel=1e-9,
         epsabs=1e-16,

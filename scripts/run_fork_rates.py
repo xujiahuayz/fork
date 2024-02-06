@@ -9,13 +9,13 @@ from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
 from fork_env.simulate import get_fork_rate
 
 exp_dist = lambda n: np.random.exponential(scale=SUM_HASH_RATE / n, size=n)
-log_normal_dist = lambda n: np.random.lognormal(
-    mean=np.log(SUM_HASH_RATE / n) - np.square(1.11) / 2, sigma=1.11, size=n
+log_normal_dist = lambda n, sig=1.11: np.random.lognormal(
+    mean=np.log(SUM_HASH_RATE / n) - np.square(sig) / 2, sigma=sig, size=n
 )
-lomax_dist = lambda n: lomax.rvs(c=1.3, scale=SUM_HASH_RATE * (1.3 - 1) / n, size=n)
+lomax_dist = lambda n, c=1.3: lomax.rvs(c=c, scale=SUM_HASH_RATE * (c - 1) / n, size=n)
 
 distributions = {"exp": exp_dist, "log_normal": log_normal_dist, "lomax": lomax_dist}
-block_propagation_times = [0.87, 7.12, 8.7, 10_000]
+block_propagation_times = [0.87, 7.12, 8.7, 1_000]
 ns = range(2, 31)
 # get distributions and block propagation times combinations
 combinations = product(distributions.keys(), block_propagation_times, ns)
@@ -24,7 +24,7 @@ start_time = time.time()
 rates = []
 for distribution, block_propagation_time, n in combinations:
     rate = get_fork_rate(
-        repeat=int(1e7),
+        repeat=int(2e7),
         n=n,
         hash_distribution=distributions[distribution],
         block_propagation_time=block_propagation_time,

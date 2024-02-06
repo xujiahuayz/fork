@@ -12,7 +12,6 @@ with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
 df = pd.DataFrame(rates)
 
 # export df to excel
-# df.to_excel(DATA_FOLDER / "rates1e7.xlsx")
 for block_propagation_time in df["block_propagation_time"].unique():
     df_block_propagation_time = df[
         df["block_propagation_time"] == block_propagation_time
