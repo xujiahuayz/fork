@@ -49,57 +49,69 @@ def fork_rate(
     **kwargs,
 ) -> float:
 
-    pdf_exp.cache_clear()
-    pdf_log_normal.cache_clear()
-    pdf_lomax.cache_clear()
+    if dist == "exp":
 
-    pdf = pdf_dict[dist]
+        def pdelta(delta: float) -> float:
+            # mu = n / sum_lambda
 
-    def az(
-        x: float,
-        sum_lambda: float,
-        n: int,
-        **kwargs,
-    ) -> float:
+            def integrand(x: float) -> float:
+                return (sum_lambda / (n + sum_lambda * x)) ** 2 * (
+                    n / (n + sum_lambda * (x + delta))
+                ) ** n
 
-        def integrand(lam: float) -> float:
-            return lam * np.exp(-lam * x) * pdf(lam, sum_lambda, n)
+                # return 1 / ((mu + x) ** 2 * (mu + x + delta) ** n)
 
-        return quad(integrand, 0, np.inf, **kwargs)[0]
+            return quad(integrand, 0, np.inf, **kwargs)[0]
 
-    def bz(
-        x: float,
-        delta: float,
-        sum_lambda: float,
-        n: int,
-        **kwargs,
-    ) -> float:
-        def integrand(lam: float) -> float:
-            return lam * np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+    else:
 
-        return quad(integrand, 0, np.inf, **kwargs)[0]
+        pdf = pdf_dict[dist]
 
-    def cz(
-        x: float,
-        delta: float,
-        sum_lambda: float,
-        n: int,
-        **kwargs,
-    ) -> float:
-        def integrand(lam: float) -> float:
-            return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+        def az(
+            x: float,
+            sum_lambda: float,
+            n: int,
+            **kwargs,
+        ) -> float:
 
-        return quad(integrand, 0, np.inf, **kwargs)[0]
+            def integrand(lam: float) -> float:
+                return lam * np.exp(-lam * x) * pdf(lam, sum_lambda, n)
 
-    def pdelta(delta: float) -> float:
-        def integrand(x: float) -> float:
-            return (
-                az(x, sum_lambda, n, **kwargs)
-                * bz(x, delta, sum_lambda, n, **kwargs)
-                * cz(x, delta, sum_lambda, n, **kwargs) ** (n - 2)
-            )
+            return quad(integrand, 0, np.inf, **kwargs)[0]
 
-        return quad(integrand, 0, np.inf, **kwargs)[0]
+        def bz(
+            x: float,
+            delta: float,
+            sum_lambda: float,
+            n: int,
+            **kwargs,
+        ) -> float:
+            def integrand(lam: float) -> float:
+                return lam * np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+
+            return quad(integrand, 0, np.inf, **kwargs)[0]
+
+        def cz(
+            x: float,
+            delta: float,
+            sum_lambda: float,
+            n: int,
+            **kwargs,
+        ) -> float:
+            def integrand(lam: float) -> float:
+                return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+
+            return quad(integrand, 0, np.inf, **kwargs)[0]
+
+        def pdelta(delta: float) -> float:
+            def integrand(x: float) -> float:
+                return (
+                    az(x, sum_lambda, n, **kwargs)
+                    * bz(x, delta, sum_lambda, n, **kwargs)
+                    * cz(x, delta, sum_lambda, n, **kwargs) ** (n - 2)
+                )
+
+            return quad(integrand, 0, np.inf, **kwargs)[0]
 
     return n * (n - 1) * quad(pdelta, 0, proptime, epsrel=5e-4)[0]
 
@@ -109,10 +121,12 @@ if __name__ == "__main__":
     result = fork_rate(
         proptime=0.87,
         sum_lambda=SUM_HASH_RATE,
-        n=28,
+        n=4,
         dist="exp",
         epsrel=1e-9,
         epsabs=1e-16,
         limit=130,
         limlst=10,
     )
+
+    kwargs = {"epsrel": 1e-9, "epsabs": 1e-16, "limit": 130, "limlst": 10}

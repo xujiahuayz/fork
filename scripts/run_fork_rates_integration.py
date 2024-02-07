@@ -1,8 +1,9 @@
 import time
+import json
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import SUM_HASH_RATE
+from fork_env.constants import SUM_HASH_RATE, DATA_FOLDER
 from fork_env.integration import fork_rate
 
 distributions = ["exp", "log_normal", "lomax"]
@@ -39,7 +40,10 @@ def compute_rate(args):
 
 
 if __name__ == "__main__":
-    distributions = ["exp", "log_normal", "lomax"]
+    distributions = [
+        "exp"
+        # , "log_normal", "lomax"
+    ]
     block_propagation_times = [0.87, 7.12, 8.7, 1_000]
     ns = range(2, 31)
     combinations = product(distributions, block_propagation_times, ns)
@@ -53,3 +57,7 @@ if __name__ == "__main__":
 
     end_time = time.time()
     print(f"Computation completed in {end_time - start_time} seconds.")
+
+    # save rates to json
+    with open(DATA_FOLDER / "rates_integration_exp.json", "w") as f:
+        json.dump(rates, f)
