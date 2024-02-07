@@ -6,15 +6,6 @@ from itertools import product
 from fork_env.constants import SUM_HASH_RATE, DATA_FOLDER
 from fork_env.integration import fork_rate
 
-distributions = ["exp", "log_normal", "lomax"]
-block_propagation_times = [0.87, 7.12, 8.7, 1_000]
-ns = range(2, 31)
-# get distributions and block propagation times combinations
-combinations = product(distributions, block_propagation_times, ns)
-
-start_time = time.time()
-rates = []
-
 
 def compute_rate(args):
     distribution, block_propagation_time, n = args
