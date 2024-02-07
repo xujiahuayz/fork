@@ -31,11 +31,29 @@ def compute_rate(args):
 
 
 if __name__ == "__main__":
-    distributions = [
-        "exp"
-        # , "log_normal", "lomax"
+    distributions = ["exp", "log_normal", "lomax"]
+    block_propagation_times = [
+        0.86,
+        0.87,
+        7.12,
+        8.7,
+        0.1,
+        0.2,
+        0.5,
+        1,
+        2,
+        5,
+        10,
+        20,
+        50,
+        100,
+        200,
+        500,
+        1_000,
+        2_000,
+        5_000,
+        10_000,
     ]
-    block_propagation_times = [0.87, 7.12, 8.7, 1_000]
     ns = range(2, 31)
     combinations = product(distributions, block_propagation_times, ns)
 
@@ -50,5 +68,5 @@ if __name__ == "__main__":
     print(f"Computation completed in {end_time - start_time} seconds.")
 
     # save rates to json
-    with open(DATA_FOLDER / "rates_integration_exp.json", "w") as f:
+    with open(DATA_FOLDER / "rates_integ.json", "w") as f:
         json.dump(rates, f)

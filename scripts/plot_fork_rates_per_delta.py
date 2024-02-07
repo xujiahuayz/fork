@@ -29,7 +29,11 @@ df_simulation = pd.DataFrame(rates_simulation)
 DISTRIBUTIONS = ["exp", "log_normal", "lomax"]
 BLOCK_PROPAGATION_TIMES = [0.87, 7.12, 8.7, 1_000]
 
-colors = ["blue", "orange", "green", "red"]
+colors = {
+    "exp": "blue",
+    "log_normal": "orange",
+    "lomax": "green",
+}
 
 labels = {
     "exp": "exponential",
@@ -44,28 +48,29 @@ plt.rcParams.update({"font.size": 20})
 # plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
 
 # export df to excel
-for distribution in DISTRIBUTIONS:
+for block_propagation_time in BLOCK_PROPAGATION_TIMES:
 
     # plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
-    # plt.figure(figsize=(6, 5))
+    plt.figure(figsize=(6, 9))
+
+    plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
 
     simulated_handles = []
     analytical_handles = []
-    for block_propagation_time in BLOCK_PROPAGATION_TIMES:
+    for distribution in DISTRIBUTIONS:
 
         df_distribution_simulated = df_simulation[
             (df_simulation["distribution"] == distribution)
             & (df_simulation["block_propagation_time"] == block_propagation_time)
         ]
 
-        this_color = colors[BLOCK_PROPAGATION_TIMES.index(block_propagation_time)]
-
         # Plot simulated data
         plt.plot(
             df_distribution_simulated["n"],
             df_distribution_simulated["rate"],
-            label=f"$\Delta_0 = {block_propagation_time}$",
-            color=this_color,
+            label=labels[distribution],
+            color=colors[distribution],
             alpha=0.2,  # Making simulated data slightly transparent
             linewidth=10,
         )
@@ -79,15 +84,15 @@ for distribution in DISTRIBUTIONS:
         (line,) = plt.plot(
             df_distribution["n"],
             df_distribution["rate"],
-            label=f"$\Delta_0 = {block_propagation_time}$",
-            color=this_color,
+            label=labels[distribution],
+            color=colors[distribution],
             linestyle="--",
             linewidth=5,
         )
 
         # Store handles for legends
         simulated_handles.append(
-            mlines.Line2D([], [], color=this_color, alpha=0.2, linewidth=5)
+            mlines.Line2D([], [], color=colors[distribution], alpha=0.5, linewidth=5)
         )
         analytical_handles.append(line)
 
@@ -96,8 +101,8 @@ for distribution in DISTRIBUTIONS:
         handles=simulated_handles,
         title="simulated",
         frameon=False,
-        loc="upper right",
-        bbox_to_anchor=(1.35, 1),
+        loc="upper left",
+        bbox_to_anchor=(0, 1.6),
     )
     plt.gca().add_artist(first_legend)
     plt.legend(
@@ -105,13 +110,15 @@ for distribution in DISTRIBUTIONS:
         title="analytical",
         frameon=False,
         loc="upper right",
-        bbox_to_anchor=(1.8, 1),
+        bbox_to_anchor=(1, 1.6),
     )
 
     # set ylimit
-    # log y-axis
-    plt.yscale("log")
-    plt.ylim(1e-4, 1)
+
+    plt.ylim(
+        0,
+        1.05 * df[df["block_propagation_time"] == block_propagation_time]["rate"].max(),
+    )
 
     # vertical line at n=19
     plt.axvline(x=19, color="black", linestyle=":")
@@ -119,7 +126,7 @@ for distribution in DISTRIBUTIONS:
     plt.xlabel("number of miners $n$")
     plt.ylabel("fork rate $C(\Delta_0)$")
     # make sure the plot is not cut off
-    plt.savefig(
-        FIGURES_FOLDER / f"fork_rate_vs_n_{distribution}.pdf", bbox_inches="tight"
-    )
+    plt.tight_layout()
+
+    plt.savefig(FIGURES_FOLDER / f"fork_rate_vs_n_{block_propagation_time}.pdf")
     plt.show()
