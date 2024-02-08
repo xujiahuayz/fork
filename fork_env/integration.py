@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Callable, Literal
+from typing import Literal
 
 import numpy as np
 from scipy.integrate import quad
@@ -32,13 +32,6 @@ def pdf_lomax(lam: float, sum_lambda: float, n: int, c: float) -> float:
     pdf of the lomax distribution where scale = sum_lambda * (c - 1) / n and c = c
     """
     return lomax.pdf(lam, c=c, scale=sum_lambda * (c - 1) / n)  # type: ignore
-
-
-# pdf_dict: dict[str, Callable] = {
-#     "exp": pdf_exp,
-#     "log_normal": pdf_log_normal,
-#     "lomax": pdf_lomax,
-# }
 
 
 def fork_rate(
