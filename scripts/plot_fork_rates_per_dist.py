@@ -3,7 +3,6 @@ import json
 import matplotlib.lines as mlines
 import pandas as pd
 from matplotlib import pyplot as plt
-from matplotlib.ticker import ScalarFormatter
 
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 
@@ -11,18 +10,11 @@ from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
     rates_simulation = json.load(f)
 
-with open(DATA_FOLDER / "rates_integration.json", "r") as f:
+with open(DATA_FOLDER / "rates_integ.json", "r") as f:
     rates = json.load(f)
 
-with open(DATA_FOLDER / "rates_integration_exp.json", "r") as f:
-    rates_exp = json.load(f)
-# for each block propagation time, plot the fork rate as y-axis and n as x-axis for each distribution as line type
-df = pd.DataFrame(rates)
-# remove rows with exp
-df = df[df["distribution"] != "exp"]
 
-df_exp = pd.DataFrame(rates_exp)
-df = pd.concat([df_exp, df])
+df = pd.DataFrame(rates)
 
 df_simulation = pd.DataFrame(rates_simulation)
 
@@ -39,15 +31,8 @@ labels = {
 # increase font size of plots
 plt.rcParams.update({"font.size": 20})
 
-# increase figure size
-# plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-# plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
-
 # export df to excel
 for distribution in DISTRIBUTIONS:
-
-    # plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
-    # plt.figure(figsize=(6, 5))
 
     simulated_handles = []
     analytical_handles = []

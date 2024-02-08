@@ -5,7 +5,7 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.stats import expon, lognorm, lomax
 
-from fork_env.constants import SUM_HASH_RATE
+from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C, SUM_HASH_RATE
 
 
 @lru_cache(maxsize=None)
@@ -17,7 +17,7 @@ def pdf_exp(lam: float, sum_lambda: float, n: int) -> float:
 
 
 @lru_cache(maxsize=None)
-def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float = 1.11) -> float:
+def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float) -> float:
     """
     pdf of the log normal distribution where mean = np.log(sum_lambda / n) - np.square(sigma) / 2 and sigma = sigma
     """
@@ -27,18 +27,18 @@ def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float = 1.11) -
 
 
 @lru_cache(maxsize=None)
-def pdf_lomax(lam: float, sum_lambda: float, n: int, c: float = 1.3) -> float:
+def pdf_lomax(lam: float, sum_lambda: float, n: int, c: float) -> float:
     """
     pdf of the lomax distribution where scale = sum_lambda * (c - 1) / n and c = c
     """
     return lomax.pdf(lam, c=c, scale=sum_lambda * (c - 1) / n)  # type: ignore
 
 
-pdf_dict: dict[str, Callable] = {
-    "exp": pdf_exp,
-    "log_normal": pdf_log_normal,
-    "lomax": pdf_lomax,
-}
+# pdf_dict: dict[str, Callable] = {
+#     "exp": pdf_exp,
+#     "log_normal": pdf_log_normal,
+#     "lomax": pdf_lomax,
+# }
 
 
 def fork_rate(
@@ -65,7 +65,24 @@ def fork_rate(
 
     else:
 
-        pdf = pdf_dict[dist]
+        if dist == "log_normal":
+            if "sigma" in kwargs:
+                sigma = kwargs["sigma"]
+                # remove sigma from kwargs
+                kwargs.pop("sigma")
+            else:
+                sigma = LOG_NORMAL_SIGMA
+            pdf = lambda lam, sum_lambda, n: pdf_log_normal(
+                lam, sum_lambda, n, sigma=sigma
+            )
+        elif dist == "lomax":
+            if "c" in kwargs:
+                c = kwargs["c"]
+                # remove c from kwargs
+                kwargs.pop("c")
+            else:
+                c = LOMAX_C
+            pdf = lambda lam, sum_lambda, n: pdf_lomax(lam, sum_lambda, n, c=c)
 
         def az(
             x: float,
