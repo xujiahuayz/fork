@@ -7,6 +7,8 @@ from scipy.stats import expon, lognorm, lomax
 
 from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C, SUM_HASH_RATE
 
+# from numba import jit, njit
+
 
 @lru_cache(maxsize=None)
 def pdf_exp(lam: float, sum_lambda: float, n: int) -> float:
@@ -96,6 +98,7 @@ def fork_rate(
             n: int,
             **kwargs,
         ) -> float:
+
             def integrand(lam: float) -> float:
                 return lam * np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
 
@@ -108,12 +111,14 @@ def fork_rate(
             n: int,
             **kwargs,
         ) -> float:
+
             def integrand(lam: float) -> float:
                 return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
 
             return quad(integrand, 0, np.inf, **kwargs)[0]
 
         def pdelta(delta: float) -> float:
+
             def integrand(x: float) -> float:
                 return (
                     az(x, sum_lambda, n, **kwargs)
@@ -132,7 +137,7 @@ if __name__ == "__main__":
         proptime=0.87,
         sum_lambda=SUM_HASH_RATE,
         n=4,
-        dist="exp",
+        dist="log_normal",
         epsrel=1e-9,
         epsabs=1e-16,
         limit=130,
