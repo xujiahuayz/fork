@@ -39,15 +39,16 @@ for distribution in DISTRIBUTIONS:
         plt.plot(
             df_distribution["block_propagation_time"],
             df_distribution["rate"],
-            label=f"$n = {n_miner}$",
+            label=n_miner,
             color=colors[NUM_MINERS.index(n_miner)],
             alpha=0.8,
             linewidth=2,
         )
 
     plt.legend(
+        title="$n$",
         frameon=False,
-        loc="lower right",
+        loc="upper left",
         # bbox_to_anchor=(1, 1),
     )
 
@@ -55,10 +56,7 @@ for distribution in DISTRIBUTIONS:
     # log y-axis
     plt.yscale("log")
     plt.xscale("log")
-    plt.ylim(1e-5, 1.2)
-
-    # vertical line at n=19
-    plt.axvline(x=8.7, color="black", linestyle=":")
+    plt.ylim(0, 1)
 
     plt.xlabel("block propagation time $\Delta_0$")
     plt.ylabel("fork rate $C(\Delta_0)$")

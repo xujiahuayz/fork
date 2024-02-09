@@ -1,8 +1,8 @@
 import json
+import numpy as np
 
 import pandas as pd
 from matplotlib import pyplot as plt
-from matplotlib.ticker import ScalarFormatter
 
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, LOG_NORMAL_SIGMA, N_MINER
 
@@ -51,7 +51,7 @@ for block_propagation_time in [0.86, 8.7, 1000]:
         df_block_propagation_time.index,
         df_block_propagation_time,
         shading="auto",
-        cmap="viridis",
+        cmap="YlGn",
     )
 
     # horizontal line at n=19
@@ -60,34 +60,30 @@ for block_propagation_time in [0.86, 8.7, 1000]:
     plt.axvline(x=LOG_NORMAL_SIGMA, color="white", linestyle="--", linewidth=0.5)
 
     # add dot at n=19 and sigma=LOG_NORMAL_SIGMA
-    plt.plot(LOG_NORMAL_SIGMA, N_MINER, "+", color="k", markersize=10)
+    plt.plot(LOG_NORMAL_SIGMA, N_MINER, "*", color="red", markersize=10)
 
     # plt.yscale("log")
     plt.xscale("log")
+    x_ticks = np.logspace(
+        np.log10(0.5), np.log10(8), num=5
+    )  # Generates 5 ticks from 0.5 to 8, logarithmically spaced
+    plt.xticks(x_ticks, [f"{tick:.1f}" for tick in x_ticks])
     cbar = plt.colorbar(label="fork rate $C(\Delta_0)$")
     # add a horizontal line in the colorbar to indicate the fork rate of 0.41
-    cbar.ax.hlines(0.0041, xmin=0, xmax=1, colors="red", linewidth=3)
+    cbar.ax.hlines(0.0041, xmin=0, xmax=1, colors="blue", linewidth=3)
     # add marker at the fork rate of 0.41
-    cbar.ax.plot(0.5, the_fork_rate, "+", color="k", markersize=10)
+    cbar.ax.plot(0.5, the_fork_rate, "*", color="red", markersize=10)
 
     plt.xlabel("log normal standard deviation $\sigma$")
     plt.ylabel("number of miners $n$")
 
-    # approximate isolines for the fork rate
-    # plt.contour(
-    #     df_block_propagation_time.columns,
-    #     df_block_propagation_time.index,
-    #     df_block_propagation_time,
-    #     colors="white",
-    #     # linewidths=0.,
-    # )
     # # highlight the isoline where fork rate is 0.41
     plt.contour(
         df_block_propagation_time.columns,
         df_block_propagation_time.index,
         df_block_propagation_time,
         levels=[0.0041],
-        colors="red",
+        colors="blue",
         linewidths=3,
     )
 

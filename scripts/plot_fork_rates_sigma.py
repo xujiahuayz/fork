@@ -43,7 +43,7 @@ for block_propagation_time in [0.86, 8.7, 1000]:
         loc="upper right",
     )
 
-    plt.xlabel("$\sigma$")
+    plt.xlabel("log normal standard deviation $\sigma$")
     plt.ylabel("fork rate $C(\Delta_0)$")
 
     # # Use scientific notation on y-axis and position the exponent on top
