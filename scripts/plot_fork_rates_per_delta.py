@@ -11,18 +11,11 @@ from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
     rates_simulation = json.load(f)
 
-with open(DATA_FOLDER / "rates_integration.json", "r") as f:
+with open(DATA_FOLDER / "rates_integ.json", "r") as f:
     rates = json.load(f)
 
-with open(DATA_FOLDER / "rates_integration_exp.json", "r") as f:
-    rates_exp = json.load(f)
-# for each block propagation time, plot the fork rate as y-axis and n as x-axis for each distribution as line type
-df = pd.DataFrame(rates)
-# remove rows with exp
-df = df[df["distribution"] != "exp"]
 
-df_exp = pd.DataFrame(rates_exp)
-df = pd.concat([df_exp, df])
+df = pd.DataFrame(rates)
 
 df_simulation = pd.DataFrame(rates_simulation)
 
@@ -41,23 +34,31 @@ labels = {
     "lomax": "lomax",
 }
 # increase font size of plots
-plt.rcParams.update({"font.size": 20})
-
-# increase figure size
-# plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-# plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
+plt.rcParams.update({"font.size": 17})
 
 # export df to excel
 for block_propagation_time in BLOCK_PROPAGATION_TIMES:
 
-    # plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
-    plt.figure(figsize=(6, 9))
-
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
 
-    simulated_handles = []
-    analytical_handles = []
+    simu_anal = [
+        mlines.Line2D(
+            [], [], color="k", alpha=1, linewidth=5, linestyle="--", label="analytical"
+        ),
+        mlines.Line2D([], [], color="k", alpha=0.2, linewidth=10, label="simulated"),
+    ]
+    dist_handle = [
+        mlines.Line2D(
+            [],
+            [],
+            color=colors[distribution],
+            # linestyle="--",
+            linewidth=5,
+            label=labels[distribution],
+        )
+        for distribution in DISTRIBUTIONS
+    ]
     for distribution in DISTRIBUTIONS:
 
         df_distribution_simulated = df_simulation[
@@ -81,43 +82,35 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
         ]
 
         # Plot analytical data
-        (line,) = plt.plot(
+        plt.plot(
             df_distribution["n"],
             df_distribution["rate"],
-            label=labels[distribution],
             color=colors[distribution],
             linestyle="--",
             linewidth=5,
         )
 
-        # Store handles for legends
-        simulated_handles.append(
-            mlines.Line2D([], [], color=colors[distribution], alpha=0.5, linewidth=5)
-        )
-        analytical_handles.append(line)
-
-    # Create legends without box border outside the plot
+    # Create legends without box border outside the plot with shorter legend handles
     first_legend = plt.legend(
-        handles=simulated_handles,
-        title="simulated",
+        handles=simu_anal,
         frameon=False,
-        loc="upper left",
-        bbox_to_anchor=(0, 1.6),
+        loc="lower left",
+        bbox_to_anchor=(-0.02, -0.05),
     )
     plt.gca().add_artist(first_legend)
     plt.legend(
-        handles=analytical_handles,
-        title="analytical",
+        handles=dist_handle,
+        # title="analytical",
         frameon=False,
-        loc="upper right",
-        bbox_to_anchor=(1, 1.6),
+        loc="lower right",
+        bbox_to_anchor=(1.02, -0.05),
     )
 
     # set ylimit
-
+    max_rate = df[df["block_propagation_time"] == block_propagation_time]["rate"].max()
     plt.ylim(
-        0,
-        1.05 * df[df["block_propagation_time"] == block_propagation_time]["rate"].max(),
+        -0.05 * max_rate,
+        1.05 * max_rate,
     )
 
     # vertical line at n=19
@@ -125,6 +118,7 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
 
     plt.xlabel("number of miners $n$")
     plt.ylabel("fork rate $C(\Delta_0)$")
+
     # make sure the plot is not cut off
     plt.tight_layout()
 

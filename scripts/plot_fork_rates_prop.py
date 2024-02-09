@@ -29,11 +29,7 @@ plt.rcParams.update({"font.size": 20})
 # export df to excel
 for distribution in DISTRIBUTIONS:
 
-    simulated_handles = []
-    analytical_handles = []
     for n_miner in NUM_MINERS:
-
-        this_color = colors[NUM_MINERS.index(n_miner)]
 
         df_distribution = df[
             (df["distribution"] == distribution) & (df["n"] == n_miner)
@@ -44,7 +40,7 @@ for distribution in DISTRIBUTIONS:
             df_distribution["block_propagation_time"],
             df_distribution["rate"],
             label=f"$n = {n_miner}$",
-            color=this_color,
+            color=colors[NUM_MINERS.index(n_miner)],
             alpha=0.8,
             linewidth=2,
         )
