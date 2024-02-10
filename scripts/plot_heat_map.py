@@ -1,38 +1,53 @@
 import json
-import numpy as np
+import pickle
 
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, LOG_NORMAL_SIGMA, N_MINER
+from fork_env.constants import (
+    DATA_FOLDER,
+    FIGURES_FOLDER,
+    LOG_NORMAL_SIGMA,
+    N_MINER,
+    SUM_HASH_RATE,
+)
 
-# Load rates from json
-with open(DATA_FOLDER / "rates_integ_log_normal.json", "r") as f:
-    rates = json.load(f)
+with open(DATA_FOLDER / "per_sigmal.pkl", "rb") as f:
+    rates_sigma_dict = pickle.load(f)
 
-df = pd.DataFrame(rates)
-
-with open(DATA_FOLDER / "rates_integ_log_normal_add.json", "r") as f:
-    rates_add = json.load(f)
-
+# transform rates_sigma_dict to a dataframe, parse the keys to named columns and the values to a column
+df = pd.DataFrame(
+    [
+        {
+            "distribution": k[0],
+            "block_propagation_time": k[1],
+            "n": k[2],
+            "sumhash": k[3],
+            "sigma": k[4],
+            "rate": v,
+        }
+        for k, v in rates_sigma_dict.items()
+    ]
+)
 
 with open(DATA_FOLDER / "rates_integ.json", "r") as f:
     rates_integ = json.load(f)
 
 df_integ = pd.DataFrame(rates_integ)
-df_integ = df_integ[df_integ["distribution"] == "log_normal"]
-# remove the distribution column and add sigma column with value = LOG_NORMAL_SIGMA
-df_integ = df_integ.drop(columns=["distribution"])
+df_integ = df_integ[
+    (df_integ["distribution"] == "log_normal") & (df_integ["sumhash"] == SUM_HASH_RATE)
+]
 df_integ["sigma"] = LOG_NORMAL_SIGMA
 
-df_add = pd.DataFrame(rates_add)
 
-df = pd.concat([df, df_add, df_integ])
+df = pd.concat([df, df_integ])
+# remove duplicated rows
 
 # for each block propogation time, create a heatmap with x axis being sigma, y axis being n, and color being the fork rate,
 # log scale the color and x axis
 plt.rcParams.update({"font.size": 18})
-for block_propagation_time in [0.86, 8.7, 1000]:
+for block_propagation_time in [0.763, 8.7, 1000]:
     df_block_propagation_time = df[
         (df["block_propagation_time"] == block_propagation_time)
         & (df["sigma"] > 0.5)

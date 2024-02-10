@@ -1,5 +1,4 @@
 import json
-import numpy as np
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -7,32 +6,20 @@ from matplotlib import pyplot as plt
 from fork_env.constants import (
     DATA_FOLDER,
     FIGURES_FOLDER,
-    LOG_NORMAL_SIGMA,
-    N_MINER,
     SUM_HASH_RATE,
 )
 
-# Load rates from json
-with open(DATA_FOLDER / "rates_integ_sumhash.json", "r") as f:
-    rates = json.load(f)
-
-df = pd.DataFrame(rates)
 
 with open(DATA_FOLDER / "rates_integ.json", "r") as f:
     rates_integ = json.load(f)
 
-df_integ = pd.DataFrame(rates_integ)
-df_integ = df_integ[df_integ["block_propagation_time"] == 8.7]
-# remove the distribution column and add sigma column with value = LOG_NORMAL_SIGMA
-df_integ = df_integ.drop(columns=["block_propagation_time"])
-df_integ["sumhash"] = SUM_HASH_RATE
-
-df = pd.concat([df, df_integ])
+df = pd.DataFrame(rates_integ)
+df = df[df["block_propagation_time"] == 8.7]
 
 plt.rcParams.update({"font.size": 20})
 
 for distribution in ["exp", "log_normal", "lomax"]:
-    for sumhash in sorted([1e-3, SUM_HASH_RATE, 1e-1, 1e0], reverse=True):
+    for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
         df_distribution = df[
             (df["distribution"] == distribution) & (df["sumhash"] == sumhash)
         ]
@@ -51,8 +38,10 @@ for distribution in ["exp", "log_normal", "lomax"]:
     plt.legend(
         title="$\Sigma \lambda$",
         frameon=False,
-        loc="right",
-        bbox_to_anchor=(1.05, 0.56),
+        loc="lower right",
+        bbox_to_anchor=(1, -0.05),
+        ncol=2,
+        handlelength=1,
     )
 
     plt.xlabel("number of miners $n$")

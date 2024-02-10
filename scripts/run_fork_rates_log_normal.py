@@ -1,14 +1,22 @@
-import json
+import pickle
 import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
+from fork_env.constants import DATA_FOLDER, LOG_NORMAL_SIGMA, SUM_HASH_RATE
 from fork_env.integration import fork_rate
 
 
-def compute_rate_log_normal(args):
+def compute_rate_log_normal(args) -> tuple[tuple, float]:
     sigma, block_propagation_time, n = args
+
+    the_key = (
+        "log_normal",
+        block_propagation_time,
+        n,
+        SUM_HASH_RATE,
+        sigma,
+    )
 
     rate = fork_rate(
         proptime=block_propagation_time,
@@ -21,17 +29,14 @@ def compute_rate_log_normal(args):
         limit=130,
         limlst=10,
     )
-    rate_dict = {
-        "sigma": sigma,
-        "block_propagation_time": block_propagation_time,
-        "n": n,
-        "rate": rate,
-    }
-    print(rate_dict)
-    return rate_dict
+    print(the_key, rate)
+    return the_key, rate
 
 
 if __name__ == "__main__":
+    with open(DATA_FOLDER / "per_sigmal.pkl", "rb") as f:
+        rates_sigma_dict = pickle.load(f)
+
     sigmas = [
         0.55,
         0.6,
@@ -64,16 +69,34 @@ if __name__ == "__main__":
     ns = range(2, 31)
     combinations = product(sigmas, block_propagation_times, ns)
 
-    start_time = time.time()
-    rates = []
+    # remove keys in rates_sigma_dict from combinations
+    combinations = [
+        (sigma, block_propagation_time, n)
+        for sigma, block_propagation_time, n in combinations
+        if (
+            "log_normal",
+            block_propagation_time,
+            n,
+            SUM_HASH_RATE,
+            sigma,
+        )
+        not in rates_sigma_dict
+    ]
+    if combinations:
 
-    # Using ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor() as executor:
-        rates = list(executor.map(compute_rate_log_normal, combinations))
+        start_time = time.time()
 
-    end_time = time.time()
-    print(f"Computation completed in {end_time - start_time} seconds.")
+        # Using ProcessPoolExecutor to parallelize computation
+        with ProcessPoolExecutor() as executor:
+            rates = list(executor.map(compute_rate_log_normal, combinations))
 
-    # save rates to json
-    with open(DATA_FOLDER / "rates_integ_log_normal_add.json", "w") as f:
-        json.dump(rates, f)
+        end_time = time.time()
+        print(f"Computation completed in {end_time - start_time} seconds.")
+
+        for rate in rates:
+            if rate is not None:
+                rates_sigma_dict[rate[0]] = rate[1]
+
+        # save rates_sigmal_dict to pickle
+        with open(DATA_FOLDER / "per_sigmal.pkl", "wb") as f:
+            pickle.dump(rates_sigma_dict, f)
