@@ -2,12 +2,10 @@ import json
 import numpy as np
 
 import pandas as pd
-from mpl_toolkits.mplot3d import axes3d
+
 import matplotlib.pyplot as plt
 
-from mpl_toolkits.mplot3d import Axes3D
-
-from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
+from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, SUM_HASH_RATE
 
 
 with open(DATA_FOLDER / "rates_integ.json", "r") as f:
@@ -15,12 +13,10 @@ with open(DATA_FOLDER / "rates_integ.json", "r") as f:
 
 
 df = pd.DataFrame(rates)
-
+df = df[df["sumhash"] == SUM_HASH_RATE]
 
 DISTRIBUTIONS = ["exp", "log_normal", "lomax"]
-BLOCK_PROPAGATION_TIMES = [0.87, 7.12, 8.7, 1_000]
 
-colors = ["blue", "orange", "green", "red"]
 
 labels = {
     "exp": "exponential",
