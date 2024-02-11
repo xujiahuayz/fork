@@ -47,7 +47,10 @@ df = pd.concat([df, df_integ])
 # for each block propogation time, create a heatmap with x axis being sigma, y axis being n, and color being the fork rate,
 # log scale the color and x axis
 plt.rcParams.update({"font.size": 18})
-for block_propagation_time in [0.763, 8.7, 1000]:
+# resize the plot
+plt.rcParams["figure.figsize"] = [5, 5]
+
+for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     df_block_propagation_time = df[
         (df["block_propagation_time"] == block_propagation_time)
         & (df["sigma"] > 0.5)
@@ -83,13 +86,16 @@ for block_propagation_time in [0.763, 8.7, 1000]:
         np.log10(0.5), np.log10(8), num=5
     )  # Generates 5 ticks from 0.5 to 8, logarithmically spaced
     plt.xticks(x_ticks, [f"{tick:.1f}" for tick in x_ticks])
-    cbar = plt.colorbar(label="fork rate $C(\Delta_0)$")
-    # add a horizontal line in the colorbar to indicate the fork rate of 0.41
-    cbar.ax.hlines(0.0041, xmin=0, xmax=1, colors="blue", linewidth=3)
-    # add marker at the fork rate of 0.41
-    cbar.ax.plot(0.5, the_fork_rate, "*", color="red", markersize=10)
+    cbar = plt.colorbar(label="fork rate $C(\Delta_0)$", location="top")
+    # make cbar ticker labels scientific
+    cbar.formatter.set_powerlimits((0, 0))
 
-    plt.xlabel("log normal standard deviation $\sigma$")
+    # add a horizontal line in the colorbar to indicate the fork rate of 0.41
+    cbar.ax.vlines(0.0041, ymin=0, ymax=1, colors="blue", linewidth=3)
+    # add marker at the fork rate of 0.41
+    cbar.ax.plot(the_fork_rate, 0.5, "*", color="red", markersize=10)
+
+    plt.xlabel("log normal $\sigma$")
     plt.ylabel("number of miners $n$")
 
     # # highlight the isoline where fork rate is 0.41
