@@ -1,16 +1,16 @@
+import pickle
 import time
-import json
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import SUM_HASH_RATE, DATA_FOLDER
+from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
 from fork_env.integration import fork_rate
 
 
-def compute_rate(args):
+def compute_rate(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n, sumhash = args
 
-    rate = fork_rate(
+    the_rate = fork_rate(
         proptime=block_propagation_time,
         sum_lambda=sumhash,
         n=n,
@@ -18,17 +18,10 @@ def compute_rate(args):
         epsrel=1e-9,
         epsabs=1e-16,
         limit=130,
-        limlst=10,
     )
-    rate_dict = {
-        "distribution": distribution,
-        "block_propagation_time": block_propagation_time,
-        "n": n,
-        "sumhash": sumhash,
-        "rate": rate,
-    }
-    print(rate_dict)
-    return rate_dict
+
+    print(args, the_rate)
+    return args, the_rate
 
 
 if __name__ == "__main__":
@@ -73,6 +66,5 @@ if __name__ == "__main__":
     end_time = time.time()
     print(f"Computation completed in {end_time - start_time} seconds.")
 
-    # save rates to json
-    with open(DATA_FOLDER / "rates_integ.json", "w") as f:
-        json.dump(rates, f)
+    with open(DATA_FOLDER / "rates_analytical.pkl", "wb") as f:
+        pickle.dump(rates, f)

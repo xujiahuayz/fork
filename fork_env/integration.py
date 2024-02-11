@@ -2,9 +2,11 @@ from functools import lru_cache
 from typing import Callable, Literal
 
 import numpy as np
-from scipy.integrate import quad, dblquad
+from scipy.integrate import dblquad, quad, quad_vec
 
-from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C, SUM_HASH_RATE
+from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C
+
+SQRRT2PI = np.sqrt(2 * np.pi)
 
 
 @lru_cache(maxsize=None)
@@ -14,7 +16,7 @@ def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float) -> float
     """
     return np.exp(
         -((sigma**2 / 2 + np.log(lam) - np.log(sum_lambda / n)) ** 2) / (2 * sigma**2)
-    ) / (lam * sigma * np.sqrt(2 * np.pi))
+    ) / (lam * sigma * SQRRT2PI)
 
 
 @lru_cache(maxsize=None)
@@ -54,17 +56,6 @@ def az(
     )[0]
 
 
-# def cz_integrand(
-#     lam: float,
-#     x: float,
-#     delta: float,
-#     sum_lambda: float,
-#     n: int,
-#     pdf: Callable,
-# ) -> float:
-#     return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
-
-
 def bz(
     x: float,
     delta: float,
@@ -92,7 +83,7 @@ def cz(
     def integrand(lam: float) -> float:
         return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
 
-    return quad(integrand, 0, np.inf, **kwargs)[0]
+    return quad_vec(integrand, 0, np.inf, **kwargs)[0]
 
 
 def fork_rate(
@@ -109,16 +100,6 @@ def fork_rate(
             return (sum_lambda / (n + sum_lambda * x)) ** 2 * (
                 n / (n + sum_lambda * (x + delta))
             ) ** n
-
-        # def pdelta(delta: float) -> float:
-        #     # mu = n / sum_lambda
-
-        #     def integrand(x: float) -> float:
-        #         return (sum_lambda / (n + sum_lambda * x)) ** 2 * (
-        #             n / (n + sum_lambda * (x + delta))
-        #         ) ** n
-
-        #     return quad(integrand, 0, np.inf, **kwargs)[0]
 
     else:
 
@@ -142,10 +123,6 @@ def fork_rate(
                 c = LOMAX_C
             pdf = lambda lam, sum_lambda, n: pdf_lomax(lam, sum_lambda, n, c=c)
 
-        # def pdelta(delta: float) -> float:
-
-        #     return quad(integrand, 0, np.inf, **kwargs)[0]
-
         def pdelta_integrand(x: float, delta: float) -> float:
             return (
                 az(x, sum_lambda, n, pdf, **kwargs)
@@ -167,14 +144,12 @@ def fork_rate(
 
 
 if __name__ == "__main__":
-
-    result = fork_rate(
-        proptime=5000,
+    res = fork_rate(
+        proptime=1000,
         sum_lambda=1 / 1000,
-        n=15,
+        n=30,
         dist="log_normal",
         epsrel=1e-9,
         epsabs=1e-16,
         limit=130,
-        limlst=10,
     )

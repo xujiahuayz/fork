@@ -3,7 +3,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import DATA_FOLDER, LOG_NORMAL_SIGMA, SUM_HASH_RATE
+from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
 from fork_env.integration import fork_rate
 
 
@@ -18,7 +18,7 @@ def compute_rate_log_normal(args) -> tuple[tuple, float]:
         sigma,
     )
 
-    rate = fork_rate(
+    the_rate = fork_rate(
         proptime=block_propagation_time,
         sum_lambda=SUM_HASH_RATE,
         n=n,
@@ -29,8 +29,8 @@ def compute_rate_log_normal(args) -> tuple[tuple, float]:
         limit=130,
         limlst=10,
     )
-    print(the_key, rate)
-    return the_key, rate
+    print(the_key, the_rate)
+    return the_key, the_rate
 
 
 if __name__ == "__main__":
