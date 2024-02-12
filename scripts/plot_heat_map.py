@@ -31,10 +31,21 @@ df = pd.DataFrame(
     ]
 )
 
-with open(DATA_FOLDER / "rates_integ.json", "r") as f:
-    rates_integ = json.load(f)
+with open(DATA_FOLDER / "rates_analytical.pkl", "rb") as f:
+    rates = pickle.load(f)
 
-df_integ = pd.DataFrame(rates_integ)
+df_integ = pd.DataFrame(
+    [
+        {
+            "distribution": k[0][0],
+            "block_propagation_time": k[0][1],
+            "n": k[0][2],
+            "sumhash": k[0][3],
+            "rate": k[1],
+        }
+        for k in rates
+    ]
+)
 df_integ = df_integ[
     (df_integ["distribution"] == "log_normal") & (df_integ["sumhash"] == SUM_HASH_RATE)
 ]
