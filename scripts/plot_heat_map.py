@@ -106,8 +106,8 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # add marker at the fork rate of 0.41
     cbar.ax.plot(the_fork_rate, 0.5, "*", color="red", markersize=10)
 
-    plt.xlabel("log normal $\sigma$")
-    plt.ylabel("number of miners $n$")
+    plt.xlabel("log-normal $\sigma$")
+    plt.ylabel("number of miners $N$")
 
     # # highlight the isoline where fork rate is 0.41
     plt.contour(

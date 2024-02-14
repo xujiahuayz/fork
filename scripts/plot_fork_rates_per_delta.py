@@ -116,7 +116,7 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
     # vertical line at n=19
     plt.axvline(x=19, color="black", linestyle=":")
 
-    plt.xlabel("number of miners $n$")
+    plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate $C(\Delta_0)$")
 
     # make sure the plot is not cut off

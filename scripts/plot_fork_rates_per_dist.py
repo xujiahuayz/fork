@@ -71,13 +71,15 @@ for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
         # add a think colorbar
         fig.colorbar(surf, shrink=0.5, aspect=5)
 
-        ax.set_xlabel("number of miners $n$", labelpad=10)
-        ax.set_ylabel("block propagation time $\\Delta_0$", labelpad=15)
+        ax.set_xlabel("number of miners $N$", labelpad=10)
+        ax.set_ylabel("block propagation delay \n $\\Delta_0$ [s]", labelpad=20)
         ax.set_zlabel("fork rate $C(\Delta_0)$", labelpad=10)
 
         ax.set_zlim(0, 1)
         title_value = round(sumhash, 5)
-        plt.title(f"$\Sigma \lambda = {title_value}$", loc="right", y=0.85)
+        plt.title(
+            f"$\Sigma \lambda = {title_value}$ [$s^{{{-1}}}$]", loc="right", y=0.85
+        )
 
         # Save the plot to a file
         plt.savefig(
