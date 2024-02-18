@@ -1,4 +1,3 @@
-import json
 import pickle
 
 import numpy as np
@@ -8,15 +7,15 @@ from matplotlib import pyplot as plt
 from fork_env.constants import (
     DATA_FOLDER,
     FIGURES_FOLDER,
-    LOG_NORMAL_SIGMA,
+    LOMAX_C,
     N_MINER,
     SUM_HASH_RATE,
 )
 
-with open(DATA_FOLDER / "per_sigmal.pkl", "rb") as f:
-    rates_sigma_dict = pickle.load(f)
+with open(DATA_FOLDER / "per_c.pkl", "rb") as f:
+    rates_c_dict = pickle.load(f)
 
-# transform rates_sigma_dict to a dataframe, parse the keys to named columns and the values to a column
+# transform rates_c_dict to a dataframe, parse the keys to named columns and the values to a column
 df = pd.DataFrame(
     [
         {
@@ -24,10 +23,10 @@ df = pd.DataFrame(
             "block_propagation_time": k[1],
             "n": k[2],
             "sumhash": k[3],
-            "sigma": k[4],
+            "c": k[4],
             "rate": v,
         }
-        for k, v in rates_sigma_dict.items()
+        for k, v in rates_c_dict.items()
     ]
 )
 
@@ -47,32 +46,32 @@ df_integ = pd.DataFrame(
     ]
 )
 df_integ = df_integ[
-    (df_integ["distribution"] == "log_normal") & (df_integ["sumhash"] == SUM_HASH_RATE)
+    (df_integ["distribution"] == "lomax") & (df_integ["sumhash"] == SUM_HASH_RATE)
 ]
-df_integ["sigma"] = LOG_NORMAL_SIGMA
+df_integ["c"] = LOMAX_C
 
 
 df = pd.concat([df, df_integ])
 # remove duplicated rows
 
-# for each block propogation time, create a heatmap with x axis being sigma, y axis being n, and color being the fork rate,
+# for each block propogation time, create a heatmap with x axis being c, y axis being n, and color being the fork rate,
 # log scale the color and x axis
 plt.rcParams.update({"font.size": 18})
 # resize the plot
 plt.rcParams["figure.figsize"] = [5, 5]
 
+x_ticks = [1, 2, 3, 4, 5, 6]
+
 for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     df_block_propagation_time = df[
         (df["block_propagation_time"] == block_propagation_time)
-        & (df["sigma"] > 0.5)
-        & (df["sigma"] < 8)
     ]
 
     df_block_propagation_time = df_block_propagation_time.pivot(
-        index="n", columns="sigma", values="rate"
+        index="n", columns="c", values="rate"
     )
-    # get forkrate at sigma=LOG_NORMAL_SIGMA and n=N_MINER
-    the_fork_rate = df_block_propagation_time.loc[N_MINER, LOG_NORMAL_SIGMA]
+    # get forkrate at c=LOG_NORMAL_c and n=N_MINER
+    the_fork_rate = df_block_propagation_time.loc[N_MINER, LOMAX_C]
 
     plt.figure()
     plt.pcolormesh(
@@ -85,18 +84,19 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
 
     # horizontal line at n=19
     plt.axhline(y=N_MINER, color="white", linestyle="--", linewidth=0.5)
-    # vertical line at sigma=LOG_NORMAL_SIGMA
-    plt.axvline(x=LOG_NORMAL_SIGMA, color="white", linestyle="--", linewidth=0.5)
+    # vertical line at c=LOG_NORMAL_c
+    plt.axvline(x=LOMAX_C, color="white", linestyle="--", linewidth=0.5)
 
-    # add dot at n=19 and sigma=LOG_NORMAL_SIGMA
-    plt.plot(LOG_NORMAL_SIGMA, N_MINER, "*", color="red", markersize=10)
+    # add dot at n=19 and c=LOG_NORMAL_c
+    plt.plot(LOMAX_C, N_MINER, "*", color="red", markersize=10)
 
-    # plt.yscale("log")
+    plt.xlim([1, 6])
+
     plt.xscale("log")
-    x_ticks = np.logspace(
-        np.log10(0.5), np.log10(8), num=5
-    )  # Generates 5 ticks from 0.5 to 8, logarithmically spaced
-    plt.xticks(x_ticks, [f"{tick:.1f}" for tick in x_ticks])
+
+    # place xticks at 1, 2, 4, 8 with exactly 1 decimal place
+    plt.xticks(x_ticks, x_ticks)
+
     cbar = plt.colorbar(label="fork rate $C(\Delta_0)$", location="top")
     # make cbar ticker labels scientific
     cbar.formatter.set_powerlimits((0, 0))
@@ -106,7 +106,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # add marker at the fork rate of 0.41
     cbar.ax.plot(the_fork_rate, 0.5, "*", color="red", markersize=10)
 
-    plt.xlabel("log-normal $\sigma$")
+    plt.xlabel("lomax $\\alpha$")
     plt.ylabel("number of miners $N$")
 
     # # highlight the isoline where fork rate is 0.41
@@ -120,7 +120,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     )
 
     plt.savefig(
-        FIGURES_FOLDER / f"fork_rate_heatmap_{block_propagation_time}.pdf",
+        FIGURES_FOLDER / f"fork_rate_heatmap_c_{block_propagation_time}.pdf",
         bbox_inches="tight",
     )
     plt.show()
