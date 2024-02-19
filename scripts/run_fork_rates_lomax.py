@@ -34,16 +34,14 @@ def compute_rate_log_lomax(args) -> tuple[tuple, float]:
 
 
 if __name__ == "__main__":
-    # with open(DATA_FOLDER / "per_sigmal.pkl", "rb") as f:
-    #     rates_c_dict = pickle.load(f)
-    rates_c_dict = {}
+    with open(DATA_FOLDER / "per_c.pkl", "rb") as f:
+        rates_c_dict = pickle.load(f)
+
     cs = [
-        # 0.55,
-        # 0.6,
-        # 0.7,
-        # 0.8,
-        # 0.9,
-        #
+        1.0001,
+        1.0005,
+        1.001,
+        1.005,
         1.01,
         1.02,
         1.05,
@@ -60,6 +58,17 @@ if __name__ == "__main__":
         4,
         5,
         6,
+        8,
+        10,
+        12,
+        15,
+        20,
+        25,
+        50,
+        100,
+        200,
+        500,
+        1_000,
     ]
 
     block_propagation_times = [
@@ -73,19 +82,19 @@ if __name__ == "__main__":
     ns = range(2, 31)
     combinations = product(cs, block_propagation_times, ns)
 
-    # # remove keys in rates_sigma_dict from combinations
-    # combinations = [
-    #     (c, block_propagation_time, n)
-    #     for c, block_propagation_time, n in combinations
-    #     if (
-    #         "lomax",
-    #         block_propagation_time,
-    #         n,
-    #         SUM_HASH_RATE,
-    #         c,
-    #     )
-    #     not in rates_c_dict
-    # ]
+    # remove keys in rates_sigma_dict from combinations
+    combinations = [
+        (c, block_propagation_time, n)
+        for c, block_propagation_time, n in combinations
+        if (
+            "lomax",
+            block_propagation_time,
+            n,
+            SUM_HASH_RATE,
+            c,
+        )
+        not in rates_c_dict
+    ]
     if combinations:
 
         start_time = time.time()

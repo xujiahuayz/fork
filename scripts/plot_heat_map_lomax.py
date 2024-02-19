@@ -54,13 +54,16 @@ df_integ["c"] = LOMAX_C
 df = pd.concat([df, df_integ])
 # remove duplicated rows
 
+# make c 1/c
+df["c"] = 1 / df["c"]
+
 # for each block propogation time, create a heatmap with x axis being c, y axis being n, and color being the fork rate,
 # log scale the color and x axis
 plt.rcParams.update({"font.size": 18})
 # resize the plot
 plt.rcParams["figure.figsize"] = [5, 5]
 
-x_ticks = [1, 2, 3, 4, 5, 6]
+x_ticks = [1, 2, 4, 8, 16, 32]
 
 for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     df_block_propagation_time = df[
@@ -71,7 +74,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
         index="n", columns="c", values="rate"
     )
     # get forkrate at c=LOG_NORMAL_c and n=N_MINER
-    the_fork_rate = df_block_propagation_time.loc[N_MINER, LOMAX_C]
+    the_fork_rate = df_block_propagation_time.loc[N_MINER, 1 / LOMAX_C]
 
     plt.figure()
     plt.pcolormesh(
@@ -85,17 +88,17 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # horizontal line at n=19
     plt.axhline(y=N_MINER, color="white", linestyle="--", linewidth=0.5)
     # vertical line at c=LOG_NORMAL_c
-    plt.axvline(x=LOMAX_C, color="white", linestyle="--", linewidth=0.5)
+    plt.axvline(x=1 / LOMAX_C, color="white", linestyle="--", linewidth=0.5)
 
     # add dot at n=19 and c=LOG_NORMAL_c
-    plt.plot(LOMAX_C, N_MINER, "*", color="red", markersize=10)
+    plt.plot(1 / LOMAX_C, N_MINER, "*", color="red", markersize=10)
 
-    plt.xlim([1, 6])
+    plt.xlim([1 / 50, 1.01])
 
-    plt.xscale("log")
+    # plt.xscale("log")
 
     # place xticks at 1, 2, 4, 8 with exactly 1 decimal place
-    plt.xticks(x_ticks, x_ticks)
+    # plt.xticks(x_ticks, x_ticks)
 
     cbar = plt.colorbar(label="fork rate $C(\Delta_0)$", location="top")
     # make cbar ticker labels scientific
@@ -106,7 +109,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # add marker at the fork rate of 0.41
     cbar.ax.plot(the_fork_rate, 0.5, "*", color="red", markersize=10)
 
-    plt.xlabel("lomax $\\alpha$")
+    plt.xlabel("lomax $\\alpha^{-1}$")
     plt.ylabel("number of miners $N$")
 
     # # highlight the isoline where fork rate is 0.41
