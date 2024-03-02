@@ -25,9 +25,9 @@ def compute_rate_log_lomax(args) -> tuple[tuple, float]:
         n=n,
         dist="lomax",
         c=c,
-        epsrel=1e-9,
-        epsabs=1e-16,
-        limit=130,
+        epsrel=1e-16,
+        epsabs=1e-22,
+        limit=380,
     )
     print(the_key, the_rate)
     return the_key, the_rate
@@ -69,15 +69,17 @@ if __name__ == "__main__":
         200,
         500,
         1_000,
+        1e7,
+        1e14,
     ]
 
     block_propagation_times = [
         0.763,
         2.48,
-        16.472,
-        7.12,
-        8.7,
-        1_000,
+        # 16.472,
+        # 7.12,
+        # 8.7,
+        # 1_000,
     ]
     ns = range(2, 31)
     combinations = product(cs, block_propagation_times, ns)

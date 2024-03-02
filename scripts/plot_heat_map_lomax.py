@@ -1,6 +1,5 @@
 import pickle
 
-import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -12,7 +11,7 @@ from fork_env.constants import (
     SUM_HASH_RATE,
 )
 
-with open(DATA_FOLDER / "per_c.pkl", "rb") as f:
+with open(DATA_FOLDER / "per_c_new.pkl", "rb") as f:
     rates_c_dict = pickle.load(f)
 
 # transform rates_c_dict to a dataframe, parse the keys to named columns and the values to a column
@@ -63,7 +62,7 @@ plt.rcParams.update({"font.size": 18})
 # resize the plot
 plt.rcParams["figure.figsize"] = [5, 5]
 
-x_ticks = [1, 2, 4, 8, 16, 32]
+# x_ticks = [1, 2, 4, 8, 16, 32]
 
 for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     df_block_propagation_time = df[
@@ -73,6 +72,12 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     df_block_propagation_time = df_block_propagation_time.pivot(
         index="n", columns="c", values="rate"
     )
+    df_block_propagation_time.interpolate(
+        method="linear", axis=0, inplace=True
+    )  # Row-wise interpolation
+    df_block_propagation_time.interpolate(
+        method="linear", axis=1, inplace=True
+    )  # Column-wise interpolation
     # get forkrate at c=LOG_NORMAL_c and n=N_MINER
     the_fork_rate = df_block_propagation_time.loc[N_MINER, 1 / LOMAX_C]
 
@@ -93,7 +98,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # add dot at n=19 and c=LOG_NORMAL_c
     plt.plot(1 / LOMAX_C, N_MINER, "*", color="red", markersize=10)
 
-    plt.xlim([1 / 50, 1.01])
+    plt.xlim([1 / 1e25, 1.005])
 
     # plt.xscale("log")
 

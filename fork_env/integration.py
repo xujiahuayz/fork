@@ -2,7 +2,7 @@ from functools import lru_cache
 from typing import Callable, Literal
 
 import numpy as np
-from scipy.integrate import dblquad, quad, quad_vec
+from scipy.integrate import dblquad, quad_vec
 
 from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C
 
@@ -51,7 +51,7 @@ def az(
     **kwargs,
 ) -> float:
 
-    return quad(
+    return quad_vec(
         lambda lam: az_integrand(lam, x, sum_lambda, n, pdf), 0, np.inf, **kwargs
     )[0]
 
@@ -68,7 +68,7 @@ def bz(
     def integrand(lam: float) -> float:
         return lam * np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
 
-    return quad(integrand, 0, np.inf, **kwargs)[0]
+    return quad_vec(integrand, 0, np.inf, **kwargs)[0]
 
 
 def cz(
@@ -111,8 +111,8 @@ def fork_rate(
             else:
                 sigma = LOG_NORMAL_SIGMA
 
-            def pdf(lam, sum_lambda, n):
-                return pdf_log_normal(lam, sum_lambda, n, sigma)
+            def pdf(lam: float, sum_lambda: float, n: int):
+                return pdf_log_normal(lam, sum_lambda, n, sigma=sigma)
 
         elif dist == "lomax":
             if "c" in kwargs:
@@ -121,7 +121,9 @@ def fork_rate(
                 kwargs.pop("c")
             else:
                 c = LOMAX_C
-            pdf = lambda lam, sum_lambda, n: pdf_lomax(lam, sum_lambda, n, c=c)
+
+            def pdf(lam: float, sum_lambda: float, n: int):
+                return pdf_lomax(lam, sum_lambda, n, c=c)
 
         def pdelta_integrand(x: float, delta: float) -> float:
             return (
@@ -148,9 +150,9 @@ if __name__ == "__main__":
         proptime=0.763,
         sum_lambda=1 / 600,
         n=30,
-        c=2,
+        c=1e14,
         dist="lomax",
-        epsrel=1e-9,
-        epsabs=1e-16,
-        limit=130,
+        epsrel=1e-16,
+        epsabs=1e-22,
+        limit=380,
     )
