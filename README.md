@@ -4,7 +4,7 @@
 
 ```
 git clone https://github.com/xujiahuayz/fork.git
-cd fork  
+cd fork
 ```
 
 ### Give execute permission to your script and then run `setup_repo.sh`
@@ -57,4 +57,17 @@ pip install toml
 
 ```bash
 pip install -e ".[dev]"
+```
+
+## Create data folder
+
+```
+mkdir data
+```
+
+## Download pool data to data folder
+
+```
+cd data
+wget https://raw.githubusercontent.com/blockchain/Blockchain-Known-Pools/master/pools.json
 ```

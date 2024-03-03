@@ -11,7 +11,7 @@ from fork_env.constants import (
     SUM_HASH_RATE,
 )
 
-with open(DATA_FOLDER / "per_c_new.pkl", "rb") as f:
+with open(DATA_FOLDER / "per_c.pkl", "rb") as f:
     rates_c_dict = pickle.load(f)
 
 # transform rates_c_dict to a dataframe, parse the keys to named columns and the values to a column
@@ -98,7 +98,7 @@ for block_propagation_time in [0.763, 2.48, 8.7, 16.472, 1000]:
     # add dot at n=19 and c=LOG_NORMAL_c
     plt.plot(1 / LOMAX_C, N_MINER, "*", color="red", markersize=10)
 
-    plt.xlim([1 / 1e25, 1.005])
+    plt.xlim([-0.005, 1.005])
 
     # plt.xscale("log")
 
