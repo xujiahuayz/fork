@@ -70,4 +70,5 @@ mkdir data
 ```
 cd data
 wget https://raw.githubusercontent.com/blockchain/Blockchain-Known-Pools/master/pools.json
+curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/miner/list/all" > miner_rank.json
 ```

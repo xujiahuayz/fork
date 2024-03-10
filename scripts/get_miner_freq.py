@@ -122,21 +122,27 @@ for start_block in range(
 
     # # fit an exponential distribution to miner_hash
     # lam = expon.fit(miner_hash)[0]
-    # fit a lognormal distribution to miner_hash using moments
-    lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
-    lognorm_loc = (
-        np.log(hash_mean) - lognorm_sigma**2 / 2
-    )  # "mu", mean of the log of the distribution, not the mean of the distribution
-    lognorm_scale = np.exp(lognorm_loc)
 
-    # sigma, lognorm_loc, lognorm_scale = lognorm.fit(miner_hash)
-    # fit a lomax distribution to miner_hash using moments
+    lognorm_sigma, lognorm_loc, lognorm_scale = lognorm.fit(miner_hash)
+    # # fit a lomax distribution to miner_hash using moments
 
-    c = 1 + hash_mean**2 / hash_std**2
-    lomax_loc = hash_mean - hash_mean / c
-    lomax_scale = hash_mean / c
+    # c = 1 + hash_mean**2 / hash_std**2
+    # lomax_loc = hash_mean - hash_mean / c
+    # lomax_scale = hash_mean / c
+    # # fit a lognormal distribution to miner_hash using moments
+    # lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
+    # lognorm_loc = (
+    #     np.log(hash_mean) - lognorm_sigma**2 / 2
+    # )  # "mu", mean of the log of the distribution, not the mean of the distribution
+    # lognorm_scale = np.exp(lognorm_loc)
+    # mean of fitted lognormal distribution
+    lognorm_mean = lognorm.mean(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
+    lognorm_std = lognorm.std(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
 
-    # c, lomax_loc, lomax_scale = lomax.fit(miner_hash)
+    c, lomax_loc, lomax_scale = lomax.fit(miner_hash)
+    # mean of fitted lomax distribution
+    lomax_mean = lomax.mean(c, loc=lomax_loc, scale=lomax_scale)
+    lomax_std = lomax.std(c, loc=lomax_loc, scale=lomax_scale)
 
     # add a row to hash_panel
     row = {
@@ -153,10 +159,14 @@ for start_block in range(
         "exp_scale": hash_mean,
         "log_normal_loc": lognorm_loc,
         "log_normal_sigma": lognorm_sigma,
+        "log_normal_mean": lognorm_mean,
+        "log_normal_std": lognorm_std,
         # "log_normal_scale": lognorm_scale,
         "lomax_c": c,
         "lomax_loc": lomax_loc,
         "lomax_scale": lomax_scale,
+        "lomax_mean": lomax_mean,
+        "lomax_std": lomax_std,
     }
     hash_panel.append(row)
 
