@@ -20,6 +20,7 @@ class Dlt:
         """
         run mine_block iteratively with each miner
         """
+        # TODO: use list comprehension
         for miner in self.miners.values():
             miner.mine_first_block()
         # sort mining times

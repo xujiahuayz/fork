@@ -123,18 +123,18 @@ for start_block in range(
     # # fit an exponential distribution to miner_hash
     # lam = expon.fit(miner_hash)[0]
 
-    lognorm_sigma, lognorm_loc, lognorm_scale = lognorm.fit(miner_hash)
+    # lognorm_sigma, lognorm_loc, lognorm_scale = lognorm.fit(miner_hash)
     # # fit a lomax distribution to miner_hash using moments
 
     # c = 1 + hash_mean**2 / hash_std**2
     # lomax_loc = hash_mean - hash_mean / c
     # lomax_scale = hash_mean / c
-    # # fit a lognormal distribution to miner_hash using moments
-    # lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
-    # lognorm_loc = (
-    #     np.log(hash_mean) - lognorm_sigma**2 / 2
-    # )  # "mu", mean of the log of the distribution, not the mean of the distribution
-    # lognorm_scale = np.exp(lognorm_loc)
+    # fit a lognormal distribution to miner_hash using moments
+    lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
+    lognorm_loc = (
+        np.log(hash_mean) - lognorm_sigma**2 / 2
+    )  # "mu", mean of the log of the distribution, not the mean of the distribution
+    lognorm_scale = np.exp(lognorm_loc)
     # mean of fitted lognormal distribution
     lognorm_mean = lognorm.mean(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
     lognorm_std = lognorm.std(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
@@ -170,25 +170,33 @@ for start_block in range(
     }
     hash_panel.append(row)
 
+    # plot ccdf
+
     # Create a figure and a set of subplots
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
     # Plotting the histogram of miner_hash on the ax1 with the 'left' y-axis
     color = "tab:blue"
     ax1.set_xlabel("Hash Rate")
-    ax1.set_ylabel("Frequency", color=color)
+    ax1.set_ylabel("1 - Cumulative Frequency", color=color)
+
+    # plotting empirical ccdf
     n, bins, patches = ax1.hist(
-        miner_hash, bins=200, alpha=0.5, label="Miner Hash Rates", color=color
+        miner_hash,
+        bins=200,
+        alpha=0.5,
+        label="Miner Hash Rates",
+        color=color,
+        cumulative=-1,
+        density=True,
     )
-    ax1.tick_params(axis="y", labelcolor=color)
 
     # Instantiate a second y-axis sharing the same x-axis
     ax2 = ax1.twinx()
     color = "tab:red"
     ax2.set_ylabel(
-        "Probability Density", color=color
+        "1 - Cumulative Probability", color=color
     )  # we already handled the x-label with ax1
-    ax2.tick_params(axis="y", labelcolor=color)
 
     # Generate points on the x-axis:
     x = np.linspace(min(miner_hash), max(miner_hash), 100)
@@ -197,23 +205,25 @@ for start_block in range(
     # Exponential
     ax2.plot(
         x,
-        expon.pdf(x, scale=hash_mean),
+        1 - expon.cdf(x, scale=hash_mean),
         "r-",
         lw=2,
         label="Exponential Fit (right axis)",
     )
+
     # Log-Normal
     ax2.plot(
         x,
-        lognorm.pdf(x, s=lognorm_sigma, scale=np.exp(lognorm_loc)),
+        1 - lognorm.cdf(x, s=lognorm_sigma, scale=np.exp(lognorm_loc)),
         "g-",
         lw=2,
         label="Log-Normal Fit (right axis)",
     )
+
     # Lomax
     ax2.plot(
         x,
-        lomax.pdf(x, c, loc=lomax_loc, scale=lomax_scale),
+        1 - lomax.cdf(x, c, loc=lomax_loc, scale=lomax_scale),
         "b-",
         lw=2,
         label="Lomax Fit (right axis)",
@@ -223,18 +233,15 @@ for start_block in range(
     plt.title(
         f"Hash Rate Distribution and Fits for Blocks {start_block} to {end_block}"
     )
+
+    # legend
+    fig.legend(loc="upper right")
+
+    # log x-axis and y-axis
+    ax1.set_xscale("log")
+    ax1.set_yscale("log")
+
     fig.tight_layout()  # adjust the layout to make room for the second y-label
-
-    # Create combined legend for both axes
-    lines, labels = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines + lines2, labels + labels2, loc="upper right")
-
-    # Display the plot
-    plt.show()
-    plt.close()
-
-    # plot miner_hash as histogram with left y-axis, and then plot the fitted distributions on the right y-axis
 
 
 hash_panel = pd.DataFrame(hash_panel)
