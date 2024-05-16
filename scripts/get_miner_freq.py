@@ -192,18 +192,18 @@ for start_block in range(
     )
 
     # Instantiate a second y-axis sharing the same x-axis
-    ax2 = ax1.twinx()
-    color = "tab:red"
-    ax2.set_ylabel(
+    # ax1 = ax1.twinx()
+    # color = "tab:red"
+    ax1.set_ylabel(
         "1 - Cumulative Probability", color=color
     )  # we already handled the x-label with ax1
 
     # Generate points on the x-axis:
-    x = np.linspace(min(miner_hash), max(miner_hash), 100)
+    x = np.exp(np.linspace(min(np.log(miner_hash)), max(np.log(miner_hash)), 100))
 
     # Plotting the fitted distributions on the ax2 with the 'right' y-axis
     # Exponential
-    ax2.plot(
+    ax1.plot(
         x,
         1 - expon.cdf(x, scale=hash_mean),
         "r-",
@@ -212,7 +212,7 @@ for start_block in range(
     )
 
     # Log-Normal
-    ax2.plot(
+    ax1.plot(
         x,
         1 - lognorm.cdf(x, s=lognorm_sigma, scale=np.exp(lognorm_loc)),
         "g-",
@@ -221,7 +221,7 @@ for start_block in range(
     )
 
     # Lomax
-    ax2.plot(
+    ax1.plot(
         x,
         1 - lomax.cdf(x, c, loc=lomax_loc, scale=lomax_scale),
         "b-",
@@ -238,8 +238,8 @@ for start_block in range(
     fig.legend(loc="upper right")
 
     # log x-axis and y-axis
-    ax1.set_xscale("log")
-    ax1.set_yscale("log")
+    # ax1.set_xscale("log")
+    # ax1.set_yscale("log")
 
     fig.tight_layout()  # adjust the layout to make room for the second y-label
 
