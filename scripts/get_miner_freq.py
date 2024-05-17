@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import expon, lognorm, lomax
 
-from fork_env.constants import CLUSTER_PATH, DATA_FOLDER
+from fork_env.constants import CLUSTER_PATH, DATA_FOLDER, FIGURES_FOLDER
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
 with open(CLUSTER_PATH, "rb") as f:
@@ -37,24 +37,6 @@ cluster_miner_full = {
     ]
     for i, addresses in btc_tx_value_series.items()
 }
-
-# add_cluster_keys = address_cluster_dict.keys()
-# pool_keys = pool_dict.keys()
-# cluster_miner = {
-#     i: [
-#         (
-#             set(address_cluster_dict[address] for address in add_set)
-#             if (add_set := addresses.intersection(add_cluster_keys))
-#             else None
-#         ),
-#         (
-#             set(pool_dict[address]["name"] for address in add_set)
-#             if (add_set := addresses.intersection(pool_keys))
-#             else None
-#         ),
-#     ]
-#     for i, addresses in btc_tx_value_series.items()
-# }
 
 
 # check if all blocks's cluster length is 1
@@ -90,8 +72,8 @@ block_time_df["miner_addresses"] = btc_tx_value_series
 block_time_df["miner_cluster"] = cluster_miner
 
 
-first_start_block = 455_000
-rolling_window = 25_000
+first_start_block = 530_000
+rolling_window = 30_000
 
 hash_panel = []
 
@@ -100,13 +82,14 @@ for start_block in range(
     max(btc_tx_value_series.index) - rolling_window + 1,
     rolling_window,
 ):
-    end_block = start_block + rolling_window - 1
+    end_block = start_block + rolling_window
 
     df_in_scope = block_time_df.loc[start_block:end_block]
     block_times = df_in_scope["block_timestamp"].to_list()
     # time difference between the first and last block in seconds
     start_time = block_times[0]
     end_time = block_times[-1]
+    # use miliseconds for time difference
     average_block_time = (end_time - start_time).total_seconds() / rolling_window
     total_hash_rate = 1 / average_block_time
     miner_hash_share = df_in_scope["miner_cluster"].value_counts(normalize=True)
@@ -120,33 +103,26 @@ for start_block in range(
     hash_mean = miner_hash.mean()
     hash_std = miner_hash.std()
 
-    # # fit an exponential distribution to miner_hash
-    # lam = expon.fit(miner_hash)[0]
+    expon_rate = 1 / hash_mean
+    expon_dist = expon(scale=hash_mean)
 
-    # lognorm_sigma, lognorm_loc, lognorm_scale = lognorm.fit(miner_hash)
-    # # fit a lomax distribution to miner_hash using moments
-
-    # c = 1 + hash_mean**2 / hash_std**2
-    # lomax_loc = hash_mean - hash_mean / c
-    # lomax_scale = hash_mean / c
     # fit a lognormal distribution to miner_hash using moments
     lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
     lognorm_loc = (
         np.log(hash_mean) - lognorm_sigma**2 / 2
     )  # "mu", mean of the log of the distribution, not the mean of the distribution
     lognorm_scale = np.exp(lognorm_loc)
-    # mean of fitted lognormal distribution
-    lognorm_mean = lognorm.mean(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
-    lognorm_std = lognorm.std(lognorm_sigma, loc=lognorm_loc, scale=lognorm_scale)
+    lognormal_dist = lognorm(lognorm_sigma, scale=lognorm_scale)
 
-    c, lomax_loc, lomax_scale = lomax.fit(miner_hash)
-    # mean of fitted lomax distribution
-    lomax_mean = lomax.mean(c, loc=lomax_loc, scale=lomax_scale)
-    lomax_std = lomax.std(c, loc=lomax_loc, scale=lomax_scale)
+    # fit a lomax distribution  using moments
+    lomax_shape = 2 * hash_std**2 / (hash_std**2 - hash_mean**2)
+    lomax_scale = hash_mean * (lomax_shape - 1)
+    lomax_dist = lomax(lomax_shape, scale=lomax_scale)
 
     # add a row to hash_panel
     row = {
-        "block_range": f"{start_block} - {end_block}",
+        "start_block": start_block,
+        "end_block": end_block,
         "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
         "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
         "average_block_time": average_block_time,
@@ -155,93 +131,69 @@ for start_block in range(
         "hash_mean": hash_mean,
         "hash_std": hash_std,
         "max_share": max_share * 100,
-        # "exp_lambda": lam,
-        "exp_scale": hash_mean,
+        "exp_rate": expon_rate,
         "log_normal_loc": lognorm_loc,
         "log_normal_sigma": lognorm_sigma,
-        "log_normal_mean": lognorm_mean,
-        "log_normal_std": lognorm_std,
-        # "log_normal_scale": lognorm_scale,
-        "lomax_c": c,
-        "lomax_loc": lomax_loc,
+        "lomax_c": lomax_shape,
         "lomax_scale": lomax_scale,
-        "lomax_mean": lomax_mean,
-        "lomax_std": lomax_std,
     }
     hash_panel.append(row)
 
     # plot ccdf
 
     # Create a figure and a set of subplots
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-
-    # Plotting the histogram of miner_hash on the ax1 with the 'left' y-axis
-    color = "tab:blue"
-    ax1.set_xlabel("Hash Rate")
-    ax1.set_ylabel("1 - Cumulative Frequency", color=color)
+    fig, ax = plt.subplots(figsize=(3, 2))
 
     # plotting empirical ccdf
-    n, bins, patches = ax1.hist(
+    n, bins, patches = ax.hist(
         miner_hash,
         bins=200,
         alpha=0.5,
-        label="Miner Hash Rates",
-        color=color,
+        label="empirical hash rate",
         cumulative=-1,
         density=True,
     )
 
-    # Instantiate a second y-axis sharing the same x-axis
-    # ax1 = ax1.twinx()
-    # color = "tab:red"
-    ax1.set_ylabel(
-        "1 - Cumulative Probability", color=color
-    )  # we already handled the x-label with ax1
-
+    ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
+    ax.set_xlabel("hash rate")
     # Generate points on the x-axis:
     x = np.exp(np.linspace(min(np.log(miner_hash)), max(np.log(miner_hash)), 100))
-
     # Plotting the fitted distributions on the ax2 with the 'right' y-axis
     # Exponential
-    ax1.plot(
+    ax.plot(
         x,
-        1 - expon.cdf(x, scale=hash_mean),
-        "r-",
-        lw=2,
-        label="Exponential Fit (right axis)",
+        1 - expon_dist.cdf(x),
+        label="exponential fit",
     )
-
     # Log-Normal
-    ax1.plot(
+    ax.plot(
         x,
-        1 - lognorm.cdf(x, s=lognorm_sigma, scale=np.exp(lognorm_loc)),
-        "g-",
-        lw=2,
-        label="Log-Normal Fit (right axis)",
+        1 - lognormal_dist.cdf(x),
+        label="log-normal fit",
     )
 
     # Lomax
-    ax1.plot(
+    ax.plot(
         x,
-        1 - lomax.cdf(x, c, loc=lomax_loc, scale=lomax_scale),
-        "b-",
-        lw=2,
-        label="Lomax Fit (right axis)",
+        1 - lomax_dist.cdf(x),
+        label="lomax fit",
     )
 
-    # Adding titles and legend
-    plt.title(
-        f"Hash Rate Distribution and Fits for Blocks {start_block} to {end_block}"
-    )
-
-    # legend
-    fig.legend(loc="upper right")
+    # legend top of the plot, outside of the plot, no frame
+    fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.32), frameon=False)
 
     # log x-axis and y-axis
-    # ax1.set_xscale("log")
-    # ax1.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
 
     fig.tight_layout()  # adjust the layout to make room for the second y-label
+    # save the plot
+    plt.savefig(
+        FIGURES_FOLDER / f"hash_dist_{start_block}_{end_block}.pdf",
+        bbox_inches="tight",
+    )
 
 
 hash_panel = pd.DataFrame(hash_panel)
+# save to pickle
+hash_panel.to_pickle(DATA_FOLDER / "hash_panel.pkl")

@@ -8,6 +8,7 @@ N_MINER = 19
 
 DATA_FOLDER = PROJECT_ROOT / "data"
 FIGURES_FOLDER = PROJECT_ROOT / "figures"
+TABLE_FOLDER = PROJECT_ROOT / "tables"
 
 BITCOIN_MINER_PATH = DATA_FOLDER / "bitcoin_miner.pkl"
 BITCOIN_MINER_JSON_PATH = DATA_FOLDER / "bitcoin_miner.json"
