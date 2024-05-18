@@ -4,7 +4,11 @@ from typing import Callable, Literal
 import numpy as np
 from scipy.integrate import dblquad, quad_vec
 
-from fork_env.constants import LOG_NORMAL_SIGMA, LOMAX_C
+from fork_env.constants import HASH_STD
+from fork_env.utils import (
+    calc_ln_sig,
+    calc_lmx_shape,
+)
 
 SQRRT2PI = np.sqrt(2 * np.pi)
 
@@ -91,6 +95,7 @@ def fork_rate(
     sum_lambda: float,
     n: int,
     dist: Literal["exp", "log_normal", "lomax"] = "exp",
+    std: float = HASH_STD,
     **kwargs,
 ) -> float:
 
@@ -102,25 +107,15 @@ def fork_rate(
             ) ** n
 
     else:
-
+        hash_mean = sum_lambda / n
         if dist == "log_normal":
-            if "sigma" in kwargs:
-                sigma = kwargs["sigma"]
-                # remove sigma from kwargs
-                kwargs.pop("sigma")
-            else:
-                sigma = LOG_NORMAL_SIGMA
+            sigma = calc_ln_sig(hash_mean, std)
 
             def pdf(lam: float, sum_lambda: float, n: int):
                 return pdf_log_normal(lam, sum_lambda, n, sigma=sigma)
 
         elif dist == "lomax":
-            if "c" in kwargs:
-                c = kwargs["c"]
-                # remove c from kwargs
-                kwargs.pop("c")
-            else:
-                c = LOMAX_C
+            c = calc_lmx_shape(hash_mean, std)
 
             def pdf(lam: float, sum_lambda: float, n: int):
                 return pdf_lomax(lam, sum_lambda, n, c=c)
@@ -150,7 +145,7 @@ if __name__ == "__main__":
         proptime=0.763,
         sum_lambda=1 / 600,
         n=30,
-        c=1e14,
+        std=HASH_STD * 2,
         dist="lomax",
         epsrel=1e-16,
         epsabs=1e-22,

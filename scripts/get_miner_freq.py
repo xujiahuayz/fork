@@ -7,6 +7,14 @@ import pandas as pd
 from scipy.stats import expon, lognorm, lomax
 
 from fork_env.constants import CLUSTER_PATH, DATA_FOLDER, FIGURES_FOLDER
+from fork_env.utils import (
+    calc_ex_rate,
+    calc_ln_loc,
+    calc_ln_scale,
+    calc_ln_sig,
+    calc_lmx_shape,
+    calc_lmx_scale,
+)
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
 with open(CLUSTER_PATH, "rb") as f:
@@ -103,20 +111,20 @@ for start_block in range(
     hash_mean = miner_hash.mean()
     hash_std = miner_hash.std()
 
-    expon_rate = 1 / hash_mean
+    expon_rate = calc_ex_rate(hash_mean)
     expon_dist = expon(scale=hash_mean)
 
     # fit a lognormal distribution to miner_hash using moments
-    lognorm_sigma = np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
-    lognorm_loc = (
-        np.log(hash_mean) - lognorm_sigma**2 / 2
+    lognorm_sigma = calc_ln_sig(hash_mean, hash_std)
+    lognorm_loc = calc_ln_loc(
+        hash_mean, hash_std
     )  # "mu", mean of the log of the distribution, not the mean of the distribution
-    lognorm_scale = np.exp(lognorm_loc)
+    lognorm_scale = calc_ln_scale(hash_mean, hash_std)
     lognormal_dist = lognorm(lognorm_sigma, scale=lognorm_scale)
 
     # fit a lomax distribution  using moments
-    lomax_shape = 2 * hash_std**2 / (hash_std**2 - hash_mean**2)
-    lomax_scale = hash_mean * (lomax_shape - 1)
+    lomax_shape = calc_lmx_shape(hash_mean, hash_std)
+    lomax_scale = calc_lmx_scale(hash_mean, hash_std)
     lomax_dist = lomax(lomax_shape, scale=lomax_scale)
 
     # add a row to hash_panel
@@ -155,7 +163,7 @@ for start_block in range(
     )
 
     ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
-    ax.set_xlabel("hash rate")
+    ax.set_xlabel("hash rate [s$^{-1}$]")
     # Generate points on the x-axis:
     x = np.exp(np.linspace(min(np.log(miner_hash)), max(np.log(miner_hash)), 100))
     # Plotting the fitted distributions on the ax2 with the 'right' y-axis
@@ -180,7 +188,11 @@ for start_block in range(
     )
 
     # legend top of the plot, outside of the plot, no frame
-    fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.32), frameon=False)
+    fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.4), frameon=False)
+
+    # fix x-axis and y-axis
+    ax.set_xlim(4e-8, 6e-4)
+    ax.set_ylim(1e-8, 2)
 
     # log x-axis and y-axis
     ax.set_xscale("log")
