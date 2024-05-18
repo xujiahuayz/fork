@@ -1,6 +1,5 @@
 # read hash_panel.pkl from file
 import pandas as pd
-import numpy as np
 from fork_env.constants import DATA_FOLDER, TABLE_FOLDER
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")

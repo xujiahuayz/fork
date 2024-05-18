@@ -5,7 +5,14 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
-from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
+from fork_env.constants import (
+    DATA_FOLDER,
+    FIGURES_FOLDER,
+    EMPIRICAL_PROP_DELAY,
+    DIST_COLORS,
+    DIST_LABELS,
+    DIST_KEYS,
+)
 
 # load rates from json
 with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
@@ -19,25 +26,12 @@ df = pd.DataFrame(rates)
 
 df_simulation = pd.DataFrame(rates_simulation)
 
-DISTRIBUTIONS = ["exp", "log_normal", "lomax"]
-BLOCK_PROPAGATION_TIMES = [0.87, 7.12, 8.7, 1_000]
 
-colors = {
-    "exp": "blue",
-    "log_normal": "orange",
-    "lomax": "green",
-}
-
-labels = {
-    "exp": "exponential",
-    "log_normal": "log normal",
-    "lomax": "lomax",
-}
 # increase font size of plots
 plt.rcParams.update({"font.size": 17})
 
 # export df to excel
-for block_propagation_time in BLOCK_PROPAGATION_TIMES:
+for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
@@ -52,14 +46,13 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
         mlines.Line2D(
             [],
             [],
-            color=colors[distribution],
-            # linestyle="--",
+            color=DIST_COLORS[distribution],
             linewidth=5,
-            label=labels[distribution],
+            label=DIST_LABELS[distribution],
         )
-        for distribution in DISTRIBUTIONS
+        for distribution in DIST_KEYS
     ]
-    for distribution in DISTRIBUTIONS:
+    for distribution in DIST_KEYS:
 
         df_distribution_simulated = df_simulation[
             (df_simulation["distribution"] == distribution)
@@ -70,8 +63,8 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
         plt.plot(
             df_distribution_simulated["n"],
             df_distribution_simulated["rate"],
-            label=labels[distribution],
-            color=colors[distribution],
+            label=DIST_LABELS[distribution],
+            color=DIST_COLORS[distribution],
             alpha=0.2,  # Making simulated data slightly transparent
             linewidth=10,
         )
@@ -85,7 +78,7 @@ for block_propagation_time in BLOCK_PROPAGATION_TIMES:
         plt.plot(
             df_distribution["n"],
             df_distribution["rate"],
-            color=colors[distribution],
+            color=DIST_COLORS[distribution],
             linestyle="--",
             linewidth=5,
         )

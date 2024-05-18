@@ -3,38 +3,61 @@ import time
 from itertools import product
 
 import numpy as np
-from scipy.stats import lomax
 
-from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE, LOG_NORMAL_SIGMA, LOMAX_C
+from fork_env.constants import (
+    DIST_KEYS,
+    HASH_STD,
+    SIMULATED_FORK_RATES_PATH,
+    SUM_HASH_RATE,
+    EMPIRICAL_PROP_DELAY,
+    NUMBER_MINERS_LIST,
+)
 from fork_env.simulate import get_fork_rate
+from fork_env.utils import gen_lmx_dist, gen_ln_dist
+from scipy.stats import expon
 
-exp_dist = lambda n: np.random.exponential(scale=SUM_HASH_RATE / n, size=n)
-log_normal_dist = lambda n, sig=LOG_NORMAL_SIGMA: np.random.lognormal(
-    mean=np.log(SUM_HASH_RATE / n) - np.square(sig) / 2, sigma=sig, size=n
-)
-lomax_dist = lambda n, c=LOMAX_C: lomax.rvs(
-    c=c, scale=SUM_HASH_RATE * (c - 1) / n, size=n
-)
 
-distributions = {"exp": exp_dist, "log_normal": log_normal_dist, "lomax": lomax_dist}
-block_propagation_times = [0.87, 7.12, 8.7, 1_000]
-ns = range(2, 31)
-# get distributions and block propagation times combinations
-combinations = product(distributions.keys(), block_propagation_times, ns)
+def expon_dist(n_miners: int, sum_hash: float = SUM_HASH_RATE):
+    return expon(scale=sum_hash / n_miners)
+
+
+def lognorm_dist(
+    n_miners: int,
+    sum_hash: float = SUM_HASH_RATE,
+    hash_std: float = HASH_STD,
+):
+    _, _, ln_dist = gen_ln_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
+    return ln_dist
+
+
+def lomax_dist(
+    n_miners: int, sum_hash: float = SUM_HASH_RATE, hash_std: float = HASH_STD
+) -> np.ndarray:
+    _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
+    return lmx_dist
+
+
+distributions = {
+    DIST_KEYS[0]: expon_dist,
+    DIST_KEYS[1]: lognorm_dist,
+    DIST_KEYS[2]: lomax_dist,
+}
+
+combinations = product(DIST_KEYS, EMPIRICAL_PROP_DELAY.values(), NUMBER_MINERS_LIST)
 
 start_time = time.time()
 rates = []
-for distribution, block_propagation_time, n in combinations:
+for dist, block_propagation_time, n in combinations:
     rate = get_fork_rate(
         repeat=int(2e7),
-        n=n,
-        hash_distribution=distributions[distribution],
+        n_miners=n,
+        hash_distribution=lambda n: distributions[dist](n).rvs(size=n),
         block_propagation_time=block_propagation_time,
     )
     print(rate)
     rates.append(
         {
-            "distribution": distribution,
+            "distribution": dist,
             "block_propagation_time": block_propagation_time,
             "n": n,
             "rate": rate,
@@ -42,8 +65,7 @@ for distribution, block_propagation_time, n in combinations:
     )
 
 # save rates to json
-
-with open(DATA_FOLDER / "rates_no_sum_constraint.json", "w") as f:
+with open(SIMULATED_FORK_RATES_PATH, "w") as f:
     json.dump(rates, f)
 
 time_taken = time.time() - start_time

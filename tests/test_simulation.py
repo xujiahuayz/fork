@@ -11,9 +11,9 @@ def test_simulate_fork():
     """
     results = simulate_fork_repeat(
         repeat=int(1e6),
-        n=int(1e3),
-        hash_distribution=lambda n: np.random.exponential(
-            scale=SUM_HASH_RATE / n, size=n
+        n_miners=int(1e3),
+        hash_distribution=lambda n_miners: np.random.exponential(
+            scale=SUM_HASH_RATE / n_miners, size=n_miners
         ),
         block_propagation_time=0.1,
     )

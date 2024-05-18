@@ -6,10 +6,10 @@ from fork_env.dltenv import Dlt, Miner
 
 
 def simulate_fork(
-    n: int, hash_distribution: Callable, block_propagation_time: float
+    n_miners: int, hash_distribution: Callable, block_propagation_time: float
 ) -> tuple[bool, float | None]:
-    hash_rates = hash_distribution(n)
-    miners = {i: Miner(id=i, hash_rate=hash_rates[i]) for i in range(n)}
+    hash_rates = hash_distribution(n_miners)
+    miners = {i: Miner(id=i, hash_rate=hash_rates[i]) for i in range(n_miners)}
 
     dlt = Dlt(miners=miners, block_propagation_time=block_propagation_time)
     fork_exists = dlt.fork_created()

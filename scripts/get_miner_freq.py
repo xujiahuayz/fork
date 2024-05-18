@@ -4,17 +4,17 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import expon, lognorm, lomax
+from scipy.stats import expon
 
-from fork_env.constants import CLUSTER_PATH, DATA_FOLDER, FIGURES_FOLDER
-from fork_env.utils import (
-    calc_ex_rate,
-    calc_ln_loc,
-    calc_ln_scale,
-    calc_ln_sig,
-    calc_lmx_shape,
-    calc_lmx_scale,
+from fork_env.constants import (
+    CLUSTER_PATH,
+    DATA_FOLDER,
+    DIST_COLORS,
+    DIST_KEYS,
+    DIST_LABELS,
+    FIGURES_FOLDER,
 )
+from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
 with open(CLUSTER_PATH, "rb") as f:
@@ -85,6 +85,9 @@ rolling_window = 30_000
 
 hash_panel = []
 
+x = [10**i for i in np.linspace(-8, -3, 100)]
+
+
 for start_block in range(
     first_start_block,
     max(btc_tx_value_series.index) - rolling_window + 1,
@@ -115,17 +118,16 @@ for start_block in range(
     expon_dist = expon(scale=hash_mean)
 
     # fit a lognormal distribution to miner_hash using moments
-    lognorm_sigma = calc_ln_sig(hash_mean, hash_std)
-    lognorm_loc = calc_ln_loc(
-        hash_mean, hash_std
-    )  # "mu", mean of the log of the distribution, not the mean of the distribution
-    lognorm_scale = calc_ln_scale(hash_mean, hash_std)
-    lognormal_dist = lognorm(lognorm_sigma, scale=lognorm_scale)
+    lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
 
     # fit a lomax distribution  using moments
-    lomax_shape = calc_lmx_shape(hash_mean, hash_std)
-    lomax_scale = calc_lmx_scale(hash_mean, hash_std)
-    lomax_dist = lomax(lomax_shape, scale=lomax_scale)
+    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
+
+    distributions = {
+        DIST_KEYS[0]: expon_dist,
+        DIST_KEYS[1]: lognorm_dist,
+        DIST_KEYS[2]: lomax_dist,
+    }
 
     # add a row to hash_panel
     row = {
@@ -157,7 +159,7 @@ for start_block in range(
         miner_hash,
         bins=200,
         alpha=0.5,
-        label="empirical hash rate",
+        label="empirical distribution",
         cumulative=-1,
         density=True,
     )
@@ -165,27 +167,14 @@ for start_block in range(
     ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
     ax.set_xlabel("hash rate [s$^{-1}$]")
     # Generate points on the x-axis:
-    x = np.exp(np.linspace(min(np.log(miner_hash)), max(np.log(miner_hash)), 100))
-    # Plotting the fitted distributions on the ax2 with the 'right' y-axis
-    # Exponential
-    ax.plot(
-        x,
-        1 - expon_dist.cdf(x),
-        label="exponential fit",
-    )
-    # Log-Normal
-    ax.plot(
-        x,
-        1 - lognormal_dist.cdf(x),
-        label="log-normal fit",
-    )
 
-    # Lomax
-    ax.plot(
-        x,
-        1 - lomax_dist.cdf(x),
-        label="lomax fit",
-    )
+    for key in DIST_KEYS:
+        ax.plot(
+            x,
+            1 - distributions[key].cdf(x),
+            label=DIST_LABELS[key],
+            color=DIST_COLORS[key],
+        )
 
     # legend top of the plot, outside of the plot, no frame
     fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.4), frameon=False)
