@@ -29,6 +29,8 @@ def calc_lmx_shape(hash_mean: float, hash_std: float) -> float:
 
 def calc_lmx_params(hash_mean: float, hash_std: float) -> tuple[float, float]:
     lomax_shape = calc_lmx_shape(hash_mean, hash_std)
+    if lomax_shape <= 2:
+        raise ValueError("Lomax shape must be greater than 2 to have a finite std.")
     lmx_scale = hash_mean * (lomax_shape - 1)
     return lomax_shape, lmx_scale
 

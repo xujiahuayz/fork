@@ -9,7 +9,7 @@ TABLE_FOLDER = PROJECT_ROOT / "tables"
 BITCOIN_MINER_PATH = DATA_FOLDER / "bitcoin_miner.pkl"
 BITCOIN_MINER_JSON_PATH = DATA_FOLDER / "bitcoin_miner.json"
 CLUSTER_PATH = DATA_FOLDER / "clusters.pkl"
-SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.json"
+SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.jsonl"
 
 
 DIST_KEYS = ["exp", "log_normal", "lomax"]
@@ -46,9 +46,9 @@ HASH_STD = hash_panel["hash_std"].iloc[-1]
 # 1716033902225	1716037503164	102772821	0.5	7057	0.9	17683	0.99	28007	0.5	816	0.9	2666	0.99	14916	2024-05-18 12:05:02_225	2024-05-18 13:05:03_164
 
 EMPIRICAL_PROP_DELAY = {
-    0.5: 816,
-    0.9: 2666,
-    0.99: 14916,
+    0.5: 0.816,
+    0.9: 2.666,
+    0.99: 14.916,
 }
 
 NUMBER_MINERS_LIST = [2**i for i in range(1, 9)]

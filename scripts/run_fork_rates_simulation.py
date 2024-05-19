@@ -33,7 +33,9 @@ def lognorm_dist(
 def lomax_dist(
     n_miners: int, sum_hash: float = SUM_HASH_RATE, hash_std: float = HASH_STD
 ) -> np.ndarray:
-    _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
+    lomax_shape, lmx_scale, lmx_dist = gen_lmx_dist(
+        hash_mean=sum_hash / n_miners, hash_std=hash_std
+    )
     return lmx_dist
 
 
@@ -47,26 +49,32 @@ combinations = product(DIST_KEYS, EMPIRICAL_PROP_DELAY.values(), NUMBER_MINERS_L
 
 start_time = time.time()
 rates = []
-for dist, block_propagation_time, n in combinations:
-    rate = get_fork_rate(
-        repeat=int(2e7),
-        n_miners=n,
-        hash_distribution=lambda n: distributions[dist](n).rvs(size=n),
-        block_propagation_time=block_propagation_time,
-    )
-    print(rate)
-    rates.append(
-        {
+# save each line to jsonl
+with open(SIMULATED_FORK_RATES_PATH, "w") as f:
+    for dist, block_propagation_time, n in combinations:
+        # try to catch value error
+        try:
+            rate = get_fork_rate(
+                repeat=int(1e7),
+                n_miners=n,
+                hash_distribution=lambda n: distributions[dist](n).rvs(size=n),
+                block_propagation_time=block_propagation_time,
+            )
+        except ValueError as e:
+            print(f"Error: {e}")
+            # next iteration
+            continue
+
+        this_rate = {
             "distribution": dist,
             "block_propagation_time": block_propagation_time,
             "n": n,
             "rate": rate,
         }
-    )
+        print(this_rate)
+        # write to jsonl
+        f.write(json.dumps(this_rate) + "\n")
 
-# save rates to json
-with open(SIMULATED_FORK_RATES_PATH, "w") as f:
-    json.dump(rates, f)
 
 time_taken = time.time() - start_time
 print(f"Time taken: {time_taken}")

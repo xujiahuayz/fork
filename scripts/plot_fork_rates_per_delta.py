@@ -12,11 +12,12 @@ from fork_env.constants import (
     DIST_COLORS,
     DIST_LABELS,
     DIST_KEYS,
+    SIMULATED_FORK_RATES_PATH,
 )
 
-# load rates from json
-with open(DATA_FOLDER / "rates_no_sum_constraint.json", "r") as f:
-    rates_simulation = json.load(f)
+# load rates from jsonl
+with open(SIMULATED_FORK_RATES_PATH, "r") as f:
+    rates_simulation = [json.loads(line) for line in f]
 
 with open(DATA_FOLDER / "rates_integ.json", "r") as f:
     rates = json.load(f)
