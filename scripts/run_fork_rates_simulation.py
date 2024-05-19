@@ -33,9 +33,7 @@ def lognorm_dist(
 def lomax_dist(
     n_miners: int, sum_hash: float = SUM_HASH_RATE, hash_std: float = HASH_STD
 ) -> np.ndarray:
-    lomax_shape, lmx_scale, lmx_dist = gen_lmx_dist(
-        hash_mean=sum_hash / n_miners, hash_std=hash_std
-    )
+    _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
     return lmx_dist
 
 

@@ -33,11 +33,7 @@ class Dlt:
         )
         time_diff = sorted_mining_times[1] - sorted_mining_times[0]
         self.last_mining_time = sorted_mining_times[0]
-        if time_diff < self.block_propagation_time:
-            # logging info "fork created"
-            logging.info("fork created")
-            return True
-        return False
+        return time_diff < self.block_propagation_time
 
 
 @dataclass
