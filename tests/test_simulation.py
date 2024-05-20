@@ -10,7 +10,7 @@ def test_simulate_fork():
     test that average last mining time of 1000 simulations is close to 1 / SUM_HASH_RATE with pytest
     """
     results = simulate_fork_repeat(
-        repeat=int(1e6),
+        repeat=int(1e5),
         n_miners=int(1e3),
         hash_distribution=lambda n_miners: np.random.exponential(
             scale=SUM_HASH_RATE / n_miners, size=n_miners

@@ -1,19 +1,21 @@
-from typing import Callable
+from typing import Callable, Iterable
 
 from joblib import Parallel, delayed
-
-from fork_env.dltenv import Dlt, Miner
+import numpy as np
 
 
 def simulate_fork(
-    n_miners: int, hash_distribution: Callable, block_propagation_time: float
-) -> tuple[bool, float | None]:
+    n_miners: int,
+    hash_distribution: Callable[[int], Iterable[float]],
+    block_propagation_time: float,
+) -> tuple[bool, float]:
     hash_rates = hash_distribution(n_miners)
-    miners = {i: Miner(id=i, hash_rate=hash_rates[i]) for i in range(n_miners)}
+    sorted_mining_times = [np.random.exponential(1 / miner) for miner in hash_rates]
+    sorted_mining_times.sort()
 
-    dlt = Dlt(miners=miners, block_propagation_time=block_propagation_time)
-    fork_exists = dlt.fork_created()
-    return fork_exists, dlt.last_mining_time
+    last_mining_time = sorted_mining_times[0]
+    time_diff = sorted_mining_times[1] - last_mining_time
+    return time_diff < block_propagation_time, last_mining_time
 
 
 def simulate_fork_repeat(repeat: int, **kwargs) -> list[tuple[bool, float | None]]:

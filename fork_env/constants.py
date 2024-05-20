@@ -51,4 +51,4 @@ EMPIRICAL_PROP_DELAY = {
     0.99: 14.916,
 }
 
-NUMBER_MINERS_LIST = [2**i for i in range(1, 9)]
+NUMBER_MINERS_LIST = [2, 3, 4, 5, 8, 10, 20, 50, 100, 120, 150, 200]
