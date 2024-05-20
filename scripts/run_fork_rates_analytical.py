@@ -3,7 +3,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
+from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE, DIST_KEYS
 from fork_env.integration import fork_rate
 
 
@@ -25,7 +25,7 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 
 if __name__ == "__main__":
-    distributions = ["exp", "log_normal", "lomax"]
+    distributions = DIST_KEYS
     # https://www.dsn.kastel.kit.edu/bitcoin/#propagation
     # https://www.dsn.kastel.kit.edu/bitcoin/data/invstat.gpd
     # 1707502394221	1707505994984	125861738	0.5	7147	0.9	17665	0.99	27919	0.5	763	0.9	2480	0.99	16472	2024-02-09 18:13:14_221	2024-02-09 19:13:14_984

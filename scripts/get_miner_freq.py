@@ -180,8 +180,8 @@ for start_block in range(
     fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.4), frameon=False)
 
     # fix x-axis and y-axis
-    ax.set_xlim(4e-8, 6e-4)
-    ax.set_ylim(1e-8, 2)
+    ax.set_xlim(5e-8, 6e-4)
+    ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis
     ax.set_xscale("log")

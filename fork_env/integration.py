@@ -4,73 +4,61 @@ from typing import Callable, Literal
 import numpy as np
 from scipy.integrate import dblquad, quad_vec
 
-from fork_env.constants import HASH_STD
+from fork_env.constants import HASH_STD, SUM_HASH_RATE, EMPIRICAL_PROP_DELAY
 from fork_env.utils import (
+    calc_lmx_params,
+    calc_ln_params,
     calc_ln_sig,
-    calc_lmx_shape,
 )
 
 SQRRT2PI = np.sqrt(2 * np.pi)
 
 
 @lru_cache(maxsize=None)
-def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float) -> float:
+def pdf_log_normal(
+    lam: float, mu: float, sigmaSQRRT2PI: float, twosigsq: float
+) -> float:
     """
     pdf of the log normal distribution where mean = np.log(sum_lambda / n) - np.square(sigma) / 2 and sigma = sigma
     """
-    return np.exp(
-        -((sigma**2 / 2 + np.log(lam) - np.log(sum_lambda / n)) ** 2) / (2 * sigma**2)
-    ) / (lam * sigma * SQRRT2PI)
+    return np.exp(-((np.log(lam) - mu) ** 2) / twosigsq) / (lam * sigmaSQRRT2PI)
 
 
 @lru_cache(maxsize=None)
-def pdf_lomax(lam: float, sum_lambda: float, n: int, c: float) -> float:
+def pdf_lomax(lam: float, lmx_shape: float, lmx_scale: float) -> float:
     """
     pdf of the lomax distribution where scale = sum_lambda * (c - 1) / n and c = c
     """
-    return (
-        n
-        * c
-        * (1 + n * lam / (sum_lambda * (c - 1))) ** (-c)
-        / (sum_lambda * (c - 1) + n * lam)
-    )
+    return lmx_shape / lmx_scale * (1 + lam / lmx_scale) ** (-lmx_shape - 1)
 
 
 def az_integrand(
     lam: float,
     x: float,
-    sum_lambda: float,
-    n: int,
     pdf: Callable,
 ) -> float:
-    return lam * np.exp(-lam * x) * pdf(lam, sum_lambda, n)
+    return lam * np.exp(-lam * x) * pdf(lam)
 
 
 @lru_cache(maxsize=None)
 def az(
     x: float,
-    sum_lambda: float,
-    n: int,
     pdf: Callable,
     **kwargs,
 ) -> float:
 
-    return quad_vec(
-        lambda lam: az_integrand(lam, x, sum_lambda, n, pdf), 0, np.inf, **kwargs
-    )[0]
+    return quad_vec(lambda lam: az_integrand(lam, x, pdf), 0, np.inf, **kwargs)[0]
 
 
 def bz(
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
     pdf: Callable,
     **kwargs,
 ) -> float:
 
     def integrand(lam: float) -> float:
-        return lam * np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+        return lam * np.exp(-lam * (x + delta)) * pdf(lam)
 
     return quad_vec(integrand, 0, np.inf, **kwargs)[0]
 
@@ -78,14 +66,12 @@ def bz(
 def cz(
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
     pdf: Callable,
     **kwargs,
 ) -> float:
 
     def integrand(lam: float) -> float:
-        return np.exp(-lam * (x + delta)) * pdf(lam, sum_lambda, n)
+        return np.exp(-lam * (x + delta)) * pdf(lam)
 
     return quad_vec(integrand, 0, np.inf, **kwargs)[0]
 
@@ -95,7 +81,7 @@ def fork_rate(
     sum_lambda: float,
     n: int,
     dist: Literal["exp", "log_normal", "lomax"] = "exp",
-    std: float = HASH_STD,
+    hash_std: float = HASH_STD,
     **kwargs,
 ) -> float:
 
@@ -109,22 +95,27 @@ def fork_rate(
     else:
         hash_mean = sum_lambda / n
         if dist == "log_normal":
-            sigma = calc_ln_sig(hash_mean, std)
+            mu, sigma, _ = calc_ln_params(hash_mean, hash_std)
+            # pre-calculate some values for pdf_log_normal
+            sigmaSQRRT2PI = sigma * np.sqrt(2 * np.pi)
+            twosigsq = 2 * sigma**2
 
-            def pdf(lam: float, sum_lambda: float, n: int):
-                return pdf_log_normal(lam, sum_lambda, n, sigma=sigma)
+            def pdf(lam: float):
+                return pdf_log_normal(
+                    lam, mu=mu, sigmaSQRRT2PI=sigmaSQRRT2PI, twosigsq=twosigsq
+                )
 
         elif dist == "lomax":
-            c = calc_lmx_shape(hash_mean, std)
+            lmx_shape, lmx_scale = calc_lmx_params(hash_mean, hash_std)
 
-            def pdf(lam: float, sum_lambda: float, n: int):
-                return pdf_lomax(lam, sum_lambda, n, c=c)
+            def pdf(lam: float):
+                return pdf_lomax(lam, lmx_shape=lmx_shape, lmx_scale=lmx_scale)
 
         def pdelta_integrand(x: float, delta: float) -> float:
             return (
-                az(x, sum_lambda, n, pdf, **kwargs)
-                * bz(x, delta, sum_lambda, n, pdf, **kwargs)
-                * cz(x, delta, sum_lambda, n, pdf, **kwargs) ** (n - 2)
+                az(x, pdf, **kwargs)
+                * bz(x, delta, pdf, **kwargs)
+                * cz(x, delta, pdf, **kwargs) ** (n - 2)
             )
 
     return (
@@ -142,11 +133,11 @@ def fork_rate(
 
 if __name__ == "__main__":
     res = fork_rate(
-        proptime=0.763,
-        sum_lambda=1 / 600,
-        n=30,
-        std=HASH_STD * 2,
-        dist="lomax",
+        proptime=EMPIRICAL_PROP_DELAY[0.9],
+        sum_lambda=SUM_HASH_RATE,
+        n=2**4,
+        hash_std=HASH_STD,
+        dist="log_normal",
         epsrel=1e-16,
         epsabs=1e-22,
         limit=380,

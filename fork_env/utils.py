@@ -13,7 +13,7 @@ def calc_ln_sig(hash_mean: float, hash_std: float) -> float:
 
 def calc_ln_params(hash_mean: float, hash_std: float) -> tuple[float, float, float]:
     lognorm_sigma = calc_ln_sig(hash_mean, hash_std)
-    lognorm_loc = np.log(hash_mean) - lognorm_sigma**2 / 2
+    lognorm_loc = np.log(hash_mean) - lognorm_sigma**2 / 2  # mu
     lognorm_scale = np.exp(lognorm_loc)
     return lognorm_loc, lognorm_sigma, lognorm_scale
 
@@ -28,11 +28,11 @@ def calc_lmx_shape(hash_mean: float, hash_std: float) -> float:
 
 
 def calc_lmx_params(hash_mean: float, hash_std: float) -> tuple[float, float]:
-    lomax_shape = calc_lmx_shape(hash_mean, hash_std)
-    if lomax_shape <= 2:
+    lmx_shape = calc_lmx_shape(hash_mean, hash_std)
+    if lmx_shape <= 2:
         raise ValueError("Lomax shape must be greater than 2 to have a finite std.")
-    lmx_scale = hash_mean * (lomax_shape - 1)
-    return lomax_shape, lmx_scale
+    lmx_scale = hash_mean * (lmx_shape - 1)
+    return lmx_shape, lmx_scale
 
 
 def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
