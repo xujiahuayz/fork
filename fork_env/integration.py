@@ -8,10 +8,7 @@ from fork_env.constants import HASH_STD, SUM_HASH_RATE, EMPIRICAL_PROP_DELAY
 from fork_env.utils import (
     calc_lmx_params,
     calc_ln_params,
-    calc_ln_sig,
 )
-
-SQRRT2PI = np.sqrt(2 * np.pi)
 
 
 @lru_cache(maxsize=None)
@@ -133,12 +130,13 @@ def fork_rate(
 
 if __name__ == "__main__":
     res = fork_rate(
-        proptime=EMPIRICAL_PROP_DELAY[0.9],
+        proptime=EMPIRICAL_PROP_DELAY[0.5],
         sum_lambda=SUM_HASH_RATE,
-        n=2**4,
+        n=16,
         hash_std=HASH_STD,
         dist="log_normal",
         epsrel=1e-16,
         epsabs=1e-22,
         limit=380,
     )
+    print(res)
