@@ -10,6 +10,7 @@ BITCOIN_MINER_PATH = DATA_FOLDER / "bitcoin_miner.pkl"
 BITCOIN_MINER_JSON_PATH = DATA_FOLDER / "bitcoin_miner.json"
 CLUSTER_PATH = DATA_FOLDER / "clusters.pkl"
 SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.jsonl"
+ANALYTICAL_FORK_RATES_PATH = DATA_FOLDER / "rates_analytical.pkl"
 
 
 DIST_KEYS = ["exp", "log_normal", "lomax"]
@@ -51,4 +52,40 @@ EMPIRICAL_PROP_DELAY = {
     0.99: 14.916,
 }
 
-NUMBER_MINERS_LIST = [2, 3, 4, 5, 8, 10, 20, 50, 100, 120, 150, 200]
+BLOCK_PROP_TIMES = list(EMPIRICAL_PROP_DELAY.values()) + [
+    0.1,
+    5,
+    20,
+    50,
+    100,
+    150,
+    200,
+    500,
+    1000,
+]
+
+BLOCK_PROP_TIMES.sort()
+
+NUMBER_MINERS_LIST = [
+    2,
+    3,
+    4,
+    5,
+    8,
+    10,
+    15,
+    20,
+    50,
+    100,
+    150,
+    200,
+    500,
+    1000,
+    1500,
+    2000,
+    5000,
+    10000,
+]
+
+SUM_HASHES = [5e-4, 1e-2, SUM_HASH_RATE]
+SUM_HASHES.sort()

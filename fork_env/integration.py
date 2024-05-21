@@ -142,12 +142,13 @@ def fork_rate(
 
 if __name__ == "__main__":
     res = fork_rate(
-        proptime=EMPIRICAL_PROP_DELAY[0.5],
-        sum_lambda=SUM_HASH_RATE,
-        n=256,
+        proptime=1000,
+        sum_lambda=0.01,
+        n=10000,
         std=HASH_STD,
         dist="log_normal",
-        epsrel=1e-14,
-        limit=155,
+        epsrel=1e-9,
+        epsabs=1e-16,
+        limit=130,
     )
     print(res)

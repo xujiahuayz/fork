@@ -3,8 +3,15 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
-from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE, DIST_KEYS
-from fork_env.integration_slow import fork_rate
+from fork_env.constants import (
+    DIST_KEYS,
+    BLOCK_PROP_TIMES,
+    NUMBER_MINERS_LIST,
+    SUM_HASHES,
+    ANALYTICAL_FORK_RATES_PATH,
+    HASH_STD,
+)
+from fork_env.integration import fork_rate
 
 
 def compute_rate(args) -> tuple[tuple, float]:
@@ -15,6 +22,7 @@ def compute_rate(args) -> tuple[tuple, float]:
         sum_lambda=sumhash,
         n=n,
         dist=distribution,
+        std=HASH_STD,
         epsrel=1e-9,
         epsabs=1e-16,
         limit=130,
@@ -25,36 +33,7 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 
 if __name__ == "__main__":
-    distributions = DIST_KEYS
-    # https://www.dsn.kastel.kit.edu/bitcoin/#propagation
-    # https://www.dsn.kastel.kit.edu/bitcoin/data/invstat.gpd
-    # 1707502394221	1707505994984	125861738	0.5	7147	0.9	17665	0.99	27919	0.5	763	0.9	2480	0.99	16472	2024-02-09 18:13:14_221	2024-02-09 19:13:14_984
-    block_propagation_times = [
-        0.763,
-        2.48,
-        16.472,
-        7.12,
-        8.7,
-        0.1,
-        0.2,
-        0.5,
-        1,
-        2,
-        5,
-        10,
-        20,
-        50,
-        100,
-        200,
-        500,
-        1_000,
-        2_000,
-        5_000,
-        10_000,
-    ]
-    ns = range(2, 31)
-    sumhashes = [1e-3, 5e-2, 1, SUM_HASH_RATE]
-    combinations = product(distributions, block_propagation_times, ns, sumhashes)
+    combinations = product(DIST_KEYS, BLOCK_PROP_TIMES, NUMBER_MINERS_LIST, SUM_HASHES)
 
     start_time = time.time()
     rates = []
@@ -66,5 +45,5 @@ if __name__ == "__main__":
     end_time = time.time()
     print(f"Computation completed in {end_time - start_time} seconds.")
 
-    with open(DATA_FOLDER / "rates_analytical.pkl", "wb") as f:
+    with open(ANALYTICAL_FORK_RATES_PATH, "wb") as f:
         pickle.dump(rates, f)

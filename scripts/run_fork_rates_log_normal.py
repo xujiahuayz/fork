@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
 from fork_env.constants import DATA_FOLDER, SUM_HASH_RATE
-from fork_env.integration_slow import fork_rate
+from fork_env.integration import fork_rate
 
 
 def compute_rate_log_normal(args) -> tuple[tuple, float]:
