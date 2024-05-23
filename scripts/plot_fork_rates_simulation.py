@@ -6,22 +6,24 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
 from fork_env.constants import (
-    DATA_FOLDER,
     FIGURES_FOLDER,
     EMPIRICAL_PROP_DELAY,
     DIST_COLORS,
     DIST_LABELS,
     DIST_KEYS,
     SIMULATED_FORK_RATES_PATH,
+    SUM_HASH_RATE,
+    N_MINER,
 )
+
+from scripts.read_analytical_rates import rates
 
 # load rates from jsonl
 with open(SIMULATED_FORK_RATES_PATH, "r") as f:
     rates_simulation = [json.loads(line) for line in f]
 
-with open(DATA_FOLDER / "rates_integ.json", "r") as f:
-    rates = json.load(f)
 
+rates = rates[(rates["n"] <= 200) & (rates["sum_hash"] == SUM_HASH_RATE)]
 
 df = pd.DataFrame(rates)
 
@@ -31,11 +33,11 @@ df_simulation = pd.DataFrame(rates_simulation)
 # increase font size of plots
 plt.rcParams.update({"font.size": 17})
 
-# export df to excel
 for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
+
+    plt.ticklabel_format(style="plain", axis="y", scilimits=(0, 0), useMathText=True)
 
     simu_anal = [
         mlines.Line2D(
@@ -88,16 +90,17 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
     first_legend = plt.legend(
         handles=simu_anal,
         frameon=False,
-        loc="lower left",
-        bbox_to_anchor=(-0.02, -0.05),
+        loc="upper left",
+        bbox_to_anchor=(1, 1),
     )
+
     plt.gca().add_artist(first_legend)
     plt.legend(
         handles=dist_handle,
         # title="analytical",
         frameon=False,
-        loc="lower right",
-        bbox_to_anchor=(1.02, -0.05),
+        loc="lower left",
+        bbox_to_anchor=(1, 0),
     )
 
     # set ylimit
@@ -108,7 +111,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
     )
 
     # vertical line at n=19
-    plt.axvline(x=19, color="black", linestyle=":")
+    plt.axvline(x=N_MINER, color="black", linestyle=":")
 
     plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate $C(\Delta_0)$")

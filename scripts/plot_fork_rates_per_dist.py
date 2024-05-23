@@ -1,3 +1,4 @@
+from matplotlib.colors import LogNorm
 import numpy as np
 import pickle
 
@@ -5,25 +6,9 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, SUM_HASH_RATE
+from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, SUM_HASHES
+from scripts.read_analytical_rates import rates
 
-#
-with open(DATA_FOLDER / "rates_analytical.pkl", "rb") as f:
-    rates = pickle.load(f)
-
-df = pd.DataFrame(
-    [
-        {
-            "distribution": k[0][0],
-            "block_propagation_time": k[0][1],
-            "n": k[0][2],
-            "sumhash": k[0][3],
-            "rate": k[1],
-        }
-        for k in rates
-    ]
-)
-#
 
 DISTRIBUTIONS = ["exp", "log_normal", "lomax"]
 
@@ -37,8 +22,8 @@ labels = {
 plt.rcParams.update({"font.size": 18})
 # make axes label farther from ticker label values
 
-for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
-    df_hash = df[df["sumhash"] == sumhash]
+for sumhash in SUM_HASHES:
+    df_hash = rates[rates["sum_hash"] == sumhash]
     # export df to excel
     for distribution in DISTRIBUTIONS:
         df_distribution = df_hash[df_hash["distribution"] == distribution]
@@ -48,13 +33,17 @@ for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
         )
 
         # Create a pivot table to organize the data into a 2D grid, which is necessary for wireframe plots
+        # keep nan values for the wireframe plot
         pivot_table = df_distribution.pivot_table(
-            index="block_propagation_time", columns="n", values="rate"
+            index="block_propagation_time",
+            columns="n",
+            values="rate",
+            fill_value=np.nan,
         )
 
         # Extract the unique values of 'n' and 'block_propagation_time' to create meshgrid
-        X_unique = np.sort(df_distribution["n"].unique())
-        Y_unique = np.sort(df_distribution["block_propagation_time"].unique())
+        X_unique = list(pivot_table.columns)
+        Y_unique = list(pivot_table.index)
         X, Y = np.meshgrid(
             X_unique, Y_unique
         )  # Use np.log to log the Y axis if necessary
@@ -64,9 +53,21 @@ for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
 
         fig = plt.figure(figsize=(14, 10))
         ax = fig.add_subplot(111, projection="3d")
+
+        log_X = np.log2(X)
+        log_Y = np.log10(Y)
+
         # add colorbar
         surf = ax.plot_surface(
-            X, Y, Z, rstride=1, cstride=1, cmap="YlGn", edgecolor="none", alpha=0.8
+            log_X,
+            log_Y,
+            Z,
+            rstride=1,
+            cstride=1,
+            cmap="YlGn",
+            edgecolor="none",
+            alpha=0.8,
+            norm=LogNorm(vmin=5e-5, vmax=Z.max()),
         )
         # add a think colorbar
         fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -76,6 +77,15 @@ for sumhash in sorted([1e-3, 5e-2, 1, SUM_HASH_RATE], reverse=True):
         ax.set_zlabel("fork rate $C(\Delta_0)$", labelpad=10)
 
         ax.set_zlim(0, 1)
+
+        # Adjust labels for logarithmic axis
+        # ax.set_xlabel("number of miners $N$ (Log Scale)", labelpad=10)
+        ax.set_xticks([1, 3, 5, 7, 9, 11, 13])  # Set log-spaced ticks
+        ax.set_yticks(np.linspace(-1, 3, 5))  # Set linear-spaced ticks
+
+        ax.xaxis.set_major_formatter(lambda x, pos: f"$2^{{{int(x)}}}$")
+        ax.yaxis.set_major_formatter(lambda x, pos: f"$10^{{{int(x)}}}$")
+
         title_value = round(sumhash, 5)
         plt.title(
             f"$\Sigma \lambda = {title_value}$ [$s^{{{-1}}}$]", loc="right", y=0.85

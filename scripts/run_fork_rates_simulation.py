@@ -53,7 +53,7 @@ with open(SIMULATED_FORK_RATES_PATH, "w") as f:
         # try to catch value error
         try:
             rate = get_fork_rate(
-                repeat=int(2e7),
+                repeat=int(1e8),
                 n_miners=n,
                 hash_distribution=lambda n: distributions[dist](n).rvs(size=n),
                 block_propagation_time=block_propagation_time,
