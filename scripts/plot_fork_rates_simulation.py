@@ -115,6 +115,8 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate $C(\Delta_0)$")
+    # log x axis with base 2
+    plt.xscale("log", base=2)
 
     # make sure the plot is not cut off
     plt.tight_layout()
