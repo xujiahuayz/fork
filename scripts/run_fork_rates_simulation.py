@@ -58,8 +58,8 @@ try:
 except FileNotFoundError:
     pass
 
-# save each line to jsonl
-with open(SIMULATED_FORK_RATES_PATH, "w") as f:
+# open file for writing by appending
+with open(SIMULATED_FORK_RATES_PATH, "a") as f:
     for dist, block_propagation_time, n in combinations:
         # check if it has already been computed
         if any(
