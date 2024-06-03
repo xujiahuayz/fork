@@ -1,10 +1,12 @@
 import json
 import pickle
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import expon
+from scipy.special.cython_special import kn
 
 from fork_env.constants import (
     CLUSTER_PATH,
@@ -16,6 +18,28 @@ from fork_env.constants import (
 )
 from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
+
+# integrate
+from scipy.integrate import quad
+
+
+# modified bessel function, first function second kind
+def density_p(lbda: float, bis: Iterable[float], rolling_window: int) -> float:
+    return np.mean(
+        [
+            rolling_window
+            * np.exp(
+                -((bi - rolling_window * lbda) ** 2) / (rolling_window * lbda) - 2 * bi
+            )
+            / (2 * bi * kn(1, 2 * bi))
+            for bi in bis
+        ]
+    )
+
+
+def ccdf_p(lbda: float, bis: Iterable[float], rolling_window: int) -> float:
+    return 1 - quad(lambda x: density_p(x, bis, rolling_window), 0, lbda)[0]
+
 
 with open(CLUSTER_PATH, "rb") as f:
     clusters = pickle.load(f)
@@ -103,7 +127,8 @@ for start_block in range(
     # use miliseconds for time difference
     average_block_time = (end_time - start_time).total_seconds() / rolling_window
     total_hash_rate = 1 / average_block_time
-    miner_hash_share = df_in_scope["miner_cluster"].value_counts(normalize=True)
+    miner_hash_share_count = df_in_scope["miner_cluster"].value_counts()
+    miner_hash_share = miner_hash_share_count / rolling_window
 
     max_share = miner_hash_share.max()
     min_share = miner_hash_share.min()
@@ -153,6 +178,16 @@ for start_block in range(
 
     # Create a figure and a set of subplots
     fig, ax = plt.subplots(figsize=(3, 2))
+
+    ax.plot(
+        x,
+        [
+            ccdf_p(lbda, miner_hash_share_count * total_hash_rate, rolling_window)
+            for lbda in x
+        ],
+        label="ccdf_p",
+        color="red",
+    )
 
     # plotting empirical ccdf
     n, bins, patches = ax.hist(
