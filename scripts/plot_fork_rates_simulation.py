@@ -23,7 +23,7 @@ with open(SIMULATED_FORK_RATES_PATH, "r") as f:
     rates_simulation = [json.loads(line) for line in f]
 
 
-rates = rates[(rates["n"] <= 200) & (rates["sum_hash"] == SUM_HASH_RATE)]
+rates = rates[(rates["n"] < 500) & (rates["sum_hash"] == SUM_HASH_RATE)]
 
 df = pd.DataFrame(rates)
 
@@ -37,7 +37,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
 
-    plt.ticklabel_format(style="plain", axis="y", scilimits=(0, 0), useMathText=True)
+    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
 
     simu_anal = [
         mlines.Line2D(
@@ -105,10 +105,10 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     # set ylimit
     max_rate = df[df["block_propagation_time"] == block_propagation_time]["rate"].max()
-    plt.ylim(
-        -0.05 * max_rate,
-        1.05 * max_rate,
-    )
+    # plt.ylim(
+    #     0,
+    #     0.025,
+    # )
 
     # vertical line at n=19
     plt.axvline(x=N_MINER, color="black", linestyle=":")

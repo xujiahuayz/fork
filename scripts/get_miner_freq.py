@@ -1,44 +1,17 @@
 import json
 import pickle
-from typing import Iterable
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from scipy.stats import expon
-from scipy.special.cython_special import kn
 
 from fork_env.constants import (
     CLUSTER_PATH,
     DATA_FOLDER,
-    DIST_COLORS,
     DIST_KEYS,
-    DIST_LABELS,
-    FIGURES_FOLDER,
 )
 from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist
+from fork_env.constants import BLOCK_WINDOW
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
-
-# integrate
-from scipy.integrate import quad
-
-
-# modified bessel function, first function second kind
-def density_p(lbda: float, bis: Iterable[float], rolling_window: int) -> float:
-    return np.mean(
-        [
-            rolling_window
-            * np.exp(
-                -((bi - rolling_window * lbda) ** 2) / (rolling_window * lbda) - 2 * bi
-            )
-            / (2 * bi * kn(1, 2 * bi))
-            for bi in bis
-        ]
-    )
-
-
-def ccdf_p(lbda: float, bis: Iterable[float], rolling_window: int) -> float:
-    return 1 - quad(lambda x: density_p(x, bis, rolling_window), 0, lbda)[0]
 
 
 with open(CLUSTER_PATH, "rb") as f:
@@ -105,19 +78,16 @@ block_time_df["miner_cluster"] = cluster_miner
 
 
 first_start_block = 530_000
-rolling_window = 30_000
 
 hash_panel = []
-
-x = [10**i for i in np.linspace(-8, -3, 100)]
 
 
 for start_block in range(
     first_start_block,
-    max(btc_tx_value_series.index) - rolling_window + 1,
-    rolling_window,
+    max(btc_tx_value_series.index) - BLOCK_WINDOW + 1,
+    BLOCK_WINDOW,
 ):
-    end_block = start_block + rolling_window
+    end_block = start_block + BLOCK_WINDOW
 
     df_in_scope = block_time_df.loc[start_block:end_block]
     block_times = df_in_scope["block_timestamp"].to_list()
@@ -125,10 +95,10 @@ for start_block in range(
     start_time = block_times[0]
     end_time = block_times[-1]
     # use miliseconds for time difference
-    average_block_time = (end_time - start_time).total_seconds() / rolling_window
+    average_block_time = (end_time - start_time).total_seconds() / BLOCK_WINDOW
     total_hash_rate = 1 / average_block_time
     miner_hash_share_count = df_in_scope["miner_cluster"].value_counts()
-    miner_hash_share = miner_hash_share_count / rolling_window
+    miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
 
     max_share = miner_hash_share.max()
     min_share = miner_hash_share.min()
@@ -137,7 +107,7 @@ for start_block in range(
 
     num_miners = len(miner_hash)
     hash_mean = miner_hash.mean()
-    hash_std = miner_hash.std()
+    hash_std = miner_hash.std(ddof=0)
 
     expon_rate = calc_ex_rate(hash_mean)
     expon_dist = expon(scale=hash_mean)
@@ -147,12 +117,6 @@ for start_block in range(
 
     # fit a lomax distribution  using moments
     lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
-
-    distributions = {
-        DIST_KEYS[0]: expon_dist,
-        DIST_KEYS[1]: lognorm_dist,
-        DIST_KEYS[2]: lomax_dist,
-    }
 
     # add a row to hash_panel
     row = {
@@ -171,63 +135,14 @@ for start_block in range(
         "log_normal_sigma": lognorm_sigma,
         "lomax_c": lomax_shape,
         "lomax_scale": lomax_scale,
+        "miner_hash": miner_hash,
+        "distributions": {
+            DIST_KEYS[0]: expon_dist,
+            DIST_KEYS[1]: lognorm_dist,
+            DIST_KEYS[2]: lomax_dist,
+        },
     }
     hash_panel.append(row)
-
-    # plot ccdf
-
-    # Create a figure and a set of subplots
-    fig, ax = plt.subplots(figsize=(3, 2))
-
-    ax.plot(
-        x,
-        [
-            ccdf_p(lbda, miner_hash_share_count * total_hash_rate, rolling_window)
-            for lbda in x
-        ],
-        label="ccdf_p",
-        color="red",
-    )
-
-    # plotting empirical ccdf
-    n, bins, patches = ax.hist(
-        miner_hash,
-        bins=200,
-        alpha=0.5,
-        label="empirical distribution",
-        cumulative=-1,
-        density=True,
-    )
-
-    ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
-    ax.set_xlabel("hash rate [s$^{-1}$]")
-    # Generate points on the x-axis:
-
-    for key in DIST_KEYS:
-        ax.plot(
-            x,
-            1 - distributions[key].cdf(x),
-            label=DIST_LABELS[key],
-            color=DIST_COLORS[key],
-        )
-
-    # legend top of the plot, outside of the plot, no frame
-    fig.legend(loc="upper right", bbox_to_anchor=(0.9, 1.4), frameon=False)
-
-    # fix x-axis and y-axis
-    ax.set_xlim(5e-8, 6e-4)
-    ax.set_ylim(2e-3, 1.8)
-
-    # log x-axis and y-axis
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-
-    fig.tight_layout()  # adjust the layout to make room for the second y-label
-    # save the plot
-    plt.savefig(
-        FIGURES_FOLDER / f"hash_dist_{start_block}_{end_block}.pdf",
-        bbox_inches="tight",
-    )
 
 
 hash_panel = pd.DataFrame(hash_panel)

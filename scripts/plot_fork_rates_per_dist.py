@@ -21,7 +21,8 @@ labels = {
 # increase font size of plots
 plt.rcParams.update({"font.size": 18})
 # make axes label farther from ticker label values
-
+# rates = rates[rates["n"] < 500 & rates["n"] > 10]
+rates = rates[(rates["n"] < 500) & (rates["n"] > 8)]
 for sumhash in SUM_HASHES:
     df_hash = rates[rates["sum_hash"] == sumhash]
     # export df to excel
@@ -67,7 +68,8 @@ for sumhash in SUM_HASHES:
             cmap="YlGn",
             edgecolor="none",
             alpha=0.8,
-            norm=LogNorm(vmin=5e-5, vmax=Z.max()),
+            vmin=0,
+            vmax=1,
         )
         # add a think colorbar
         fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -80,7 +82,7 @@ for sumhash in SUM_HASHES:
 
         # Adjust labels for logarithmic axis
         # ax.set_xlabel("number of miners $N$ (Log Scale)", labelpad=10)
-        ax.set_xticks([1, 3, 5, 7, 9, 11, 13])  # Set log-spaced ticks
+        ax.set_xticks([4, 5, 6, 7])  # Set log-spaced ticks
         ax.set_yticks(np.linspace(-1, 3, 5))  # Set linear-spaced ticks
 
         ax.xaxis.set_major_formatter(lambda x, pos: f"$2^{{{int(x)}}}$")

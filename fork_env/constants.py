@@ -11,8 +11,11 @@ BITCOIN_MINER_JSON_PATH = DATA_FOLDER / "bitcoin_miner.json"
 CLUSTER_PATH = DATA_FOLDER / "clusters.pkl"
 SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.jsonl"
 ANALYTICAL_FORK_RATES_PATH = DATA_FOLDER / "rates_analytical.pkl"
+ANALYTICAL_FORK_RATES_PATH_STD = DATA_FOLDER / "rates_analytical_std.pkl"
+SIMULATED_FORK_RATES_EMP_DIST = DATA_FOLDER / "rates_simulated_emp_dist.jsonl"
 
-
+EMPRITICAL_FORK_RATE = 0.0041
+BLOCK_WINDOW = 30_000
 DIST_KEYS = ["exp", "log_normal", "lomax"]
 
 DIST_COLORS = {
@@ -87,5 +90,5 @@ NUMBER_MINERS_LIST = [
     10000,
 ]
 
-SUM_HASHES = [5e-4, 1e-2, SUM_HASH_RATE]
+SUM_HASHES = [5e-4, 5e-3, SUM_HASH_RATE]
 SUM_HASHES.sort()
