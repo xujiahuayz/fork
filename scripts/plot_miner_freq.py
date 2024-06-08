@@ -39,7 +39,13 @@ for index, row in hash_panel.iterrows():
 
     ax.plot(
         x,
-        [ccdf_p(lbda * BLOCK_WINDOW, bi_hash) for lbda in x],
+        [
+            ccdf_p(
+                lbda * BLOCK_WINDOW,
+                bi_hash,
+            )
+            for lbda in x
+        ],
         label="empirical fit",
         color="red",
         # dashed line

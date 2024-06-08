@@ -97,7 +97,7 @@ for start_block in range(
     # use miliseconds for time difference
     average_block_time = (end_time - start_time).total_seconds() / BLOCK_WINDOW
     total_hash_rate = 1 / average_block_time
-    miner_hash_share_count = df_in_scope["miner_cluster"].value_counts()
+    miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
     miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
 
     max_share = miner_hash_share.max()

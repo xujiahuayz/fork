@@ -1,3 +1,4 @@
+from math import prod
 from typing import Any, Iterable
 import numpy as np
 from scipy.stats import lognorm, lomax
@@ -64,6 +65,49 @@ def cdf_p(lbda: float, bis: Iterable[float]) -> float:
 
 def ccdf_p(lbda: float, bis: Iterable[float]) -> float:
     return 1 - cdf_p(lbda, bis)
+
+
+def p_delta_emp_integrand(
+    x: float, delta: float, bis: Iterable[float], block_window: int
+) -> float:
+    sum_i = 0
+    for i, bi in enumerate(bis):
+        sum_j = 0
+        for j, bj in enumerate(bis):
+            if i != j:
+                prod_k = prod(
+                    kn(1, bk * np.sqrt(2 * (x + delta) / block_window + 1))
+                    / (kn(1, bk) * np.sqrt(2 * (x + delta) / block_window + 1))
+                    for k, bk in enumerate(bis)
+                    if j != k
+                )
+                sum_j += (
+                    kn(2, bj * np.sqrt(2 * (x + delta) / block_window + 1))
+                    / (kn(1, bj) * (2 * (x + delta) + block_window))
+                    * prod_k
+                )
+        sum_i += (
+            kn(2, bi * np.sqrt(2 * x / block_window + 1))
+            / (kn(1, bi) * (2 * x + block_window))
+            * sum_j
+        )
+    return sum_i
+
+
+def p_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
+    return quad(
+        lambda x: p_delta_emp_integrand(x, delta, bis, block_window),
+        0,
+        np.inf,
+    )[0]
+
+
+def c_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
+    return quad(
+        lambda d: p_delta_emp(d, bis, block_window),
+        0,
+        delta,
+    )[0]
 
 
 class EmpDist(rv_continuous):
