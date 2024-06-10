@@ -2,19 +2,21 @@ import pickle
 import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
-import numpy as np
 
 from fork_env.constants import (
     EMPIRICAL_PROP_DELAY,
     SUM_HASHES,
     ANALYTICAL_FORK_RATES_PATH_STD,
+    DATA_FOLDER,
     HASH_STD,
 )
 from fork_env.integration_ln import fork_rate_ln
 
-# open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
-with open(ANALYTICAL_FORK_RATES_PATH_STD, "rb") as f:
-    rates_sigma_dict = pickle.load(f)
+# # open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
+# with open(ANALYTICAL_FORK_RATES_PATH_STD, "rb") as f:
+#     rates_sigma_dict = pickle.load(f)
+
+rates_sigma_dict = {}
 
 
 def compute_rate(args) -> tuple[tuple, float]:

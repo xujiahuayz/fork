@@ -3,10 +3,9 @@ from functools import lru_cache
 import numpy as np
 from scipy.integrate import dblquad, quad_vec
 
-from fork_env.constants import EMPIRICAL_PROP_DELAY, HASH_STD, SUM_HASH_RATE
+from fork_env.constants import HASH_STD
 from fork_env.utils import (
     calc_ln_sig,
-    calc_lmx_shape,
 )
 
 
