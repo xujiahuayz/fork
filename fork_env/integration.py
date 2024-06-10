@@ -10,6 +10,7 @@ from fork_env.utils import (
     calc_lmx_shape,
 )
 
+
 SQRRT2PI = np.sqrt(2 * np.pi)
 
 
@@ -18,9 +19,18 @@ def pdf_log_normal(lam: float, sum_lambda: float, n: int, sigma: float) -> float
     """
     pdf of the log normal distribution where mean = np.log(sum_lambda / n) - np.square(sigma) / 2 and sigma = sigma
     """
-    return np.exp(
-        -((sigma**2 / 2 + np.log(lam) - np.log(sum_lambda / n)) ** 2) / (2 * sigma**2)
-    ) / (lam * sigma * SQRRT2PI)
+    sigma2 = sigma**2
+    # capture warnings - if there is a warning, pause
+
+    return pow(
+        lam
+        * SQRRT2PI
+        * np.exp(
+            pow(sigma2 / 2 + np.log(lam * n / sum_lambda), 2) / (2 * sigma2)
+            + np.log(sigma)
+        ),
+        -1,
+    )
 
 
 @lru_cache(maxsize=None)
@@ -142,13 +152,13 @@ def fork_rate(
 
 if __name__ == "__main__":
     res = fork_rate(
-        proptime=1000,
-        sum_lambda=0.01,
-        n=10000,
-        std=HASH_STD,
+        proptime=2.666,
+        sum_lambda=0.0017136,
+        n=500,
+        std=0.001,
         dist="log_normal",
-        epsrel=1e-9,
-        epsabs=1e-16,
-        limit=130,
+        # epsrel=1e-15,
+        # epsabs=1e-17,
+        # limit=250,
     )
     print(res)

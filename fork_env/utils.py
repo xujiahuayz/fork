@@ -11,9 +11,11 @@ def calc_ex_rate(hash_mean: float) -> float:
     return 1 / hash_mean
 
 
-def calc_ln_sig(hash_mean: float, hash_std: float) -> float:
-    return np.sqrt(np.log(1 + hash_std**2 / hash_mean**2))
+def calc_ln_sig2(hash_mean: float, hash_std: float) -> float:
+    return np.log(1 + hash_std**2 / hash_mean**2)
 
+def calc_ln_sig(hash_mean: float, hash_std: float) -> float:
+    return np.sqrt(calc_ln_sig2(hash_mean, hash_std))
 
 def calc_ln_params(hash_mean: float, hash_std: float) -> tuple[float, float, float]:
     lognorm_sigma = calc_ln_sig(hash_mean, hash_std)

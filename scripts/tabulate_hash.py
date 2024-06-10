@@ -11,7 +11,7 @@ hash_panel["start_time"] = pd.to_datetime(hash_panel["start_time"]).dt.date
 
 def manipulate_precision(col_ame: str, precision: int) -> None:
     hash_panel[col_ame] = hash_panel[col_ame].apply(
-        lambda x: f"{{:,.{precision}f}}".format(x)
+        lambda x: "$" + f"{{:,.{precision}f}}".format(x) + "$"
     )
 
 
@@ -23,6 +23,10 @@ manipulate_precision("log_normal_loc", 2)
 manipulate_precision("log_normal_sigma", 2)
 manipulate_precision("lomax_c", 2)
 manipulate_precision("lomax_scale", 6)
+manipulate_precision("hash_mean", 6)
+manipulate_precision("num_miners", 0)
+manipulate_precision("hash_std", 6)
+
 
 hash_panel_to_latex = hash_panel[
     [
