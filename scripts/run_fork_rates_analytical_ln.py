@@ -3,56 +3,63 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
+import numpy as np
+
 from fork_env.constants import (
     EMPIRICAL_PROP_DELAY,
     SUM_HASHES,
     ANALYTICAL_FORK_RATES_PATH_STD,
-    DATA_FOLDER,
     HASH_STD,
+    N_MINER,
 )
 from fork_env.integration_ln import fork_rate_ln
 
-# # open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
-# with open(ANALYTICAL_FORK_RATES_PATH_STD, "rb") as f:
-#     rates_sigma_dict = pickle.load(f)
+# open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
+with open(ANALYTICAL_FORK_RATES_PATH_STD, "rb") as f:
+    rates_sigma_dict = pickle.load(f)
 
-rates_sigma_dict = {}
+# change list to dict
+rates_sigma_dict = dict(rates_sigma_dict)
 
 
 def compute_rate(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n, sumhash, std = args
-    print(args)
-    # if args are in the rates_sigma_dict, return the rate
-    if (distribution, block_propagation_time, n, sumhash, std) in rates_sigma_dict:
-        the_rate_calculated = rates_sigma_dict[
-            (distribution, block_propagation_time, n, sumhash, std)
-        ]
-        # only use this value if it is not None and not nan and > 1e-20
+    print("processing", args)
+    # if args are in the first element of the rates_sigma_dict, use the value
+    try:
+        if (
+            distribution,
+            block_propagation_time,
+            n,
+            sumhash,
+            std,
+        ) in rates_sigma_dict:
+            the_rate_calculated = rates_sigma_dict[
+                (distribution, block_propagation_time, n, sumhash, std)
+            ]
+            # only use this value if it is not None and not nan and > 1e-20
 
-        the_rate = (
-            the_rate_calculated
-            if the_rate_calculated and the_rate_calculated > 1e-20
-            else fork_rate_ln(
+            the_rate = (
+                the_rate_calculated
+                if the_rate_calculated and the_rate_calculated > 1e-20
+                else fork_rate_ln(
+                    proptime=block_propagation_time,
+                    sum_lambda=sumhash,
+                    n=n,
+                    std=std,
+                )
+            )
+            print("using cached value", args)
+        else:
+            the_rate = fork_rate_ln(
                 proptime=block_propagation_time,
                 sum_lambda=sumhash,
                 n=n,
                 std=std,
-                # epsrel=1e-10,
-                # epsabs=1e-17,
-                # limit=140,
             )
-        )
-    else:
-        the_rate = fork_rate_ln(
-            proptime=block_propagation_time,
-            sum_lambda=sumhash,
-            n=n,
-            std=std,
-            # epsrel=1e-10,
-            # epsabs=1e-17,
-            # limit=140,
-        )
-
+    except Exception as e:
+        print(f"Error in {args}: {e}")
+        the_rate = np.nan
     print(args, the_rate)
     return args, the_rate
 
@@ -61,22 +68,56 @@ if __name__ == "__main__":
     combinations = product(
         ["log_normal"],
         list(EMPIRICAL_PROP_DELAY.values()),
-        [10, 12, 15, 20, 30, 50, 70, 100, 120, 150, 200, 250, 300],
+        [
+            # 13,
+            # 14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            100,
+            120,
+            140,
+            160,
+            180,
+            200,
+        ]
+        + [N_MINER],
         SUM_HASHES,
         [
-            3e-5,
-            4e-5,
-            5e-5,
+            # 4.5e-5,
+            # 4.6e-5,
+            # 4.7e-5,
+            # 5e-5,
+            6e-5,
+            6.5e-5,
+            7e-5,
             8e-5,
+            9e-5,
             # 1e-4,
+            1.2e-4,
+            1.3e-4,
+            1.4e-4,
             1.5e-4,
+            1.7e-4,
             2e-4,
+            2.5e-4,
+            3e-4,
+            4e-4,
             5e-4,
+            8e-4,
             1e-3,
             2e-3,
-            5e-3,
-            1e-2,
-            1.5e-2,
+            3e-3,
+            4e-3,
         ]
         + [HASH_STD],
     )

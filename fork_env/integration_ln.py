@@ -76,7 +76,7 @@ def cz(
 
     return quad_vec(
         lambda lam: cz_integrand_ln(lam, x, delta, sum_lambda, n, sigma),
-        0,
+        1e-200,
         np.inf,
         **kwargs,
     )[0]
@@ -129,11 +129,8 @@ def fork_rate_ln(
 if __name__ == "__main__":
     res = fork_rate_ln(
         proptime=0.816,
-        sum_lambda=0.005,
-        n=40,
-        std=0.00002,
-        # epsrel=1e-4,
-        # epsabs=1e-6,
-        # limit=50,
+        sum_lambda=0.0005,
+        n=20,
+        std=0.009,
     )
     print(res)

@@ -153,9 +153,9 @@ def fork_rate(
 if __name__ == "__main__":
     res = fork_rate(
         proptime=0.816,
-        sum_lambda=0.005,
-        n=40,
-        std=0.00002,
+        sum_lambda=0.0005,
+        n=10,
+        std=8e-05,
         dist="log_normal",
         # epsrel=1e-15,
         # epsabs=1e-17,
