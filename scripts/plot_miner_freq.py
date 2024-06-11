@@ -38,13 +38,13 @@ for index, row in hash_panel.iterrows():
         )
 
     ax.plot(
-        x,
+        bi_hash,
         [
             ccdf_p(
-                lbda * BLOCK_WINDOW,
-                bi_hash,
+                lbda * BLOCK_WINDOW / row["total_hash_rate"],
+                list(bi_hash * BLOCK_WINDOW / row["total_hash_rate"]),
             )
-            for lbda in x
+            for lbda in bi_hash
         ],
         label="empirical fit",
         color="red",

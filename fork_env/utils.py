@@ -2,9 +2,17 @@ from math import prod
 from typing import Any, Iterable
 import numpy as np
 from scipy.stats import lognorm, lomax
-from scipy.integrate import quad
 from scipy.special.cython_special import kn
 from scipy.stats import rv_continuous
+
+from mpmath import mp, quad, exp, power
+
+mp.dps = 120  # Set precision to 50 decimal places
+
+# from decimal import Decimal, getcontext
+
+# getcontext().prec = 500
+# from sympy import symbols, integrate, sqrt
 
 
 def calc_ex_rate(hash_mean: float) -> float:
@@ -14,8 +22,10 @@ def calc_ex_rate(hash_mean: float) -> float:
 def calc_ln_sig2(hash_mean: float, hash_std: float) -> float:
     return np.log(1 + hash_std**2 / hash_mean**2)
 
+
 def calc_ln_sig(hash_mean: float, hash_std: float) -> float:
     return np.sqrt(calc_ln_sig2(hash_mean, hash_std))
+
 
 def calc_ln_params(hash_mean: float, hash_std: float) -> tuple[float, float, float]:
     lognorm_sigma = calc_ln_sig(hash_mean, hash_std)
@@ -46,27 +56,26 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
 
 
-def density_component(lbda: float, bi: float) -> float:
-    if bi == 0:
-        return np.exp(lbda / 2)
-    if lbda == 0:
-        return np.inf
-    return bi * np.exp(bi**2 / (2 * lbda) + lbda / 2) * kn(1, bi)
+def ccdf_component(lbda: float, bi: float):
+    lbda = mp.mpf(lbda)
+    # bi = Decimal(int(bi))
+    result = exp(bi - power(bi, 2) / (2 * lbda) - lbda / 2)
+    return result
 
 
-# modified bessel function, first function second kind
-def density_p(lbda: float, bis: Iterable[float]) -> float:
+def ccdf_p(lbda: float, bis: list[float]) -> float:
+    B = np.sum(bis)
+    ints = [float(quad(lambda x: ccdf_component(x, bi), [0, B])) for bi in bis]
     return np.mean(
-        [1 / (2 * density_component(lbda=lbda, bi=bi)) for bi in bis]
-    )  # type: ignore
+        [
+            float(quad(lambda x: ccdf_component(x, bis[i]), [lbda, B])) / w
+            for i, w in enumerate(ints)
+        ]
+    )
 
 
 def cdf_p(lbda: float, bis: Iterable[float]) -> float:
-    return quad(lambda x: density_p(x, bis), 0, lbda)[0]
-
-
-def ccdf_p(lbda: float, bis: Iterable[float]) -> float:
-    return 1 - cdf_p(lbda, bis)
+    return 1 - ccdf_p(lbda, bis)
 
 
 def p_delta_emp_integrand(
@@ -117,104 +126,49 @@ class EmpDist(rv_continuous):
         super().__init__(a=0, xtol=xtol, seed=seed)
         self.bis = bis
 
-    def _pdf(self, x: float) -> float:
-        return density_p(
-            x,
-            bis=self.bis,
-        )
+    def _cdf(self, x: float) -> float:
+        return cdf_p(x, self.bis)
 
 
 if __name__ == "__main__":
-    emp_dist = EmpDist(
-        bis=[
-            0.0004971774441377959,
-            0.0004360584338864814,
-            0.0001990651875942347,
-            0.0001844994421605102,
-            0.00011464098464896097,
-            7.562763511471067e-05,
-            6.517457074462605e-05,
-            1.7764497372111044e-05,
-            1.747889452046939e-05,
-            1.685056824685774e-05,
-            1.5136951137007803e-05,
-            1.4794227715037815e-05,
-            1.4622866004052821e-05,
-            1.376605744912785e-05,
-            9.653376385487993e-06,
-            7.825518134981392e-06,
-            3.198751938386554e-06,
-            1.599375969193277e-06,
-            1.4851348285366145e-06,
-            1.370893687879952e-06,
-            1.3137731175516207e-06,
-            1.0281702659099639e-06,
-            6.85446843939976e-07,
-            6.283262736116446e-07,
-            3.998439922983193e-07,
-            3.42723421969988e-07,
-            2.2848228131332533e-07,
-            2.2848228131332533e-07,
-            1.71361710984994e-07,
-            1.71361710984994e-07,
-            1.1424114065666266e-07,
-            1.1424114065666266e-07,
-            1.1424114065666266e-07,
-            1.1424114065666266e-07,
-            5.712057032833133e-08,
-            5.712057032833133e-08,
-            5.712057032833133e-08,
-            5.712057032833133e-08,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-        ]
-    )
-    print(emp_dist.rvs(size=2))
+    # Test the EmpDist class
+    bis = [
+        8704,
+        7633,
+        3485,
+        3230,
+        2007,
+        1324,
+        1141,
+        311,
+        306,
+        295,
+        265,
+        259,
+        256,
+        241,
+        169,
+        137,
+        56,
+        28,
+        26,
+        24,
+        23,
+        18,
+        12,
+        11,
+        7,
+        6,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+    ]

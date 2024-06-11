@@ -7,14 +7,10 @@ from fork_env.constants import HASH_STD
 from fork_env.utils import (
     calc_ln_sig,
 )
+from numba import njit
 
 
-@lru_cache(maxsize=None)
-def integrand_com(sigma2: float, lam: float, sum_lambda: float, n: int) -> float:
-    return pow(sigma2 / 2 + np.log(lam * n / sum_lambda), 2) / (2 * sigma2)
-
-
-@lru_cache(maxsize=None)
+@njit
 def az_integrand_ln(
     lam: float,
     x: float,
@@ -23,18 +19,10 @@ def az_integrand_ln(
     sigma: float,
 ) -> float:
     sigma2 = sigma**2
-    return pow(
-        np.exp(
-            integrand_com(
-                sigma2=sigma2,
-                lam=lam,
-                sum_lambda=sum_lambda,
-                n=n,
-            )
-            + lam * x
-        ),
-        -1,
-    )
+    temp = lam * n / sum_lambda
+    return np.exp(
+        -sigma2 / 8 - pow(np.log(temp), 2) / (2 * sigma2) - lam * x
+    ) / np.sqrt(temp)
 
 
 @lru_cache(maxsize=None)
@@ -94,22 +82,6 @@ def cz(
     )[0]
 
 
-# def pdelta_integrand_ln(
-#     x: float,
-#     delta: float,
-#     sum_lambda: float,
-#     n: int,
-#     sigma: float,
-#     **kwargs,
-# ) -> float:
-
-#     return (
-#         az(x, sum_lambda, n, sigma, **kwargs)
-#         * bz(x, delta, sum_lambda, n, sigma, **kwargs)
-#         * cz(x, delta, sum_lambda, n, sigma, **kwargs) ** (n - 2)
-#     )
-
-
 def fork_rate_ln(
     proptime: float,
     sum_lambda: float,
@@ -157,9 +129,9 @@ def fork_rate_ln(
 if __name__ == "__main__":
     res = fork_rate_ln(
         proptime=0.816,
-        sum_lambda=0.0005,
-        n=20,
-        std=0.02,
+        sum_lambda=0.005,
+        n=40,
+        std=0.00002,
         # epsrel=1e-4,
         # epsabs=1e-6,
         # limit=50,
