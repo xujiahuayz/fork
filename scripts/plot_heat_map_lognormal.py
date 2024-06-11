@@ -77,7 +77,7 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
         ]
         this_df_block_propagation_time = df_block_propagation_time[
             (df_block_propagation_time["rate"] > 1e-20)
-            & (df_block_propagation_time["std"] > 6e-5)
+            & (df_block_propagation_time["std"] > 7e-5)
             & (df_block_propagation_time["n"] > 14)
         ]
 
