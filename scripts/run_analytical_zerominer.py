@@ -9,7 +9,10 @@ from fork_env.constants import (
     SUM_HASH_RATE,
     BLOCK_PROP_TIMES,
 )
-from fork_env.integration import fork_rate
+from fork_env.integration_exp import fork_rate_exp
+from fork_env.integration_lomax import fork_rate_lomax
+from fork_env.integration_ln import fork_rate_ln
+
 import pandas as pd
 import numpy as np
 
@@ -19,23 +22,39 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 bis = list(hash_panel["miner_hash"].iloc[-1])
 
+with open(DATA_FOLDER / "analytical_zerominers.pkl", "rb") as f:
+    rates = pickle.load(f)
+
+rates = dict(rates)
+
 
 def compute_rate_zerominer(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n_zerominers = args
+    if args in rates:
+        return args, rates[args]
     bis_with_zero_miners = bis + [0] * n_zerominers
     n = len(bis_with_zero_miners)
     std: float = np.std(bis_with_zero_miners, ddof=0)  # type: ignore
-
-    the_rate = fork_rate(
-        proptime=block_propagation_time,
-        sum_lambda=SUM_HASH_RATE,
-        n=n,
-        dist=distribution,
-        std=std,
-        epsrel=1e-10,
-        epsabs=1e-17,
-        limit=140,
-    )
+    if distribution == "exp":
+        the_rate = fork_rate_exp(
+            proptime=block_propagation_time,
+            sum_lambda=SUM_HASH_RATE,
+            n=n,
+        )
+    elif distribution == "log_normal":
+        the_rate = fork_rate_ln(
+            proptime=block_propagation_time,
+            sum_lambda=SUM_HASH_RATE,
+            n=n,
+            std=std,
+        )
+    elif distribution == "lomax":
+        the_rate = fork_rate_lomax(
+            proptime=block_propagation_time,
+            sum_lambda=SUM_HASH_RATE,
+            n=n,
+            std=std,
+        )
 
     print(args, the_rate)
     return args, the_rate
@@ -45,7 +64,7 @@ if __name__ == "__main__":
     combinations = product(
         DIST_KEYS,
         BLOCK_PROP_TIMES,
-        [0, 10, 20, 50, 100, 150, 200],
+        [0, 10, 20, 50, 100, 150, 200, 300],
     )
 
     start_time = time.time()
