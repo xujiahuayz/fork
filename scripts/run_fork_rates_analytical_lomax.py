@@ -61,7 +61,7 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        ["log_normal"],
+        ["lomax"],
         list(EMPIRICAL_PROP_DELAY.values()),
         [
             # 13,

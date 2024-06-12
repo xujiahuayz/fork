@@ -100,7 +100,7 @@ def fork_rate_lomax(
             az(x, sum_lambda, n, c, **kwargs)
             * bz(x, delta, sum_lambda, n, c, **kwargs)
             * cz(x, delta, sum_lambda, n, c, **kwargs) ** (n - 2)
-        ) * cn
+        )
 
     return (
         n
@@ -112,14 +112,14 @@ def fork_rate_lomax(
             0,
             np.inf,
         )[0]
-    )
+    ) * cn
 
 
 if __name__ == "__main__":
     res = fork_rate_lomax(
-        proptime=2.666,
-        sum_lambda=0.00171,
-        n=500,
-        std=0.00011,
+        proptime=14.916,
+        sum_lambda=0.005,
+        n=38,
+        std=0.00010987017445924091,
     )
     print(res)

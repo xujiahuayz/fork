@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from fork_env.constants import (
-    ANALYTICAL_FORK_RATES_PATH_STD,
+    DATA_FOLDER,
     EMPIRICAL_PROP_DELAY,
     FIGURES_FOLDER,
     SUM_HASHES,
@@ -13,7 +13,7 @@ from fork_env.constants import (
     HASH_STD,
 )
 
-with open(ANALYTICAL_FORK_RATES_PATH_STD, "rb") as f:
+with open(DATA_FOLDER / "rates_analytical_std_ln.pkl", "rb") as f:
     rates_sigma_dict = pickle.load(f)
 
 # distribution, block_propagation_time, n, sumhash, std
@@ -79,6 +79,7 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
             (df_block_propagation_time["rate"] > 1e-20)
             & (df_block_propagation_time["std"] > 7e-5)
             & (df_block_propagation_time["n"] > 14)
+            & (df_block_propagation_time["n"] < 160)
         ]
 
         this_df_block_propagation_time = this_df_block_propagation_time.pivot(

@@ -16,7 +16,7 @@ from fork_env.constants import (
 with open("./scripts/tempa.txt", "r") as f:
     lines = f.readlines()
 
-rates = {}
+rates = []
 for line in lines:
     if line.startswith("('l") and ") " in line and (not line.endswith(")")):
         # split string to get the key
@@ -27,8 +27,8 @@ for line in lines:
             value = eval(strings[1])
         except:
             value = None
-        rates[key] = value
+        rates.append((key, value))
 
 
-with open(ANALYTICAL_FORK_RATES_PATH_STD, "wb") as f:
+with open(DATA_FOLDER / "rates_analytical_std_lomax.pkl", "wb") as f:
     pickle.dump(rates, f)
