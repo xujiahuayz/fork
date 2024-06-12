@@ -130,7 +130,7 @@ if __name__ == "__main__":
     res = fork_rate_ln(
         proptime=0.816,
         sum_lambda=0.0005,
-        n=20,
-        std=0.009,
+        n=10,
+        std=8e-05,
     )
     print(res)

@@ -12,14 +12,9 @@ from fork_env.constants import (
     HASH_STD,
     N_MINER,
 )
-from fork_env.integration_ln import fork_rate_ln
+from fork_env.integration_lomax import fork_rate_lomax
 
-# open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
-with open(DATA_FOLDER / "rates_analytical_std_ln.pkl", "rb") as f:
-    rates_sigma_dict = pickle.load(f)
-
-# change list to dict
-rates_sigma_dict = dict(rates_sigma_dict)
+rates_c_dict = dict()
 
 
 def compute_rate(args) -> tuple[tuple, float]:
@@ -33,8 +28,8 @@ def compute_rate(args) -> tuple[tuple, float]:
             n,
             sumhash,
             std,
-        ) in rates_sigma_dict:
-            the_rate_calculated = rates_sigma_dict[
+        ) in rates_c_dict:
+            the_rate_calculated = rates_c_dict[
                 (distribution, block_propagation_time, n, sumhash, std)
             ]
             # only use this value if it is not None and not nan and > 1e-20
@@ -42,7 +37,7 @@ def compute_rate(args) -> tuple[tuple, float]:
             the_rate = (
                 the_rate_calculated
                 if the_rate_calculated and the_rate_calculated > 1e-20
-                else fork_rate_ln(
+                else fork_rate_lomax(
                     proptime=block_propagation_time,
                     sum_lambda=sumhash,
                     n=n,
@@ -51,7 +46,7 @@ def compute_rate(args) -> tuple[tuple, float]:
             )
             print("using cached value", args)
         else:
-            the_rate = fork_rate_ln(
+            the_rate = fork_rate_lomax(
                 proptime=block_propagation_time,
                 sum_lambda=sumhash,
                 n=n,
@@ -132,5 +127,5 @@ if __name__ == "__main__":
     end_time = time.time()
     print(f"Computation completed in {end_time - start_time} seconds.")
 
-    with open(DATA_FOLDER / "rates_analytical_std_ln.pkl", "wb") as f:
+    with open(DATA_FOLDER / "rates_analytical_std_lomax.pkl", "wb") as f:
         pickle.dump(rates, f)
