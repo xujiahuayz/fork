@@ -41,9 +41,22 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     simu_anal = [
         mlines.Line2D(
-            [], [], color="k", alpha=1, linewidth=5, linestyle="--", label="analytical"
+            [],
+            [],
+            color="k",
+            alpha=1,
+            linewidth=5,
+            linestyle="--",
+            label="analytical $C(\Delta_0)$",
         ),
-        mlines.Line2D([], [], color="k", alpha=0.2, linewidth=10, label="simulated"),
+        mlines.Line2D(
+            [],
+            [],
+            color="k",
+            alpha=0.2,
+            linewidth=10,
+            label="simulated $\\frac{n_{fork}}{n}$",
+        ),
     ]
     dist_handle = [
         mlines.Line2D(
@@ -92,6 +105,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
         frameon=False,
         loc="upper left",
         bbox_to_anchor=(1, 1),
+        handlelength=0.5,
     )
 
     plt.gca().add_artist(first_legend)
@@ -101,6 +115,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
         frameon=False,
         loc="lower left",
         bbox_to_anchor=(1, 0),
+        handlelength=0.5,
     )
 
     # set ylimit
@@ -114,7 +129,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
     plt.axvline(x=N_MINER, color="black", linestyle=":")
 
     plt.xlabel("number of miners $N$")
-    plt.ylabel("fork rate $C(\Delta_0)$")
+    plt.ylabel("fork rate")
     # log x axis with base 2
     plt.xscale("log", base=2)
 

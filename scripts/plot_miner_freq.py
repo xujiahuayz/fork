@@ -37,14 +37,18 @@ for index, row in hash_panel.iterrows():
             color=DIST_COLORS[key],
         )
 
+    emp_x = bi_hash.sort_values().tolist()
+    ecdf = sm.distributions.ECDF(emp_x)
+
+    empfit_x = [0] + emp_x + [row["total_hash_rate"] / 3, row["total_hash_rate"] / 2]
     ax.plot(
-        bi_hash,
+        empfit_x,
         [
             ccdf_p(
                 lbda * BLOCK_WINDOW / row["total_hash_rate"],
                 list(bi_hash * BLOCK_WINDOW / row["total_hash_rate"]),
             )
-            for lbda in bi_hash
+            for lbda in empfit_x
         ],
         label="empirical fit",
         color="red",
@@ -52,12 +56,9 @@ for index, row in hash_panel.iterrows():
         linestyle="--",
     )
 
-    emp_x = bi_hash.sort_values()
-    ecdf = sm.distributions.ECDF(emp_x)
-
     # plot empirical ccdf as volume plot with steps
     ax.fill_between(
-        [0] + emp_x.tolist(),
+        [0] + emp_x,
         [1] + (1 - ecdf(emp_x)).tolist(),
         color="black",
         alpha=0.2,
@@ -75,8 +76,6 @@ for index, row in hash_panel.iterrows():
         bbox_to_anchor=(0.95, 1.3),
         frameon=False,
         ncol=2,
-        # title="distribution",
-        # title_fontsize="small",
         fontsize="small",
         handlelength=0.5,
     )

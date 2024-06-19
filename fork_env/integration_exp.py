@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import dblquad
 
-
 from numba import njit
 
 

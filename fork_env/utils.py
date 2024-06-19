@@ -1,9 +1,11 @@
 from math import prod
-from typing import Any, Iterable
+from typing import Any
 import numpy as np
 from scipy.stats import lognorm, lomax
 from scipy.special.cython_special import kn
 from scipy.stats import rv_continuous
+from numba import njit
+from scipy.integrate import quad_vec
 
 from mpmath import mp, quad, exp, power
 
@@ -56,30 +58,64 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
 
 
-def ccdf_component(lbda: float, bi: float):
-    lbda = mp.mpf(lbda)
-    # bi = Decimal(int(bi))
-    result = exp(bi - power(bi, 2) / (2 * lbda) - lbda / 2)
+def ccdf_component(lbda: float, bi: float, mpf: bool = False):
+    if bi == 0:
+        return 1 / np.exp(lbda / 2)
+    if mpf:
+        result = exp(bi - power(bi, 2) / (2 * lbda) - lbda / 2)
+    else:
+        result = np.exp(bi - pow(bi, 2) / (2 * lbda) - lbda / 2)
     return result
 
 
-def ccdf_p(lbda: float, bis: list[float]) -> float:
+def pdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
     B = np.sum(bis)
-    ints = [float(quad(lambda x: ccdf_component(x, bi), [0, B])) for bi in bis]
-    return np.mean(
-        [
-            float(quad(lambda x: ccdf_component(x, bis[i]), [lbda, B])) / w
-            for i, w in enumerate(ints)
+    if mpf:
+        ints = [float(quad(lambda x: ccdf_component(x, bi, mpf=mpf), [0, B])) for bi in bis]  # type: ignore
+    else:
+        # break down integration into two parts to avoid singularities
+        ints = [
+            (
+                quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), 0, bi)[0]
+                + quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), bi, B)[0]
+            )
+            for bi in bis
         ]
-    )
+    return np.mean([ccdf_component(lbda, bis[i], mpf=mpf) / w for i, w in enumerate(ints)])  # type: ignore
 
 
-def cdf_p(lbda: float, bis: Iterable[float]) -> float:
-    return 1 - ccdf_p(lbda, bis)
+def ccdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
+    B = np.sum(bis)
+    if mpf:
+        ints = [float(quad(lambda x: ccdf_component(x, bi, mpf=mpf), [0, B])) for bi in bis]  # type: ignore
+        return np.mean(
+            [
+                float(quad(lambda x: ccdf_component(x, bis[i], mpf=mpf), [lbda, B])) / w  # type: ignore
+                for i, w in enumerate(ints)
+            ]
+        )
+    else:
+        ints = [
+            (
+                quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), 0, bi)[0]
+                + quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), bi, B)[0]
+            )
+            for bi in bis
+        ]
+        return np.mean(
+            [
+                quad_vec(lambda x: ccdf_component(x, bis[i], mpf=mpf), lbda, B)[0] / w  # type: ignore
+                for i, w in enumerate(ints)
+            ]
+        )
+
+
+def cdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
+    return 1 - ccdf_p(lbda, bis, mpf=mpf)
 
 
 def p_delta_emp_integrand(
-    x: float, delta: float, bis: Iterable[float], block_window: int
+    x: float, delta: float, bis: list[float], block_window: int
 ) -> float:
     sum_i = 0
     for i, bi in enumerate(bis):
@@ -105,7 +141,7 @@ def p_delta_emp_integrand(
     return sum_i
 
 
-def p_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
+def p_delta_emp(delta: float, bis: list[float], block_window: int) -> float:
     return quad(
         lambda x: p_delta_emp_integrand(x, delta, bis, block_window),
         0,
@@ -113,7 +149,7 @@ def p_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
     )[0]
 
 
-def c_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
+def c_delta_emp(delta: float, bis: list[float], block_window: int) -> float:
     return quad(
         lambda d: p_delta_emp(d, bis, block_window),
         0,
@@ -122,7 +158,7 @@ def c_delta_emp(delta: float, bis: Iterable[float], block_window: int) -> float:
 
 
 class EmpDist(rv_continuous):
-    def __init__(self, bis: Iterable[float], xtol: float = 1e-14, seed=None):
+    def __init__(self, bis: list[float], xtol: float = 1e-14, seed=None):
         super().__init__(a=0, xtol=xtol, seed=seed)
         self.bis = bis
 
