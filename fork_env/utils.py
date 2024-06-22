@@ -66,8 +66,6 @@ def pdf_empirical(lbda: float, bis: list[int], ints: list[float]) -> float:
 
 
 def ccdf_p(lbda: float, bis: list[int], B: int, ints: list[float]) -> float:
-    # B = np.sum(bis)
-    # ints = zvec(bis, B)
     return np.mean(
         [
             quad_vec(lambda x: ccdf_component(x, bis[i]), lbda, B)[0] / w  # type: ignore
