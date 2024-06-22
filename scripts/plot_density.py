@@ -1,0 +1,126 @@
+from scipy.stats import expon
+from matplotlib import pyplot as plt
+import statsmodels.api as sm  # recommended import according to the docs
+from fork_env.constants import (
+    DATA_FOLDER,
+    DIST_COLORS,
+    DIST_KEYS,
+    DIST_LABELS,
+    FIGURES_FOLDER,
+    SUM_HASH_RATE,
+    BLOCK_WINDOW,
+)
+
+from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist, zele
+import pandas as pd
+import numpy as np
+
+# import math
+from fork_env.utils import calc_ex_rate
+
+
+hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
+
+# get the last number of total hash rate
+FACTOR = BLOCK_WINDOW / SUM_HASH_RATE
+MINER_HASH_EMP = hash_panel["miner_hash"].iloc[-1].sort_values()
+BIS = hash_panel["bis"].iloc[-1]
+INTS = [zele(bi, BLOCK_WINDOW) for bi in BIS]
+INT_0 = zele(0, BLOCK_WINDOW)
+
+
+x = [10**i for i in np.linspace(-8, -3, 100)]
+EMPFIT_X = [0] + list(MINER_HASH_EMP) + [SUM_HASH_RATE / 3, SUM_HASH_RATE / 2]
+
+for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
+    bis_with_zero_miners = [0] * n_zerominers + BIS
+    n = len(bis_with_zero_miners)
+
+    miner_hash: list[float] = list(MINER_HASH_EMP) + [0] * n_zerominers
+
+    hash_mean: float = np.mean(miner_hash)  # type: ignore
+    hash_std: float = np.std(miner_hash, ddof=0)  # type: ignore
+
+    expon_rate = calc_ex_rate(hash_mean)
+    expon_dist = expon(scale=hash_mean)
+
+    # fit a lognormal distribution to miner_hash using moments
+    lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
+
+    # fit a lomax distribution  using moments
+    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
+
+    ints = [INT_0] * n_zerominers + INTS
+    EMPFIT_Y = [
+        ccdf_p(
+            lbda * FACTOR,
+            bis=bis_with_zero_miners,
+            B=BLOCK_WINDOW,
+            ints=ints,
+        )
+        for lbda in EMPFIT_X
+    ]
+
+    # Create a figure and a set of subplots
+    fig, ax = plt.subplots(figsize=(3, 2))
+
+    for key, dist in zip(DIST_KEYS, [expon_dist, lognorm_dist, lomax_dist]):
+        ax.plot(
+            x,
+            1 - dist.cdf(x),
+            label=DIST_LABELS[key],
+            color=DIST_COLORS[key],
+        )
+
+    miner_hash.sort()
+
+    ax.plot(
+        EMPFIT_X,
+        EMPFIT_Y,
+        label="empirical fit",
+        color="red",
+        # dashed line
+        linestyle="--",
+    )
+    # plot empirical ccdf as volume plot with steps
+    ecdf = sm.distributions.ECDF(miner_hash, side="left")
+
+    ax.fill_between(
+        miner_hash,
+        (1 - ecdf(miner_hash)).tolist(),
+        color="black",
+        alpha=0.2,
+        label="empirical distribution",
+        step="post",
+    )
+
+    ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
+    ax.set_xlabel("hash rate [s$^{-1}$]")
+    # Generate points on the x-axis:
+
+    # legend top of the plot, outside of the plot, no frame, short legend handles
+    fig.legend(
+        loc="upper right",
+        bbox_to_anchor=(0.95, 1.3),
+        frameon=False,
+        ncol=2,
+        fontsize="small",
+        handlelength=0.5,
+    )
+
+    # fix x-axis and y-axis
+    ax.set_xlim(3e-8, 6e-4)
+    ax.set_ylim(2e-3, 1.8)
+
+    # log x-axis and y-axis
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    # show the plot
+    # plt.show()
+
+    fig.tight_layout()  # adjust the layout to make room for the second y-label
+    # save the plot
+    plt.savefig(
+        FIGURES_FOLDER / f"hash_dist_zerominer_{n_zerominers}.pdf",
+        bbox_inches="tight",
+    )

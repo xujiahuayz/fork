@@ -12,6 +12,7 @@ from fork_env.constants import (
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
+from fork_env.integration_empirical import fork_rate_empirical
 
 import pandas as pd
 import numpy as np
@@ -34,27 +35,35 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
         return args, rates[args]
     bis_with_zero_miners = bis + [0] * n_zerominers
     n = len(bis_with_zero_miners)
-    std: float = np.std(bis_with_zero_miners, ddof=0)  # type: ignore
-    if distribution == "exp":
-        the_rate = fork_rate_exp(
+    if distribution == "empirical":
+        the_rate = fork_rate_empirical(
             proptime=block_propagation_time,
             sum_lambda=SUM_HASH_RATE,
             n=n,
+            bis=bis_with_zero_miners,
         )
-    elif distribution == "log_normal":
-        the_rate = fork_rate_ln(
-            proptime=block_propagation_time,
-            sum_lambda=SUM_HASH_RATE,
-            n=n,
-            std=std,
-        )
-    elif distribution == "lomax":
-        the_rate = fork_rate_lomax(
-            proptime=block_propagation_time,
-            sum_lambda=SUM_HASH_RATE,
-            n=n,
-            std=std,
-        )
+    else:
+        std: float = np.std(bis_with_zero_miners, ddof=0)  # type: ignore
+        if distribution == "exp":
+            the_rate = fork_rate_exp(
+                proptime=block_propagation_time,
+                sum_lambda=SUM_HASH_RATE,
+                n=n,
+            )
+        elif distribution == "log_normal":
+            the_rate = fork_rate_ln(
+                proptime=block_propagation_time,
+                sum_lambda=SUM_HASH_RATE,
+                n=n,
+                std=std,
+            )
+        elif distribution == "lomax":
+            the_rate = fork_rate_lomax(
+                proptime=block_propagation_time,
+                sum_lambda=SUM_HASH_RATE,
+                n=n,
+                std=std,
+            )
 
     print(args, the_rate)
     return args, the_rate
@@ -62,7 +71,7 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        DIST_KEYS,
+        ["empirical"] + DIST_KEYS,
         BLOCK_PROP_TIMES,
         [0, 10, 20, 50, 100, 150, 200, 300],
     )

@@ -1,20 +1,9 @@
-from math import prod
 from typing import Any
 import numpy as np
 from scipy.stats import lognorm, lomax
-from scipy.special.cython_special import kn
 from scipy.stats import rv_continuous
-from numba import njit
 from scipy.integrate import quad_vec
-
-from mpmath import mp, quad, exp, power
-
-mp.dps = 120  # Set precision to 50 decimal places
-
-# from decimal import Decimal, getcontext
-
-# getcontext().prec = 500
-# from sympy import symbols, integrate, sqrt
+from numba import njit
 
 
 def calc_ex_rate(hash_mean: float) -> float:
@@ -58,112 +47,46 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
 
 
-def ccdf_component(lbda: float, bi: float, mpf: bool = False):
+@njit
+def ccdf_component(lbda: float, bi: int):
     if bi == 0:
         return 1 / np.exp(lbda / 2)
-    if mpf:
-        result = exp(bi - power(bi, 2) / (2 * lbda) - lbda / 2)
-    else:
-        result = np.exp(bi - pow(bi, 2) / (2 * lbda) - lbda / 2)
-    return result
+    return np.exp(bi - pow(bi, 2) / (2 * lbda) - lbda / 2)
 
 
-def pdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
-    B = np.sum(bis)
-    if mpf:
-        ints = [float(quad(lambda x: ccdf_component(x, bi, mpf=mpf), [0, B])) for bi in bis]  # type: ignore
-    else:
-        # break down integration into two parts to avoid singularities
-        ints = [
-            (
-                quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), 0, bi)[0]
-                + quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), bi, B)[0]
-            )
-            for bi in bis
+def zele(bi: int, B: int) -> float:
+    return (
+        quad_vec(lambda x: ccdf_component(x, bi), 0, bi)[0]
+        + quad_vec(lambda x: ccdf_component(x, bi), bi, B)[0]
+    )
+
+
+def pdf_empirical(lbda: float, bis: list[int], ints: list[float]) -> float:
+    return np.mean([ccdf_component(lbda, bis[i]) / w for i, w in enumerate(ints)])  # type: ignore
+
+
+def ccdf_p(lbda: float, bis: list[int], B: int, ints: list[float]) -> float:
+    # B = np.sum(bis)
+    # ints = zvec(bis, B)
+    return np.mean(
+        [
+            quad_vec(lambda x: ccdf_component(x, bis[i]), lbda, B)[0] / w  # type: ignore
+            for i, w in enumerate(ints)
         ]
-    return np.mean([ccdf_component(lbda, bis[i], mpf=mpf) / w for i, w in enumerate(ints)])  # type: ignore
+    )
 
 
-def ccdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
-    B = np.sum(bis)
-    if mpf:
-        ints = [float(quad(lambda x: ccdf_component(x, bi, mpf=mpf), [0, B])) for bi in bis]  # type: ignore
-        return np.mean(
-            [
-                float(quad(lambda x: ccdf_component(x, bis[i], mpf=mpf), [lbda, B])) / w  # type: ignore
-                for i, w in enumerate(ints)
-            ]
-        )
-    else:
-        ints = [
-            (
-                quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), 0, bi)[0]
-                + quad_vec(lambda x: ccdf_component(x, bi, mpf=mpf), bi, B)[0]
-            )
-            for bi in bis
-        ]
-        return np.mean(
-            [
-                quad_vec(lambda x: ccdf_component(x, bis[i], mpf=mpf), lbda, B)[0] / w  # type: ignore
-                for i, w in enumerate(ints)
-            ]
-        )
+def cdf_p(lbda: float, bis: list[int], B: int, ints: list[float]) -> float:
+    return 1 - ccdf_p(lbda, bis, B, ints)
 
 
-def cdf_p(lbda: float, bis: list[float], mpf: bool = False) -> float:
-    return 1 - ccdf_p(lbda, bis, mpf=mpf)
+# class EmpDist(rv_continuous):
+#     def __init__(self, bis: list[int], xtol: float = 1e-14, seed=None):
+#         super().__init__(a=0, xtol=xtol, seed=seed)
+#         self.bis = bis
 
-
-def p_delta_emp_integrand(
-    x: float, delta: float, bis: list[float], block_window: int
-) -> float:
-    sum_i = 0
-    for i, bi in enumerate(bis):
-        sum_j = 0
-        for j, bj in enumerate(bis):
-            if i != j:
-                prod_k = prod(
-                    kn(1, bk * np.sqrt(2 * (x + delta) / block_window + 1))
-                    / (kn(1, bk) * np.sqrt(2 * (x + delta) / block_window + 1))
-                    for k, bk in enumerate(bis)
-                    if j != k
-                )
-                sum_j += (
-                    kn(2, bj * np.sqrt(2 * (x + delta) / block_window + 1))
-                    / (kn(1, bj) * (2 * (x + delta) + block_window))
-                    * prod_k
-                )
-        sum_i += (
-            kn(2, bi * np.sqrt(2 * x / block_window + 1))
-            / (kn(1, bi) * (2 * x + block_window))
-            * sum_j
-        )
-    return sum_i
-
-
-def p_delta_emp(delta: float, bis: list[float], block_window: int) -> float:
-    return quad(
-        lambda x: p_delta_emp_integrand(x, delta, bis, block_window),
-        0,
-        np.inf,
-    )[0]
-
-
-def c_delta_emp(delta: float, bis: list[float], block_window: int) -> float:
-    return quad(
-        lambda d: p_delta_emp(d, bis, block_window),
-        0,
-        delta,
-    )[0]
-
-
-class EmpDist(rv_continuous):
-    def __init__(self, bis: list[float], xtol: float = 1e-14, seed=None):
-        super().__init__(a=0, xtol=xtol, seed=seed)
-        self.bis = bis
-
-    def _cdf(self, x: float) -> float:
-        return cdf_p(x, self.bis)
+#     def _cdf(self, x: float) -> float:
+#         return cdf_p(x, self.bis)
 
 
 if __name__ == "__main__":

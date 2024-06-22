@@ -136,6 +136,7 @@ for start_block in range(
         "lomax_c": lomax_shape,
         "lomax_scale": lomax_scale,
         "miner_hash": miner_hash,
+        "bis": list(miner_hash_share_count.sort_values()),
         "distributions": {
             DIST_KEYS[0]: expon_dist,
             DIST_KEYS[1]: lognorm_dist,

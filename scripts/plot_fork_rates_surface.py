@@ -1,4 +1,3 @@
-from matplotlib.colors import LogNorm
 import numpy as np
 import pickle
 
@@ -20,7 +19,7 @@ rates.columns = ["distribution", "block_propagation_time", "n_zero", "rate"]
 plt.rcParams.update({"font.size": 18})
 # make axes label farther from ticker label values
 # export df to excel
-for distribution in DIST_KEYS:
+for distribution in rates["distribution"].unique():
     df_distribution = rates[rates["distribution"] == distribution]
 
     df_distribution_sorted = df_distribution.sort_values(
