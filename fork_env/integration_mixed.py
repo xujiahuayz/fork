@@ -5,7 +5,6 @@ from fork_env.utils import calc_ln_sig, zele, pdf_empirical, calc_lmx_shape
 import numpy as np
 from scipy.integrate import dblquad
 from functools import lru_cache
-from typing import Callable
 from numba import njit
 
 
@@ -45,12 +44,16 @@ def fork_rate_mixed(
             lbda = lbda * factor
             return pdf_empirical(lbda, bis, ints)
 
-        az_main = lambda x: int_empirical.az(x, sum_lambda, pdf_p)
-        bz_main = lambda x, delta: int_empirical.bz(x, delta, sum_lambda, pdf_p)
-        cz_main = lambda x, delta: int_empirical.cz(x, delta, sum_lambda, pdf_p)
+        az_main = lambda x: int_empirical.az(x, sum_lambda, pdf_p) * factor
+        bz_main = (
+            lambda x, delta: int_empirical.bz(x, delta, sum_lambda, pdf_p) * factor
+        )
+        cz_main = (
+            lambda x, delta: int_empirical.cz(x, delta, sum_lambda, pdf_p) * factor
+        )
 
     else:
-        hash_mean = float(np.mean(bis))
+        hash_mean = float(np.mean(bis)) / factor
 
         if main_dist == "exp":
             main_rate = 1 / hash_mean
@@ -60,9 +63,9 @@ def fork_rate_mixed(
             cz_main = lambda x, delta: cz_exp(main_rate, x, delta)
 
         else:
-            std = float(np.std(bis, ddof=0))
+            std = float(np.std(bis, ddof=0)) / factor
 
-            if main_dist == "ln":
+            if main_dist == "log_normal":
                 sigma = calc_ln_sig(hash_mean=hash_mean, hash_std=std)
                 dd = np.sqrt(2 * np.pi) * sigma
                 az_main = lambda x: int_ln.az(x, sum_lambda, n, sigma) / dd
@@ -97,3 +100,54 @@ def fork_rate_mixed(
             np.inf,
         )[0]
     )
+
+
+if __name__ == "__main__":
+    bis = [
+        8704,
+        7633,
+        3485,
+        3230,
+        2007,
+        1324,
+        1141,
+        311,
+        306,
+        295,
+        265,
+        259,
+        256,
+        241,
+        169,
+        137,
+        56,
+        28,
+        26,
+        24,
+        23,
+        18,
+        12,
+        11,
+        7,
+        6,
+        4,
+        4,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+    ]
+    res = fork_rate_mixed(
+        proptime=14.916,
+        sum_lambda=0.00171,
+        n_zero=0,
+        bis=bis,
+        main_dist="empirical",
+    )
+    print(res)

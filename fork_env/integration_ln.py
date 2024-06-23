@@ -128,9 +128,9 @@ def fork_rate_ln(
 
 if __name__ == "__main__":
     res = fork_rate_ln(
-        proptime=0.816,
-        sum_lambda=0.0005,
-        n=10,
-        std=8e-05,
+        proptime=14.916,
+        sum_lambda=0.00171,
+        n=38,
+        std=0.00010987017445924091,
     )
     print(res)

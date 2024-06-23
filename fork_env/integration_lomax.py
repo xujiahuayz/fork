@@ -118,8 +118,8 @@ def fork_rate_lomax(
 if __name__ == "__main__":
     res = fork_rate_lomax(
         proptime=14.916,
-        sum_lambda=0.005,
-        n=80,
+        sum_lambda=0.00171,
+        n=38,
         std=0.00010987017445924091,
     )
     print(res)
