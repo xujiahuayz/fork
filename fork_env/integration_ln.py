@@ -64,7 +64,7 @@ def cz(
 
     return quad_vec(
         lambda lam: cz_integrand_ln(lam, x, delta, sum_lambda, n, sigma),
-        1e-200,
+        0,
         np.inf,
         **kwargs,
     )[0]
@@ -79,41 +79,28 @@ def fork_rate_ln(
 ) -> float:
     hash_mean = sum_lambda / n
     sigma = calc_ln_sig(hash_mean, std)
-    dd = np.sqrt(2 * np.pi) * sigma
-    # if pow(SQRRT2PI * sigma, n) has overflow, use the following
-    try:
-        ddpow = pow(dd, n)
+    ddlog = n * np.log(np.sqrt(2 * np.pi) * sigma)
 
-        def pdelta_integrand(x: float) -> float:
-            return az(x, sum_lambda, n, sigma, **kwargs) * cz(
-                x, proptime, sum_lambda, n, sigma, **kwargs
-            ) ** (n - 1)
-
-    except OverflowError:
-        ddpow = 1
-
-        def pdelta_integrand(x: float) -> float:
-            return (az(x, sum_lambda, n, sigma, **kwargs) / dd) * (
-                cz(x, proptime, sum_lambda, n, sigma, **kwargs) / dd
-            ) ** (n - 1)
-
-    return (
-        1
-        - (
-            n
-            * quad_vec(
-                pdelta_integrand,
-                0,
-                np.inf,
-            )[0]
+    def pdelta_integrand(x: float) -> float:
+        return np.exp(
+            np.log(az(x, sum_lambda, n, sigma, **kwargs))
+            + (n - 1) * np.log(cz(x, proptime, sum_lambda, n, sigma, **kwargs))
+            - ddlog
         )
-        / ddpow
+
+    return 1 - (
+        n
+        * quad_vec(
+            pdelta_integrand,
+            0,
+            np.inf,
+        )[0]
     )
 
 
 if __name__ == "__main__":
     res = fork_rate_ln(
-        proptime=14.916,
+        proptime=0,
         sum_lambda=0.0171,
         n=38,
         std=0.02,

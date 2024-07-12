@@ -66,7 +66,7 @@ def cz(
 
     return quad_vec(
         lambda lam: cz_integrand_lomax(lam, x, delta, sum_lambda, n, c),
-        1e-200,
+        0,
         np.inf,
         **kwargs,
     )[0]
@@ -81,16 +81,18 @@ def fork_rate_lomax(
 ) -> float:
     hash_mean = sum_lambda / n
     c = calc_lmx_shape(hash_mean, std)
+    nlogc = n * np.log(c)
 
     def pdelta_integrand(x: float) -> float:
-        return az(x, sum_lambda, n, c, **kwargs) * cz(
-            x, proptime, sum_lambda, n, c, **kwargs
-        ) ** (n - 1)
+        return np.exp(
+            np.log(az(x, sum_lambda, n, c, **kwargs))
+            + (n - 1) * np.log(cz(x, proptime, sum_lambda, n, c, **kwargs))
+            + nlogc
+        )
 
     return (
         1
         - n
-        * c**n
         * quad_vec(
             pdelta_integrand,
             0,

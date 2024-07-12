@@ -15,11 +15,12 @@ def fork_rate_exp(
 
     @njit
     def pdelta_integrand(x: float) -> float:
-        return 1 / (r + x) ** 2 / (proptime + r + x) ** (n - 1)
+        return np.exp(
+            n * np.log(r) - 2 * np.log(r + x) - (n - 1) * np.log(proptime + r + x)
+        )
 
     return 1 - (
         n
-        * r**n
         * quad_vec(
             pdelta_integrand,
             0,
