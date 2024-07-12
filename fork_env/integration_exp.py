@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.integrate import dblquad
+from scipy.integrate import quad_vec
+from fork_env.utils import calc_ex_rate
 
 from numba import njit
 
@@ -10,19 +11,17 @@ def fork_rate_exp(
     n: int,
 ) -> float:
 
-    @njit
-    def pdelta_integrand(x: float, delta: float) -> float:
-        return (sum_lambda / (n + sum_lambda * x)) ** 2 * (
-            n / (n + sum_lambda * (x + delta))
-        ) ** n
+    r = calc_ex_rate(hash_mean=sum_lambda / n)
 
-    return (
+    @njit
+    def pdelta_integrand(x: float) -> float:
+        return 1 / (r + x) ** 2 / (proptime + r + x) ** (n - 1)
+
+    return 1 - (
         n
-        * (n - 1)
-        * dblquad(
+        * r**n
+        * quad_vec(
             pdelta_integrand,
-            0,
-            proptime,
             0,
             np.inf,
         )[0]

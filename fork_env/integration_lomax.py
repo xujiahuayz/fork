@@ -44,18 +44,6 @@ def az(
     )[0]
 
 
-def bz(
-    x: float,
-    delta: float,
-    sum_lambda: float,
-    n: int,
-    c: float,
-    **kwargs,
-) -> float:
-
-    return az(x + delta, sum_lambda, n, c, **kwargs)
-
-
 def cz_integrand_lomax(
     lam: float,
     x: float,
@@ -93,22 +81,18 @@ def fork_rate_lomax(
 ) -> float:
     hash_mean = sum_lambda / n
     c = calc_lmx_shape(hash_mean, std)
-    cn = c**n
 
-    def pdelta_integrand(x: float, delta: float) -> float:
-        return (
-            az(x, sum_lambda, n, c, **kwargs)
-            * bz(x, delta, sum_lambda, n, c, **kwargs)
-            * cz(x, delta, sum_lambda, n, c, **kwargs) ** (n - 2)
-        ) * cn
+    def pdelta_integrand(x: float) -> float:
+        return az(x, sum_lambda, n, c, **kwargs) * cz(
+            x, proptime, sum_lambda, n, c, **kwargs
+        ) ** (n - 1)
 
     return (
-        n
-        * (n - 1)
-        * dblquad(
+        1
+        - n
+        * c**n
+        * quad_vec(
             pdelta_integrand,
-            0,
-            proptime,
             0,
             np.inf,
         )[0]
@@ -118,8 +102,8 @@ def fork_rate_lomax(
 if __name__ == "__main__":
     res = fork_rate_lomax(
         proptime=16.23,
-        sum_lambda=0.002,
+        sum_lambda=0.02,
         n=42,
-        std=0.0002,
+        std=6,
     )
     print(res)

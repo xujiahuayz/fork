@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 import numpy as np
-from scipy.integrate import dblquad, quad_vec
+from scipy.integrate import quad_vec
 
 from fork_env.constants import HASH_STD
 from fork_env.utils import (
@@ -40,18 +40,6 @@ def az(
         np.inf,
         **kwargs,
     )[0]
-
-
-def bz(
-    x: float,
-    delta: float,
-    sum_lambda: float,
-    n: int,
-    sigma: float,
-    **kwargs,
-) -> float:
-
-    return az(x + delta, sum_lambda, n, sigma, **kwargs)
 
 
 def cz_integrand_ln(
@@ -96,41 +84,38 @@ def fork_rate_ln(
     try:
         ddpow = pow(dd, n)
 
-        def pdelta_integrand(x: float, delta: float) -> float:
-            return (
-                az(x, sum_lambda, n, sigma, **kwargs)
-                * bz(x, delta, sum_lambda, n, sigma, **kwargs)
-                * cz(x, delta, sum_lambda, n, sigma, **kwargs) ** (n - 2)
-            )
+        def pdelta_integrand(x: float) -> float:
+            return az(x, sum_lambda, n, sigma, **kwargs) * cz(
+                x, proptime, sum_lambda, n, sigma, **kwargs
+            ) ** (n - 1)
 
     except OverflowError:
         ddpow = 1
 
-        def pdelta_integrand(x: float, delta: float) -> float:
-            return (
-                (az(x, sum_lambda, n, sigma, **kwargs) / dd)
-                * (bz(x, delta, sum_lambda, n, sigma, **kwargs) / dd)
-                * (cz(x, delta, sum_lambda, n, sigma, **kwargs) / dd) ** (n - 2)
-            )
+        def pdelta_integrand(x: float) -> float:
+            return (az(x, sum_lambda, n, sigma, **kwargs) / dd) * (
+                cz(x, proptime, sum_lambda, n, sigma, **kwargs) / dd
+            ) ** (n - 1)
 
     return (
-        n
-        * (n - 1)
-        * dblquad(
-            pdelta_integrand,
-            0,
-            proptime,
-            0,
-            np.inf,
-        )[0]
-    ) / ddpow
+        1
+        - (
+            n
+            * quad_vec(
+                pdelta_integrand,
+                0,
+                np.inf,
+            )[0]
+        )
+        / ddpow
+    )
 
 
 if __name__ == "__main__":
     res = fork_rate_ln(
         proptime=14.916,
-        sum_lambda=0.00171,
+        sum_lambda=0.0171,
         n=38,
-        std=0.00010987017445924091,
+        std=0.02,
     )
     print(res)

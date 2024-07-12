@@ -25,16 +25,6 @@ def az(
     )[0]
 
 
-def bz(
-    x: float,
-    delta: float,
-    sum_lambda: float,
-    pdf: Callable,
-) -> float:
-
-    return az(x + delta, sum_lambda, pdf)
-
-
 def cz_integrand_lomax(
     lam: float,
     x: float,
@@ -72,20 +62,15 @@ def fork_rate_empirical(
         lbda = lbda * factor
         return pdf_empirical(lbda, bis, ints)
 
-    def pdelta_integrand(x: float, delta: float) -> float:
-        return (
-            (az(x, sum_lambda, pdf_p) * factor)
-            * (bz(x, delta, sum_lambda, pdf_p) * factor)
-            * (cz(x, delta, sum_lambda, pdf_p) * factor) ** (n - 2)
-        )
+    def pdelta_integrand(x: float) -> float:
+        return (az(x, sum_lambda, pdf_p) * factor) * (
+            cz(x, proptime, sum_lambda, pdf_p) * factor
+        ) ** (n - 1)
 
-    return (
+    return 1 - (
         n
-        * (n - 1)
-        * dblquad(
+        * quad_vec(
             pdelta_integrand,
-            0,
-            proptime,
             0,
             np.inf,
         )[0]
