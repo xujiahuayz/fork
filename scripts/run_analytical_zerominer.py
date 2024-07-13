@@ -8,6 +8,7 @@ from fork_env.constants import (
     DIST_KEYS,
     SUM_HASH_RATE,
     BLOCK_PROP_TIMES,
+    hash_panel_last_row,
 )
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_lomax import fork_rate_lomax
@@ -19,16 +20,14 @@ import numpy as np
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
-# get the last number of total hash rate
-
-BIS: list[int] = list(hash_panel["bis"].iloc[-1])
-
 
 def compute_rate_zerominer(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n_zerominers = args
     # if args in rates:
     #     return args, rates[args]
-    bis_with_zero_miners: list[int] = BIS + [0] * n_zerominers
+    bis_with_zero_miners: list[int] = (
+        list(hash_panel_last_row["bis"]) + [0] * n_zerominers
+    )
     n = len(bis_with_zero_miners)
     if distribution == "empirical":
         the_rate = fork_rate_empirical(
@@ -38,25 +37,29 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
             bis=bis_with_zero_miners,
         )
     else:
-        std: float = np.std(bis_with_zero_miners, ddof=0)  # type: ignore
+        hash_with_zero_miners = (
+            list(hash_panel_last_row["miner_hash"]) + [0] * n_zerominers
+        )
+        mean: float = np.mean(hash_with_zero_miners)
+        std: float = np.std(hash_with_zero_miners, ddof=0)  # type: ignore
         if distribution == "exp":
             the_rate = fork_rate_exp(
                 proptime=block_propagation_time,
-                sum_lambda=SUM_HASH_RATE,
                 n=n,
+                hash_mean=mean,
             )
         elif distribution == "log_normal":
             the_rate = fork_rate_ln(
                 proptime=block_propagation_time,
-                sum_lambda=SUM_HASH_RATE,
                 n=n,
+                hash_mean=mean,
                 std=std,
             )
         elif distribution == "lomax":
             the_rate = fork_rate_lomax(
                 proptime=block_propagation_time,
-                sum_lambda=SUM_HASH_RATE,
                 n=n,
+                hash_mean=mean,
                 std=std,
             )
 

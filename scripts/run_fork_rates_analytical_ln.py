@@ -36,8 +36,6 @@ if __name__ == "__main__":
         ["log_normal"],
         list(EMPIRICAL_PROP_DELAY.values()),
         [
-            5,
-            6,
             7,
             8,
             9,
@@ -71,12 +69,10 @@ if __name__ == "__main__":
             180,
             200,
             300,
-            400,
-            500,
         ]
         + [N_MINER],
         SUM_HASHES,
-        list(np.logspace(-5, -2, num=31, base=10)) + [HASH_STD],
+        list(np.logspace(-4.5, -2.3, num=30, base=10)) + [HASH_STD],
     )
 
     start_time = time.time()

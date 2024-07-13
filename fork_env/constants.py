@@ -31,11 +31,13 @@ DIST_LABELS = {
 }
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
+# get the last row of hash panel
+hash_panel_last_row = hash_panel.iloc[-1]
 
 # get the last number of total hash rate
-SUM_HASH_RATE = hash_panel["total_hash_rate"].iloc[-1]
-N_MINER = hash_panel["num_miners"].iloc[-1]
-HASH_STD = hash_panel["hash_std"].iloc[-1]
+SUM_HASH_RATE = hash_panel_last_row["total_hash_rate"]
+N_MINER = hash_panel_last_row["num_miners"]
+HASH_STD = hash_panel_last_row["hash_std"]
 
 # invstat.gpd
 # Format:
