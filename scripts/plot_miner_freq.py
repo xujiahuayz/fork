@@ -3,15 +3,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from fork_env.constants import (
-    BLOCK_WINDOW,
     DATA_FOLDER,
     DIST_COLORS,
     DIST_KEYS,
     DIST_LABELS,
     FIGURES_FOLDER,
 )
-
-from fork_env.utils import ccdf_p, zele
+from fork_env.utils import ccdf_p
 import statsmodels.api as sm  # recommended import according to the docs
 
 
@@ -41,15 +39,13 @@ for index, row in hash_panel.iterrows():
     ecdf = sm.distributions.ECDF(emp_x, side="left")
     empfit_x = [0] + emp_x + [row["total_hash_rate"] / 3, row["total_hash_rate"] / 2]
     bis = row["bis"]
-    ints = [zele(bi, BLOCK_WINDOW) for bi in bis]
     ax.plot(
         empfit_x,
         [
             ccdf_p(
-                lbda * BLOCK_WINDOW / row["total_hash_rate"],
+                lbda=lbda,
                 bis=bis,
-                B=BLOCK_WINDOW,
-                ints=ints,
+                factor=sum(bis) / row["total_hash_rate"],
             )
             for lbda in empfit_x
         ],
@@ -84,7 +80,7 @@ for index, row in hash_panel.iterrows():
     )
 
     # fix x-axis and y-axis
-    ax.set_xlim(3e-8, 6e-4)
+    ax.set_xlim(4e-8, 6e-4)
     ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis

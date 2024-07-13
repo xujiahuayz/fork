@@ -11,7 +11,7 @@ from fork_env.constants import (
     BLOCK_WINDOW,
 )
 
-from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist, zele
+from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist
 import pandas as pd
 import numpy as np
 
@@ -25,12 +25,10 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 FACTOR = BLOCK_WINDOW / SUM_HASH_RATE
 MINER_HASH_EMP = hash_panel["miner_hash"].iloc[-1].sort_values()
 BIS = hash_panel["bis"].iloc[-1]
-INTS = [zele(bi, BLOCK_WINDOW) for bi in BIS]
-INT_0 = zele(0, BLOCK_WINDOW)
 
 
 x = [10**i for i in np.linspace(-8, -3, 100)]
-EMPFIT_X = [0] + list(MINER_HASH_EMP) + [SUM_HASH_RATE / 3, SUM_HASH_RATE / 2]
+EMPFIT_X = [0, 4e-8] + list(MINER_HASH_EMP) + [SUM_HASH_RATE / 3, SUM_HASH_RATE / 2]
 
 for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     bis_with_zero_miners = [0] * n_zerominers + BIS
@@ -50,13 +48,11 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     # fit a lomax distribution  using moments
     lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
 
-    ints = [INT_0] * n_zerominers + INTS
     EMPFIT_Y = [
         ccdf_p(
-            lbda * FACTOR,
+            lbda=lbda,
             bis=bis_with_zero_miners,
-            B=BLOCK_WINDOW,
-            ints=ints,
+            factor=FACTOR,
         )
         for lbda in EMPFIT_X
     ]
@@ -109,7 +105,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     )
 
     # fix x-axis and y-axis
-    ax.set_xlim(3e-8, 6e-4)
+    ax.set_xlim(4e-8, 6e-4)
     ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis

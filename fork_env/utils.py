@@ -6,6 +6,7 @@ from fork_env.constants import (
     HASH_STD,
     SUM_HASH_RATE,
 )
+from scipy.special import erf
 
 
 def calc_ex_rate(hash_mean: float) -> float:
@@ -67,3 +68,16 @@ def lomax_dist(
 ) -> np.ndarray:
     _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
     return lmx_dist
+
+
+def ccdf_p(lbda: float, bis: list[int], factor: float) -> float:
+    fl = factor * lbda
+    bis = np.array(bis)
+    return (
+        np.mean(
+            1
+            + erf((bis - fl) / np.sqrt(2 * fl))
+            + np.exp(2 * bis + np.log(1 - erf((bis + fl) / np.sqrt(2 * fl))))
+        )
+        / 2
+    )
