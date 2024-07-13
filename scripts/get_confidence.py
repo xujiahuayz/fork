@@ -14,6 +14,8 @@ from fork_env.constants import (
     EMPIRICAL_PROP_DELAY,
     N_MINER,
     SUM_HASHES,
+    hash_panel_last_row,
+    BLOCK_WINDOW,
 )
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
@@ -24,38 +26,66 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 # get the last number of total hash rate
 
-bis = list(hash_panel["bis"].iloc[-1])
+bis = hash_panel_last_row["bis"]
+ps = [b / BLOCK_WINDOW for b in bis]
+var_pi = [p * (1 - p) / BLOCK_WINDOW for p in ps]
+sum_var_p = sum(var_pi)
+sum_var_p2 = sum([v**2 for v in var_pi])
 
-# combinations = product(DIST_KEYS, EMPIRICAL_PROP_DELAY.values(), NUMBER_MINERS_LIST)
 
 start_time = time.time()
 
-def fork_temp(sumhash: float, n:int, hash_mean:float, delta: float, dist: Callable):
-    sampled_mean = truncnorm.rvs(
+
+def fork_temp(
+    mean_mean: float,
+    mean_std: float,
+    mean_var: float,
+    var_std: float,
+    delta: float,
+    dist: Callable,
+):
+    sampled_mean = np.random.normal(mean_mean, mean_std)
+    sampled_var = np.random.normal(mean_var, var_std)
     return dist(
         proptime=delta,
-        hash_mean,
+        hash_mean=sampled_mean,
         n=N_MINER,
-        std=HASH_STD,
+        std=np.sqrt(sampled_var),
     )
 
 
 # open file for writing by appending
-with open(SIMULATED_FORK_RATES_PATH, "a") as f:
+with open(DATA_FOLDER / "rates_confidence.jsonl", "a") as f:
     for dist_key, dist in {
         "log_normal": fork_rate_ln,
         "lomax": fork_rate_lomax,
     }.items():
         for sumhash in SUM_HASHES:
             hash_mean = sumhash / N_MINER
-            hash_std = sum[]
+            hash_var = (
+                sum([(p * sumhash) ** 2 for p in ps]) - N_MINER * hash_mean**2
+            ) / (N_MINER - 1)
+            mean_std = np.sqrt(sum_var_p) * hash_mean
+            var_std = np.sqrt(2 / (N_MINER * (N_MINER - 1)) * sum_var_p2) * hash_mean
+
             for delta in list(EMPIRICAL_PROP_DELAY.values()):
-
-
-
                 results = Parallel(n_jobs=-1)(
-                    delayed(simulate_fork)(**kwargs) for _ in range(repeat)
+                    delayed(fork_temp)(
+                        hash_mean, mean_std, hash_var, var_std, delta, dist
+                    )
+                    for _ in range(int(1e4))
                 )
+                this_rate = {
+                    "dist": dist_key,
+                    "sumhash": sumhash,
+                    "proptime": delta,
+                    "mean_mean": hash_mean,
+                    "mean_std": mean_std,
+                    "mean_var": hash_var,
+                    "var_std": var_std,
+                    "results": results,
+                }
+                print(this_rate)
         # write to jsonl
         f.write(json.dumps(this_rate) + "\n")
 

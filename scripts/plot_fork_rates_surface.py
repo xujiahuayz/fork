@@ -5,7 +5,7 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, DIST_KEYS
+from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 
 # from scripts.read_analytical_rates import rates
 
