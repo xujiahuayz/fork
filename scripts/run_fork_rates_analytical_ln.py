@@ -25,7 +25,8 @@ def compute_rate(args) -> tuple[tuple, float]:
             std=std,
         )
     except Exception as e:
-        print(f"Error in {args}: {e}")
+        # don't care -- too many prints otherwise
+        # print(f"Error in {args}: {e}")
         the_rate = np.nan
     print(args, the_rate)
     return args, the_rate
