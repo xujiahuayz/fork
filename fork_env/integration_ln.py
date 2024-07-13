@@ -18,6 +18,8 @@ def az_integrand_ln(
     n: int,
     sigma: float,
 ) -> float:
+    if lam == 0:
+        return 0
     sigma2 = sigma**2
     temp = lam * n / sum_lambda
     return np.exp(
@@ -50,6 +52,8 @@ def cz_integrand_ln(
     n: int,
     sigma: float,
 ) -> float:
+    if lam == 0:
+        return 0
     return az_integrand_ln(lam, x + delta, sum_lambda, n, sigma) / lam
 
 

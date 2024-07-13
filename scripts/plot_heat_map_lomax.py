@@ -52,10 +52,10 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
             & (df["sumhash"] == sum_hash)
         ]
         this_df_block_propagation_time = df_block_propagation_time[
-            (df_block_propagation_time["rate"] > 1e-20)
-            & (df_block_propagation_time["std"] > 7e-5)
-            & (df_block_propagation_time["n"] > 14)
-            & (df_block_propagation_time["n"] < 200)
+            (df_block_propagation_time["std"] > 7e-5)
+            & (df_block_propagation_time["std"] < 1.5e-3)
+            & (df_block_propagation_time["n"] < 400)
+            & (df_block_propagation_time["n"] > 6)
         ]
 
         this_df_block_propagation_time = this_df_block_propagation_time.pivot(
@@ -87,6 +87,8 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
 
         plt.xscale("log")
         # plt.yscale("log")
+        # log y with base 2
+        plt.yscale("log", base=2)
         # plt.xticks(x_ticks, [f"{tick:.1f}" for tick in x_ticks])
         cbar = plt.colorbar(label="fork rate $C(\Delta_0)$", location="top")
         # make cbar ticker labels scientific

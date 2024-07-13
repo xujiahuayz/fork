@@ -33,29 +33,6 @@ df = pd.DataFrame(
     ]
 )
 
-# with open(DATA_FOLDER / "rates_analytical.pkl", "rb") as f:
-#     rates = pickle.load(f)
-
-# df_integ = pd.DataFrame(
-#     [
-#         {
-#             "distribution": k[0][0],
-#             "block_propagation_time": k[0][1],
-#             "n": k[0][2],
-#             "sumhash": k[0][3],
-#             "rate": k[1],
-#         }
-#         for k in rates
-#     ]
-# )
-# df_integ = df_integ[
-#     (df_integ["distribution"] == "log_normal") & (df_integ["sumhash"] == SUM_HASH_RATE)
-# ]
-# df_integ["sigma"] = LOG_NORMAL_SIGMA
-
-
-# df = pd.concat([df, df_integ])
-# remove duplicated rows
 
 df = df[df["distribution"] == "log_normal"]
 
@@ -76,10 +53,11 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
             & (df["sumhash"] == sum_hash)
         ]
         this_df_block_propagation_time = df_block_propagation_time[
-            (df_block_propagation_time["rate"] > 1e-20)
-            & (df_block_propagation_time["std"] > 7e-5)
-            & (df_block_propagation_time["n"] > 14)
-            & (df_block_propagation_time["n"] < 200)
+            # (df_block_propagation_time["rate"] > 1e-20)
+            (df_block_propagation_time["std"] > 7e-5)
+            & (df_block_propagation_time["std"] < 1.5e-3)
+            & (df_block_propagation_time["n"] < 400)
+            & (df_block_propagation_time["n"] > 6)
         ]
 
         this_df_block_propagation_time = this_df_block_propagation_time.pivot(
@@ -111,6 +89,7 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
 
         plt.xscale("log")
         # plt.yscale("log")
+        plt.yscale("log", base=2)
         # plt.xticks(x_ticks, [f"{tick:.1f}" for tick in x_ticks])
         cbar = plt.colorbar(label="fork rate $C(\Delta_0)$", location="top")
         # make cbar ticker labels scientific

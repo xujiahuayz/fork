@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 import numpy as np
-from scipy.integrate import dblquad, quad_vec
+from scipy.integrate import quad_vec
 
 from fork_env.constants import HASH_STD
 from fork_env.utils import (
@@ -44,6 +44,7 @@ def az(
     )[0]
 
 
+@njit
 def cz_integrand_lomax(
     lam: float,
     x: float,
@@ -52,7 +53,12 @@ def cz_integrand_lomax(
     n: int,
     c: float,
 ) -> float:
-    return az_integrand_lomax(lam, x + delta, sum_lambda, n, c) / lam
+    return (
+        n
+        / (1 + n * lam / (sum_lambda * (c - 1))) ** c
+        / (sum_lambda * (c - 1) + n * lam)
+        / np.exp(lam * (x + delta))
+    )
 
 
 def cz(
@@ -103,8 +109,8 @@ def fork_rate_lomax(
 
 if __name__ == "__main__":
     res = fork_rate_lomax(
-        proptime=16.23,
-        sum_lambda=0.02,
+        proptime=18,
+        sum_lambda=0.31,
         n=42,
         std=6,
     )

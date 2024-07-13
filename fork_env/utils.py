@@ -1,9 +1,6 @@
 from typing import Any
 import numpy as np
 from scipy.stats import lognorm, lomax
-from scipy.stats import rv_continuous
-from scipy.integrate import quad_vec
-from numba import njit
 
 
 def calc_ex_rate(hash_mean: float) -> float:
@@ -45,87 +42,3 @@ def calc_lmx_params(hash_mean: float, hash_std: float) -> tuple[float, float]:
 def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     lomax_shape, lmx_scale = calc_lmx_params(hash_mean, hash_std)
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
-
-
-@njit
-def ccdf_component(lbda: float, bi: int):
-    if bi == 0:
-        return 1 / np.exp(lbda / 2)
-    return np.exp(bi - pow(bi, 2) / (2 * lbda) - lbda / 2)
-
-
-def zele(bi: int, B: int) -> float:
-    return (
-        quad_vec(lambda x: ccdf_component(x, bi), 0, bi)[0]
-        + quad_vec(lambda x: ccdf_component(x, bi), bi, B)[0]
-    )
-
-
-def pdf_empirical(lbda: float, bis: list[int], ints: list[float]) -> float:
-    return np.mean([ccdf_component(lbda, bis[i]) / w for i, w in enumerate(ints)])  # type: ignore
-
-
-def ccdf_p(lbda: float, bis: list[int], B: int, ints: list[float]) -> float:
-    return np.mean(
-        [
-            quad_vec(lambda x: ccdf_component(x, bis[i]), lbda, B)[0] / w  # type: ignore
-            for i, w in enumerate(ints)
-        ]
-    )
-
-
-def cdf_p(lbda: float, bis: list[int], B: int, ints: list[float]) -> float:
-    return 1 - ccdf_p(lbda, bis, B, ints)
-
-
-# class EmpDist(rv_continuous):
-#     def __init__(self, bis: list[int], xtol: float = 1e-14, seed=None):
-#         super().__init__(a=0, xtol=xtol, seed=seed)
-#         self.bis = bis
-
-#     def _cdf(self, x: float) -> float:
-#         return cdf_p(x, self.bis)
-
-
-if __name__ == "__main__":
-    # Test the EmpDist class
-    bis = [
-        8704,
-        7633,
-        3485,
-        3230,
-        2007,
-        1324,
-        1141,
-        311,
-        306,
-        295,
-        265,
-        259,
-        256,
-        241,
-        169,
-        137,
-        56,
-        28,
-        26,
-        24,
-        23,
-        18,
-        12,
-        11,
-        7,
-        6,
-        4,
-        4,
-        3,
-        3,
-        2,
-        2,
-        2,
-        2,
-        1,
-        1,
-        1,
-        1,
-    ]

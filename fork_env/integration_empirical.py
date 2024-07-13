@@ -2,9 +2,7 @@ from functools import lru_cache
 from typing import Callable
 
 import numpy as np
-from scipy.integrate import dblquad, quad_vec
-
-from fork_env.utils import zele, pdf_empirical
+from scipy.integrate import quad_vec
 
 
 def az_integrand_empirical(lam: float, x: float, pdf: Callable) -> float:
@@ -14,14 +12,13 @@ def az_integrand_empirical(lam: float, x: float, pdf: Callable) -> float:
 @lru_cache(maxsize=None)
 def az(
     x: float,
-    sum_lambda: float,
     pdf: Callable,
 ) -> float:
 
     return quad_vec(
         lambda lam: az_integrand_empirical(lam, x, pdf),
         0,
-        sum_lambda,
+        np.inf,
     )[0]
 
 
@@ -31,19 +28,16 @@ def cz_integrand_lomax(
     delta: float,
     pdf: Callable,
 ) -> float:
-    return az_integrand_empirical(lam, x + delta, pdf) / lam
+    return np.exp(-lam * (x + delta)) * pdf(lam)
 
 
 def cz(
     x: float,
     delta: float,
-    sum_lambda: float,
     pdf: Callable,
 ) -> float:
 
-    return quad_vec(lambda lam: cz_integrand_lomax(lam, x, delta, pdf), 0, sum_lambda)[
-        0
-    ]
+    return quad_vec(lambda lam: cz_integrand_lomax(lam, x, delta, pdf), 0, np.inf)[0]
 
 
 def fork_rate_empirical(
@@ -53,19 +47,19 @@ def fork_rate_empirical(
     bis: list[int],
 ) -> float:
     B = np.sum(bis)
-    factor = B / sum_lambda
-
-    ints = [zele(bi, B) for bi in bis]
 
     @lru_cache(maxsize=None)
     def pdf_p(lbda: float):
-        lbda = lbda * factor
-        return pdf_empirical(lbda, bis, ints)
+        def plb(l: float, b: float) -> float:
+            ll = l * B / sum_lambda
+            return np.exp(-pow(b - ll, 2) / (2 * ll)) / np.sqrt(
+                2 * np.pi * l * sum_lambda / B
+            )
+
+        return np.mean([plb(lbda, bi) for bi in bis])
 
     def pdelta_integrand(x: float) -> float:
-        return (az(x, sum_lambda, pdf_p) * factor) * (
-            cz(x, proptime, sum_lambda, pdf_p) * factor
-        ) ** (n - 1)
+        return (az(x, pdf_p)) * (cz(x, proptime, pdf_p)) ** (n - 1)
 
     return 1 - (
         n
@@ -118,5 +112,6 @@ if __name__ == "__main__":
         1,
         1,
     ]
-    res = fork_rate_empirical(proptime=14.916, sum_lambda=0.00171, n=len(bis), bis=bis)
+    bis = [4, 1]
+    res = fork_rate_empirical(proptime=2, sum_lambda=0.3, n=len(bis), bis=bis)
     print(res)
