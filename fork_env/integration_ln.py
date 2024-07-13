@@ -14,14 +14,13 @@ from numba import njit
 def az_integrand_ln(
     lam: float,
     x: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     sigma: float,
 ) -> float:
     if lam == 0:
         return 0
     sigma2 = sigma**2
-    temp = lam * n / sum_lambda
+    temp = lam / hash_mean
     return np.exp(
         -sigma2 / 8 - pow(np.log(temp), 2) / (2 * sigma2) - lam * x
     ) / np.sqrt(temp)
@@ -30,14 +29,13 @@ def az_integrand_ln(
 @lru_cache(maxsize=None)
 def az(
     x: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     sigma: float,
     **kwargs,
 ) -> float:
 
     return quad_vec(
-        lambda lam: az_integrand_ln(lam, x, sum_lambda, n, sigma),
+        lambda lam: az_integrand_ln(lam, x, hash_mean, sigma),
         0,
         np.inf,
         **kwargs,
@@ -48,26 +46,24 @@ def cz_integrand_ln(
     lam: float,
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     sigma: float,
 ) -> float:
     if lam == 0:
         return 0
-    return az_integrand_ln(lam, x + delta, sum_lambda, n, sigma) / lam
+    return az_integrand_ln(lam, x + delta, hash_mean, sigma) / lam
 
 
 def cz(
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     sigma: float,
     **kwargs,
 ) -> float:
 
     return quad_vec(
-        lambda lam: cz_integrand_ln(lam, x, delta, sum_lambda, n, sigma),
+        lambda lam: cz_integrand_ln(lam, x, delta, hash_mean, sigma),
         0,
         np.inf,
         **kwargs,
@@ -76,19 +72,22 @@ def cz(
 
 def fork_rate_ln(
     proptime: float,
-    sum_lambda: float,
     n: int,
+    sum_lambda: float | None = None,
+    hash_mean: float | None = None,
     std: float = HASH_STD,
     **kwargs,
 ) -> float:
-    hash_mean = sum_lambda / n
+    if hash_mean is None:
+        hash_mean = sum_lambda / n
+
     sigma = calc_ln_sig(hash_mean, std)
     ddlog = n * np.log(np.sqrt(2 * np.pi) * sigma)
 
     def pdelta_integrand(x: float) -> float:
         return np.exp(
-            np.log(az(x, sum_lambda, n, sigma, **kwargs))
-            + (n - 1) * np.log(cz(x, proptime, sum_lambda, n, sigma, **kwargs))
+            np.log(az(x, hash_mean, sigma, **kwargs))
+            + (n - 1) * np.log(cz(x, proptime, hash_mean, sigma, **kwargs))
             - ddlog
         )
 
@@ -104,8 +103,8 @@ def fork_rate_ln(
 
 if __name__ == "__main__":
     res = fork_rate_ln(
-        proptime=0,
-        sum_lambda=0.0171,
+        proptime=14,
+        hash_mean=0.05 / 38,
         n=38,
         std=0.02,
     )

@@ -14,43 +14,10 @@ from fork_env.constants import (
 )
 from fork_env.integration_ln import fork_rate_ln
 
-# # open ANALYTICAL_FORK_RATES_PATH_STD and load the rates
-# with open(DATA_FOLDER / "rates_analytical_std_ln.pkl", "rb") as f:
-#     rates_sigma_dict = pickle.load(f)
-
-# # change list to dict
-# rates_sigma_dict = dict(rates_sigma_dict)
-
 
 def compute_rate(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n, sumhash, std = args
-    # print("processing", args)
-    # if args are in the first element of the rates_sigma_dict, use the value
     try:
-        # if (
-        #     distribution,
-        #     block_propagation_time,
-        #     n,
-        #     sumhash,
-        #     std,
-        # ) in rates_sigma_dict:
-        #     the_rate_calculated = rates_sigma_dict[
-        #         (distribution, block_propagation_time, n, sumhash, std)
-        #     ]
-        #     # only use this value if it is not None and not nan and > 1e-20
-
-        #     the_rate = (
-        #         the_rate_calculated
-        #         if the_rate_calculated and the_rate_calculated > 1e-20
-        #         else fork_rate_ln(
-        #             proptime=block_propagation_time,
-        #             sum_lambda=sumhash,
-        #             n=n,
-        #             std=std,
-        #         )
-        #     )
-        #     print("using cached value", args)
-        # else:
         the_rate = fork_rate_ln(
             proptime=block_propagation_time,
             sum_lambda=sumhash,

@@ -2,40 +2,18 @@ import json
 import time
 from itertools import product
 
-import numpy as np
-
 from fork_env.constants import (
     DIST_KEYS,
-    HASH_STD,
     SIMULATED_FORK_RATES_PATH,
-    SUM_HASH_RATE,
     EMPIRICAL_PROP_DELAY,
     NUMBER_MINERS_LIST,
 )
 from fork_env.simulate import get_fork_rate
-from fork_env.utils import gen_lmx_dist, gen_ln_dist
-from scipy.stats import expon
-
-
-def expon_dist(n_miners: int, sum_hash: float = SUM_HASH_RATE):
-    return expon(scale=sum_hash / n_miners)
-
-
-def lognorm_dist(
-    n_miners: int,
-    sum_hash: float = SUM_HASH_RATE,
-    hash_std: float = HASH_STD,
-):
-    _, _, ln_dist = gen_ln_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
-    return ln_dist
-
-
-def lomax_dist(
-    n_miners: int, sum_hash: float = SUM_HASH_RATE, hash_std: float = HASH_STD
-) -> np.ndarray:
-    _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
-    return lmx_dist
-
+from fork_env.utils import (
+    expon_dist,
+    lognorm_dist,
+    lomax_dist,
+)
 
 distributions = {
     DIST_KEYS[0]: expon_dist,

@@ -19,33 +19,7 @@ rates_c_dict = dict()
 
 def compute_rate(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n, sumhash, std = args
-    # print("processing", args)
-    # if args are in the first element of the rates_sigma_dict, use the value
     try:
-        # if (
-        #     distribution,
-        #     block_propagation_time,
-        #     n,
-        #     sumhash,
-        #     std,
-        # ) in rates_c_dict:
-        #     the_rate_calculated = rates_c_dict[
-        #         (distribution, block_propagation_time, n, sumhash, std)
-        #     ]
-        #     # only use this value if it is not None and not nan and > 1e-20
-
-        #     the_rate = (
-        #         the_rate_calculated
-        #         if the_rate_calculated and the_rate_calculated > 1e-20
-        #         else fork_rate_lomax(
-        #             proptime=block_propagation_time,
-        #             sum_lambda=sumhash,
-        #             n=n,
-        #             std=std,
-        #         )
-        #     )
-        #     print("using cached value", args)
-        # else:
         the_rate = fork_rate_lomax(
             proptime=block_propagation_time,
             sum_lambda=sumhash,
@@ -105,37 +79,7 @@ if __name__ == "__main__":
         + [N_MINER],
         SUM_HASHES,
         list(np.logspace(-5, -2, num=31, base=10)) + [HASH_STD],
-        # [
-        #     4.5e-5,
-        #     4.6e-5,
-        #     4.7e-5,
-        #     5e-5,
-        #     6e-5,
-        #     6.5e-5,
-        #     7e-5,
-        #     8e-5,
-        #     9e-5,
-        #     1e-4,
-        #     1.2e-4,
-        #     1.3e-4,
-        #     1.4e-4,
-        #     1.5e-4,
-        #     1.7e-4,
-        #     2e-4,
-        #     2.5e-4,
-        #     3e-4,
-        #     4e-4,
-        #     5e-4,
-        #     8e-4,
-        #     1e-3,
-        #     2e-3,
-        #     3e-3,
-        #     4e-3,
-        # ]
-        # + [HASH_STD],
     )
-
-    # 10^[-5 to -2 by 0.1] + [HASH_STD]
 
     start_time = time.time()
     rates = []

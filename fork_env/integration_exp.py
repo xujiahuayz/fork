@@ -7,11 +7,14 @@ from numba import njit
 
 def fork_rate_exp(
     proptime: float,
-    sum_lambda: float,
     n: int,
+    sum_lambda: float | None = None,
+    hash_mean: float | None = None,
 ) -> float:
+    if hash_mean is None:
+        hash_mean = sum_lambda / n
 
-    r = calc_ex_rate(hash_mean=sum_lambda / n)
+    r = calc_ex_rate(hash_mean=hash_mean)
 
     @njit
     def pdelta_integrand(x: float) -> float:

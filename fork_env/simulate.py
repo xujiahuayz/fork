@@ -36,4 +36,4 @@ def get_fork_rate(repeat: int, **kwargs) -> float:
         repeat=repeat,
         **kwargs,
     )
-    return sum([result[0] for result in results]) / repeat
+    return np.mean([result[0] for result in results])

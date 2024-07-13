@@ -16,7 +16,6 @@ from fork_env.constants import (
 with open(DATA_FOLDER / "rates_analytical_std_lomax.pkl", "rb") as f:
     rates_sigma_dict = pickle.load(f)
 
-# distribution, block_propagation_time, n, sumhash, std
 
 # transform rates_sigma_dict to a dataframe, parse the keys to named columns and the values to a column
 df = pd.DataFrame(

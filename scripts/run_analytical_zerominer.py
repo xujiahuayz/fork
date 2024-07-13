@@ -21,19 +21,14 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 # get the last number of total hash rate
 
-bis = list(hash_panel["miner_hash"].iloc[-1])
-
-# with open(DATA_FOLDER / "analytical_zerominers.pkl", "rb") as f:
-#     rates = pickle.load(f)
-
-# rates = dict(rates)
+BIS: list[int] = list(hash_panel["bis"].iloc[-1])
 
 
 def compute_rate_zerominer(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n_zerominers = args
     # if args in rates:
     #     return args, rates[args]
-    bis_with_zero_miners = bis + [0] * n_zerominers
+    bis_with_zero_miners: list[int] = BIS + [0] * n_zerominers
     n = len(bis_with_zero_miners)
     if distribution == "empirical":
         the_rate = fork_rate_empirical(

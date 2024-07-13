@@ -14,15 +14,13 @@ from numba import njit
 def az_integrand_lomax(
     lam: float,
     x: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     c: float,
 ) -> float:
     return (
         lam
-        * n
-        / (1 + n * lam / (sum_lambda * (c - 1))) ** c
-        / (sum_lambda * (c - 1) + n * lam)
+        / (1 + lam / (hash_mean * (c - 1))) ** c
+        / (hash_mean * (c - 1) + lam)
         / np.exp(lam * x)
     )
 
@@ -30,14 +28,13 @@ def az_integrand_lomax(
 @lru_cache(maxsize=None)
 def az(
     x: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     c: float,
     **kwargs,
 ) -> float:
 
     return quad_vec(
-        lambda lam: az_integrand_lomax(lam, x, sum_lambda, n, c),
+        lambda lam: az_integrand_lomax(lam, x, hash_mean, c),
         0,
         np.inf,
         **kwargs,
@@ -49,14 +46,13 @@ def cz_integrand_lomax(
     lam: float,
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     c: float,
 ) -> float:
     return (
-        n
-        / (1 + n * lam / (sum_lambda * (c - 1))) ** c
-        / (sum_lambda * (c - 1) + n * lam)
+        1
+        / (1 + lam / (hash_mean * (c - 1))) ** c
+        / (hash_mean * (c - 1) + lam)
         / np.exp(lam * (x + delta))
     )
 
@@ -64,14 +60,13 @@ def cz_integrand_lomax(
 def cz(
     x: float,
     delta: float,
-    sum_lambda: float,
-    n: int,
+    hash_mean: float,
     c: float,
     **kwargs,
 ) -> float:
 
     return quad_vec(
-        lambda lam: cz_integrand_lomax(lam, x, delta, sum_lambda, n, c),
+        lambda lam: cz_integrand_lomax(lam, x, delta, hash_mean, c),
         0,
         np.inf,
         **kwargs,
@@ -80,19 +75,21 @@ def cz(
 
 def fork_rate_lomax(
     proptime: float,
-    sum_lambda: float,
     n: int,
+    sum_lambda: float | None = None,
+    hash_mean: float | None = None,
     std: float = HASH_STD,
     **kwargs,
 ) -> float:
-    hash_mean = sum_lambda / n
+    if hash_mean is None:
+        hash_mean = sum_lambda / n
     c = calc_lmx_shape(hash_mean, std)
     nlogc = n * np.log(c)
 
     def pdelta_integrand(x: float) -> float:
         return np.exp(
-            np.log(az(x, sum_lambda, n, c, **kwargs))
-            + (n - 1) * np.log(cz(x, proptime, sum_lambda, n, c, **kwargs))
+            np.log(az(x, hash_mean, c, **kwargs))
+            + (n - 1) * np.log(cz(x, proptime, hash_mean, c, **kwargs))
             + nlogc
         )
 
@@ -109,8 +106,8 @@ def fork_rate_lomax(
 
 if __name__ == "__main__":
     res = fork_rate_lomax(
-        proptime=18,
-        sum_lambda=0.31,
+        proptime=1,
+        hash_mean=0.31 / 42,
         n=42,
         std=6,
     )

@@ -1,43 +1,13 @@
+# from functools import lru_cache
 from functools import lru_cache
-from typing import Callable
-
 import numpy as np
 from scipy.integrate import quad_vec
+from numba import njit
 
 
-def az_integrand_empirical(lam: float, x: float, pdf: Callable) -> float:
-    return lam * np.exp(-lam * x) * pdf(lam)
-
-
-@lru_cache(maxsize=None)
-def az(
-    x: float,
-    pdf: Callable,
-) -> float:
-
-    return quad_vec(
-        lambda lam: az_integrand_empirical(lam, x, pdf),
-        0,
-        np.inf,
-    )[0]
-
-
-def cz_integrand_lomax(
-    lam: float,
-    x: float,
-    delta: float,
-    pdf: Callable,
-) -> float:
-    return np.exp(-lam * (x + delta)) * pdf(lam)
-
-
-def cz(
-    x: float,
-    delta: float,
-    pdf: Callable,
-) -> float:
-
-    return quad_vec(lambda lam: cz_integrand_lomax(lam, x, delta, pdf), 0, np.inf)[0]
+@njit
+def foo(x: float, factor: float) -> float:
+    return np.sqrt(1 + 2 * x / factor)
 
 
 def fork_rate_empirical(
@@ -46,20 +16,18 @@ def fork_rate_empirical(
     n: int,
     bis: list[int],
 ) -> float:
-    B = np.sum(bis)
+
+    factor = np.sum(bis) / sum_lambda
 
     @lru_cache(maxsize=None)
-    def pdf_p(lbda: float):
-        def plb(l: float, b: float) -> float:
-            ll = l * B / sum_lambda
-            return np.exp(-pow(b - ll, 2) / (2 * ll)) / np.sqrt(
-                2 * np.pi * l * sum_lambda / B
-            )
-
-        return np.mean([plb(lbda, bi) for bi in bis])
-
     def pdelta_integrand(x: float) -> float:
-        return (az(x, pdf_p)) * (cz(x, proptime, pdf_p)) ** (n - 1)
+        ax = foo(x, factor)
+        cx = foo(x + proptime, factor)
+        az = np.mean([np.exp(bi * (1 - ax)) * (1 + bi * ax) for bi in bis]) / (
+            factor * ax**3
+        )
+        cz = np.mean([np.exp(bi * (1 - cx)) for bi in bis]) / cx
+        return az * cz ** (n - 1)
 
     return 1 - (
         n
@@ -112,6 +80,7 @@ if __name__ == "__main__":
         1,
         1,
     ]
-    bis = [4, 1]
+    # bis = [x / sum(bis) for x in bis]
+    # bis = [4, 1]
     res = fork_rate_empirical(proptime=2, sum_lambda=0.3, n=len(bis), bis=bis)
     print(res)
