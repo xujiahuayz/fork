@@ -62,7 +62,7 @@ if __name__ == "__main__":
             for sumhash in SUM_HASHES:
                 hash_mean = sumhash / N_MINER
                 hash_var = (
-                    sum([(p * sumhash) ** 2 for p in ps]) - N_MINER * hash_mean**2
+                    sum([(p * sumhash) ** 2 for p in ps]) - sumhash**2 / N_MINER
                 ) / (N_MINER - 1)
                 mean_std = np.sqrt(sum_var_p) * hash_mean
                 var_std = (

@@ -87,26 +87,6 @@ BLOCK_PROP_TIMES = list(EMPIRICAL_PROP_DELAY.values()) + [
 
 BLOCK_PROP_TIMES.sort()
 
-NUMBER_MINERS_LIST = [
-    2,
-    3,
-    4,
-    5,
-    8,
-    10,
-    15,
-    20,
-    50,
-    100,
-    150,
-    200,
-    500,
-    1000,
-    1500,
-    2000,
-    5000,
-    10000,
-]
 
 SUM_HASHES = [1e-3, 5e-3, SUM_HASH_RATE]
 SUM_HASHES.sort()

@@ -1,10 +1,10 @@
 from typing import Any
 import numpy as np
-from scipy.stats import lognorm, lomax
-from scipy.stats import expon
+from scipy.stats import lognorm, lomax, expon
 from fork_env.constants import (
     HASH_STD,
     SUM_HASH_RATE,
+    N_MINER,
 )
 from scipy.special import erf
 
@@ -50,23 +50,20 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
 
 
-def expon_dist(n_miners: int, sum_hash: float = SUM_HASH_RATE):
-    return expon(scale=sum_hash / n_miners)
+def expon_dist(hash_mean: float):
+    return expon(scale=hash_mean)
 
 
 def lognorm_dist(
-    n_miners: int,
-    sum_hash: float = SUM_HASH_RATE,
+    hash_mean: float,
     hash_std: float = HASH_STD,
 ):
-    _, _, ln_dist = gen_ln_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
+    _, _, ln_dist = gen_ln_dist(hash_mean=hash_mean, hash_std=hash_std)
     return ln_dist
 
 
-def lomax_dist(
-    n_miners: int, sum_hash: float = SUM_HASH_RATE, hash_std: float = HASH_STD
-) -> np.ndarray:
-    _, _, lmx_dist = gen_lmx_dist(hash_mean=sum_hash / n_miners, hash_std=hash_std)
+def lomax_dist(hash_mean: float, hash_std: float = HASH_STD):
+    _, _, lmx_dist = gen_lmx_dist(hash_mean=hash_mean, hash_std=hash_std)
     return lmx_dist
 
 

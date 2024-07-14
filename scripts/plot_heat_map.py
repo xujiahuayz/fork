@@ -118,6 +118,13 @@ for key, dict_items in {
             # make cbar ticker labels scientific
             cbar.formatter.set_powerlimits((0, 0))
 
+            # add a shaded region in the horizontal colorbar to indicate the 90% confidence interval
+            cbar.ax.fill_betweenx(
+                [0, 1], p5, p95, color="grey", alpha=0.8, linewidth=1, edgecolor="black"
+            )
+
+            # cbar.ax.vlines([p5, p95], ymin=0, ymax=1, colors="white", linewidth=3)
+
             # add a horizontal line in the colorbar to indicate the fork rate of 0.41
             cbar.ax.vlines(0.0041, ymin=0, ymax=1, colors="blue", linewidth=3)
             # add marker at the fork rate of 0.41

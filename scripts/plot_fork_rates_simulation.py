@@ -15,7 +15,7 @@ from fork_env.constants import (
     SUM_HASH_RATE,
     N_MINER,
 )
-
+import numpy as np
 from scripts.read_analytical_rates import rates
 
 # load rates from jsonl
@@ -34,6 +34,9 @@ df_simulation = pd.DataFrame(rates_simulation)
 plt.rcParams.update({"font.size": 17})
 
 for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
+    df_simulation["rate"] = df_simulation["time_diffs"].apply(
+        lambda x: np.mean([t < block_propagation_time for t in x])
+    )
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
 
@@ -72,7 +75,6 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
         df_distribution_simulated = df_simulation[
             (df_simulation["distribution"] == distribution)
-            & (df_simulation["block_propagation_time"] == block_propagation_time)
         ]
 
         # Plot simulated data
