@@ -48,12 +48,13 @@ with open(SIMULATED_FORK_RATES_PATH, "a") as f:
             DIST_KEYS[1]: lognorm_dist,
             DIST_KEYS[2]: lomax_dist,
         }.items():
+            print(f"n: {n}, dist: {dist}")
 
             try:
                 time_diffs = [
                     result[0]
                     for result in simulate_fork_repeat(
-                        repeat=int(2e7),
+                        repeat=int(1e7),
                         n_miners=n,
                         hash_distribution=lambda n: dist_func(hash_mean=HASH_MEAN).rvs(
                             size=n

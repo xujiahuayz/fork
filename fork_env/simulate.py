@@ -9,7 +9,9 @@ def simulate_fork(
     hash_distribution: Callable[[int], Iterable[float]],
 ) -> tuple[float, float]:
     hash_rates = hash_distribution(n_miners)
-    sorted_mining_times = [np.random.exponential(1 / miner) for miner in hash_rates]
+    sorted_mining_times = [
+        np.random.exponential(1 / one_hash) for one_hash in hash_rates
+    ]
     sorted_mining_times.sort()
 
     last_mining_time = sorted_mining_times[0]
@@ -25,17 +27,3 @@ def simulate_fork_repeat(repeat: int, **kwargs) -> list[tuple[float, float | Non
         delayed(simulate_fork)(**kwargs) for _ in range(repeat)
     )
     return results  # type: ignore
-
-
-# def get_fork_rate(repeat: int, **kwargs) -> float:
-#     """
-#     get fork rate from simulated results
-#     """
-#     results = simulate_fork_repeat(
-#         repeat=repeat,
-#         **kwargs,
-#     )
-#     return np.mean([result[0] for result in simulate_fork_repeat(
-#         repeat=repeat,
-#         **kwargs,
-#     )])
