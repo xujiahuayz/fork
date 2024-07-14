@@ -116,9 +116,16 @@ for key, dict_items in {
             # make cbar ticker labels scientific
             cbar.formatter.set_powerlimits((0, 0))
 
-            # add a shaded region in the horizontal colorbar to indicate the 90% confidence interval
+            # add a shaded region in the horizontal colorbar to indicate the 90% confidence interval, shade patter "////"
             cbar.ax.fill_betweenx(
-                [0, 1], p5, p95, color="grey", alpha=0.8, linewidth=1, edgecolor="black"
+                [0, 1],
+                p5,
+                p95,
+                color="grey",
+                alpha=0.8,
+                linewidth=1,
+                edgecolor="black",
+                hatch="////",
             )
 
             # add a horizontal line in the colorbar to indicate the fork rate of 0.41
@@ -141,7 +148,7 @@ for key, dict_items in {
 
             plt.savefig(
                 FIGURES_FOLDER
-                / f"fork_rate_heatmap_{round(block_propagation_time,4)}_{sum_hash}_{key}.pdf",
+                / f"fork_rate_heatmap_{round(block_propagation_time,4)}_{round(sum_hash,4)}_{key}.pdf",
                 bbox_inches="tight",
             )
             plt.show()

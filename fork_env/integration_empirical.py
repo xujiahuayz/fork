@@ -39,6 +39,38 @@ def fork_rate_empirical(
     )
 
 
+def fork_rate_empirical_id(
+    proptime: float,
+    sum_lambda: float,
+    n: int,
+    bis: list[int],
+) -> float:
+
+    B = np.sum(bis)
+    # independent but not identical
+    bis = np.array(bis)
+
+    factor = B / sum_lambda
+
+    @lru_cache(maxsize=None)
+    def pdelta_integrand(x: float) -> float:
+        ax = foo(x, factor)
+        cx = foo(x + proptime, factor)
+        return np.sum(
+            (1 + bis * ax)
+            * np.exp(B * (1 - cx) + bis * (cx - ax) - (n - 1) * np.log(cx))
+        ) / (factor * ax**3)
+
+    return (
+        1
+        - quad_vec(
+            pdelta_integrand,
+            0,
+            np.inf,
+        )[0]
+    )
+
+
 if __name__ == "__main__":
     bis = [
         8704,
@@ -84,3 +116,7 @@ if __name__ == "__main__":
     # bis = [4, 1]
     res = fork_rate_empirical(proptime=2, sum_lambda=0.3, n=len(bis), bis=bis)
     print(res)
+    res_id = fork_rate_empirical_id(
+        proptime=10000, sum_lambda=0.003, n=len(bis), bis=bis
+    )
+    print(res_id)

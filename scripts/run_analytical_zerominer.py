@@ -13,7 +13,7 @@ from fork_env.constants import (
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
-from fork_env.integration_empirical import fork_rate_empirical
+from fork_env.integration_empirical import fork_rate_empirical, fork_rate_empirical_id
 
 import pandas as pd
 import numpy as np
@@ -29,8 +29,13 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
         list(hash_panel_last_row["bis"]) + [0] * n_zerominers
     )
     n = len(bis_with_zero_miners)
-    if distribution == "empirical":
-        the_rate = fork_rate_empirical(
+    if distribution.startswith("empirical"):
+        for_rate_func = (
+            fork_rate_empirical_id
+            if distribution == "empirical_id"
+            else fork_rate_empirical
+        )
+        the_rate = for_rate_func(
             proptime=block_propagation_time,
             sum_lambda=SUM_HASH_RATE,
             n=n,
@@ -69,7 +74,7 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        ["empirical"] + DIST_KEYS,
+        ["empirical_id", "empirical_iid"] + DIST_KEYS,
         BLOCK_PROP_TIMES,
         [0, 10, 20, 50, 100, 150, 200, 300],
     )

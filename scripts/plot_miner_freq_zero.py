@@ -73,7 +73,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     ax.plot(
         EMPFIT_X,
         EMPFIT_Y,
-        label="empirical fit",
+        label="semi-empirical",
         color="red",
         # dashed line
         linestyle="--",
@@ -86,12 +86,12 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
         (1 - ecdf(miner_hash)).tolist(),
         color="black",
         alpha=0.2,
-        label="empirical distribution",
+        label="$\{c \cdot b_i \}$ distribution",
         step="post",
     )
 
     ax.set_ylabel("ccdf")  # we already handled the x-label with ax1
-    ax.set_xlabel("hash rate [s$^{-1}$]")
+    ax.set_xlabel("hash rate $\lambda$ [s$^{-1}$]")
     # Generate points on the x-axis:
 
     # legend top of the plot, outside of the plot, no frame, short legend handles

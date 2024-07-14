@@ -59,6 +59,8 @@ for distribution in rates["distribution"].unique():
         alpha=0.8,
         vmin=0,
         vmax=1,
+        # log scale
+        norm=plt.cm.colors.LogNorm(vmin=1.2e-4, vmax=1),
     )
     # add a think colorbar
     fig.colorbar(surf, shrink=0.5, aspect=5)

@@ -29,7 +29,7 @@ DIST_LABELS = {
     DIST_KEYS[0]: "$\\text{Exp}(r)$",
     DIST_KEYS[1]: "$\\text{LN}(\\mu, \\sigma^2)$",
     DIST_KEYS[2]: "$\\text{Lomax}(\\alpha, \\ell)$",
-    "empirical": "Semi-empirical",
+    "empirical": "semi-empirical",
 }
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
@@ -61,6 +61,11 @@ EMPIRICAL_PROP_DELAY = {
 
 BLOCK_PROP_TIMES = list(EMPIRICAL_PROP_DELAY.values()) + [
     0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.6,
+    0.8,
     1,
     2,
     3,

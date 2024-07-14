@@ -14,6 +14,7 @@ from fork_env.constants import (
     SIMULATED_FORK_RATES_PATH,
     N_MINER,
     DATA_FOLDER,
+    EMPRITICAL_FORK_RATE,
 )
 import numpy as np
 import gzip
@@ -105,7 +106,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
             df_distribution["n"],
             df_distribution["rate"],
             color=DIST_COLORS[distribution],
-            linestyle="-" if distribution == "empirical" else "--",
+            linestyle="--" if distribution == "empirical" else "-",
             linewidth=1 if distribution == "empirical" else 3,
         )
 
@@ -130,18 +131,15 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     # set ylimit
     max_rate = df[df["block_propagation_time"] == block_propagation_time]["rate"].max()
-    # plt.ylim(
-    #     0,
-    #     0.025,
-    # )
 
     # vertical line at n=19
     plt.axvline(x=N_MINER, color="black", linestyle=":")
-    # set x limit
+    # horizontal line at y=EMPRITICAL_FORK_RATE
+    plt.axhline(y=EMPRITICAL_FORK_RATE, color="black", linestyle=":")
 
     plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate")
-    # log x axis with base 2
+
     plt.xscale("log", base=2)
     plt.yscale("log", base=10)
     plt.xlim(7, 500)
