@@ -13,12 +13,13 @@ from fork_env.utils import (
     lognorm_dist,
     lomax_dist,
 )
+import gzip
 
 HASH_MEAN = SUM_HASH_RATE / N_MINER
 
 start_time = time.time()
 # open file for writing by appending
-with open(SIMULATED_FORK_RATES_PATH, "a") as f:
+with gzip.open(SIMULATED_FORK_RATES_PATH, "wt") as f:
     for n in [
         2,
         3,
@@ -35,7 +36,7 @@ with open(SIMULATED_FORK_RATES_PATH, "a") as f:
         100,
         150,
         200,
-        # 500,
+        500,
         # 1000,
         # 1500,
         # 2000,
@@ -54,7 +55,7 @@ with open(SIMULATED_FORK_RATES_PATH, "a") as f:
                 time_diffs = [
                     result[0]
                     for result in simulate_fork_repeat(
-                        repeat=int(1e7),
+                        repeat=int(2e6),
                         n_miners=n,
                         hash_distribution=lambda n: dist_func(hash_mean=HASH_MEAN).rvs(
                             size=n
@@ -71,7 +72,6 @@ with open(SIMULATED_FORK_RATES_PATH, "a") as f:
                 "n": n,
                 "time_diffs": time_diffs,
             }
-            print(this_rate)
             # write to jsonl
             f.write(json.dumps(this_rate) + "\n")
 

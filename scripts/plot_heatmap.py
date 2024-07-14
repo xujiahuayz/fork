@@ -11,7 +11,6 @@ from fork_env.constants import (
     FIGURES_FOLDER,
     SUM_HASHES,
     N_MINER,
-    HASH_STD,
 )
 from scripts.get_confidence import ps
 from fork_env.integration_lomax import fork_rate_lomax
@@ -20,10 +19,8 @@ from fork_env.integration_ln import fork_rate_ln
 with open(DATA_FOLDER / "rates_confidence.jsonl", "r") as f:
     rates_confidence = [json.loads(line) for line in f]
 
-with open(DATA_FOLDER / "rates_analytical_std_lomax.pkl", "rb") as f:
-    rates_lomax = pickle.load(f)
-with open(DATA_FOLDER / "rates_analytical_std_ln.pkl", "rb") as f:
-    rates_ln = pickle.load(f)
+with open(DATA_FOLDER / "rates_analytical_heatmap.pkl", "rb") as f:
+    rates_all = pickle.load(f)
 
 # log scale the color and x axis
 plt.rcParams.update({"font.size": 18})
@@ -35,8 +32,8 @@ x_ticks = np.logspace(
 )  # Generates 5 ticks from 0.5 to 8, logarithmically spaced
 
 for key, dict_items in {
-    "lomax": (rates_lomax, fork_rate_lomax),
-    "log_normal": (rates_ln, fork_rate_ln),
+    "lomax": fork_rate_lomax,
+    "log_normal": fork_rate_ln,
 }.items():
     df = pd.DataFrame(
         [
@@ -48,7 +45,8 @@ for key, dict_items in {
                 "std": k[4],
                 "rate": v,
             }
-            for k, v in dict_items[0]
+            for k, v in rates_all
+            if k[0] == key
         ]
     )
 
@@ -83,7 +81,7 @@ for key, dict_items in {
                 (sum([(p * sum_hash) ** 2 for p in ps]) - N_MINER * this_mean**2)
                 / (N_MINER - 1)
             )
-            the_fork_rate = dict_items[1](
+            the_fork_rate = dict_items(
                 proptime=block_propagation_time,
                 hash_mean=this_mean,
                 n=N_MINER,
@@ -122,8 +120,6 @@ for key, dict_items in {
             cbar.ax.fill_betweenx(
                 [0, 1], p5, p95, color="grey", alpha=0.8, linewidth=1, edgecolor="black"
             )
-
-            # cbar.ax.vlines([p5, p95], ymin=0, ymax=1, colors="white", linewidth=3)
 
             # add a horizontal line in the colorbar to indicate the fork rate of 0.41
             cbar.ax.vlines(0.0041, ymin=0, ymax=1, colors="blue", linewidth=3)

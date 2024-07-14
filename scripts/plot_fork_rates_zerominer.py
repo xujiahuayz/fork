@@ -1,4 +1,3 @@
-import numpy as np
 import pickle
 
 import pandas as pd
@@ -6,8 +5,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER, EMPIRICAL_PROP_DELAY
-
-# from scripts.read_analytical_rates import rates
 
 with open(DATA_FOLDER / "analytical_zerominers.pkl", "rb") as f:
     rates = pickle.load(f)

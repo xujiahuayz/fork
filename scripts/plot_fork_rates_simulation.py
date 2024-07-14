@@ -1,4 +1,5 @@
 import json
+import pickle
 
 import matplotlib.lines as mlines
 import pandas as pd
@@ -10,20 +11,25 @@ from fork_env.constants import (
     EMPIRICAL_PROP_DELAY,
     DIST_COLORS,
     DIST_LABELS,
-    DIST_KEYS,
     SIMULATED_FORK_RATES_PATH,
-    SUM_HASH_RATE,
     N_MINER,
+    DATA_FOLDER,
 )
 import numpy as np
-from scripts.read_analytical_rates import rates
+import gzip
 
+dist_keys = list(DIST_COLORS.keys())
 # load rates from jsonl
-with open(SIMULATED_FORK_RATES_PATH, "r") as f:
+with gzip.open(SIMULATED_FORK_RATES_PATH, "rt") as f:
     rates_simulation = [json.loads(line) for line in f]
 
-
-rates = rates[(rates["n"] < 500) & (rates["sum_hash"] == SUM_HASH_RATE)]
+rates = pd.DataFrame(
+    list(w[0]) + [w[1]]
+    for w in pickle.load(open(DATA_FOLDER / "rates_analytical_line.pkl", "rb"))
+)
+rates.columns = ["distribution", "block_propagation_time", "n", "rate"]
+# sort by n
+rates = rates.sort_values(by="n")
 
 df = pd.DataFrame(rates)
 
@@ -33,59 +39,61 @@ df_simulation = pd.DataFrame(rates_simulation)
 # increase font size of plots
 plt.rcParams.update({"font.size": 17})
 
+simu_anal = [
+    mlines.Line2D(
+        [],
+        [],
+        color="k",
+        alpha=1,
+        linewidth=5,
+        linestyle="--",
+        label="analytical $C(\Delta_0)$",
+    ),
+    mlines.Line2D(
+        [],
+        [],
+        color="k",
+        alpha=0.2,
+        linewidth=10,
+        label="simulated $\\frac{n_{fork}}{n}$",
+    ),
+]
+dist_handle = [
+    mlines.Line2D(
+        [],
+        [],
+        color=DIST_COLORS[distribution],
+        linestyle="-" if distribution == "empirical" else "--",
+        linewidth=1 if distribution == "empirical" else 3,
+        label=DIST_LABELS[distribution],
+    )
+    for distribution in dist_keys
+]
+
 for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
     df_simulation["rate"] = df_simulation["time_diffs"].apply(
-        lambda x: np.mean([t < block_propagation_time for t in x])
+        lambda x: np.mean(np.array(x) < block_propagation_time)
     )
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
 
     plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
 
-    simu_anal = [
-        mlines.Line2D(
-            [],
-            [],
-            color="k",
-            alpha=1,
-            linewidth=5,
-            linestyle="--",
-            label="analytical $C(\Delta_0)$",
-        ),
-        mlines.Line2D(
-            [],
-            [],
-            color="k",
-            alpha=0.2,
-            linewidth=10,
-            label="simulated $\\frac{n_{fork}}{n}$",
-        ),
-    ]
-    dist_handle = [
-        mlines.Line2D(
-            [],
-            [],
-            color=DIST_COLORS[distribution],
-            linewidth=5,
-            label=DIST_LABELS[distribution],
-        )
-        for distribution in DIST_KEYS
-    ]
-    for distribution in DIST_KEYS:
+    for distribution in dist_keys + ["empirical"]:
 
         df_distribution_simulated = df_simulation[
             (df_simulation["distribution"] == distribution)
         ]
 
-        # Plot simulated data
-        plt.plot(
-            df_distribution_simulated["n"],
-            df_distribution_simulated["rate"],
-            label=DIST_LABELS[distribution],
-            color=DIST_COLORS[distribution],
-            alpha=0.2,  # Making simulated data slightly transparent
-            linewidth=10,
-        )
+        if distribution != "empirical":
+            # Plot simulated data
+            plt.plot(
+                df_distribution_simulated["n"],
+                df_distribution_simulated["rate"],
+                color=DIST_COLORS[distribution],
+                alpha=0.2,  # Making simulated data slightly transparent
+                linewidth=10,
+            )
 
         df_distribution = df[
             (df["distribution"] == distribution)
@@ -97,8 +105,8 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
             df_distribution["n"],
             df_distribution["rate"],
             color=DIST_COLORS[distribution],
-            linestyle="--",
-            linewidth=5,
+            linestyle="-" if distribution == "empirical" else "--",
+            linewidth=1 if distribution == "empirical" else 3,
         )
 
     # Create legends without box border outside the plot with shorter legend handles
@@ -129,11 +137,15 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
 
     # vertical line at n=19
     plt.axvline(x=N_MINER, color="black", linestyle=":")
+    # set x limit
 
     plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate")
     # log x axis with base 2
     plt.xscale("log", base=2)
+    plt.yscale("log", base=10)
+    plt.xlim(7, 500)
+    plt.ylim(0.0001, 1)
 
     # make sure the plot is not cut off
     plt.tight_layout()

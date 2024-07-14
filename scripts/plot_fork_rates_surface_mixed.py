@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 
 from fork_env.constants import DATA_FOLDER, FIGURES_FOLDER
 
-# from scripts.read_analytical_rates import rates
-
 with open(DATA_FOLDER / "analytical_zerominers_mixed.pkl", "rb") as f:
     rates = pickle.load(f)
 

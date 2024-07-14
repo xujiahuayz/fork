@@ -12,22 +12,27 @@ from fork_env.constants import (
     HASH_STD,
     N_MINER,
 )
+from fork_env.integration_ln import fork_rate_ln
 from fork_env.integration_lomax import fork_rate_lomax
 
-rates_c_dict = dict()
+dist_dict = {
+    "lomax": fork_rate_lomax,
+    "log_normal": fork_rate_ln,
+}
 
 
 def compute_rate(args) -> tuple[tuple, float]:
     distribution, block_propagation_time, n, sumhash, std = args
     try:
-        the_rate = fork_rate_lomax(
+        the_rate = dist_dict[distribution](
             proptime=block_propagation_time,
             sum_lambda=sumhash,
             n=n,
             std=std,
         )
     except Exception as e:
-        print(f"Error in {args}: {e}")
+        # don't care -- too many prints otherwise
+        # print(f"Error in {args}: {e}")
         the_rate = np.nan
     print(args, the_rate)
     return args, the_rate
@@ -35,11 +40,9 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        ["lomax"],
+        ["log_normal", "lomax"],
         list(EMPIRICAL_PROP_DELAY.values()),
         [
-            5,
-            6,
             7,
             8,
             9,
@@ -73,12 +76,10 @@ if __name__ == "__main__":
             180,
             200,
             300,
-            400,
-            500,
         ]
         + [N_MINER],
         SUM_HASHES,
-        list(np.logspace(-5, -2, num=31, base=10)) + [HASH_STD],
+        list(np.logspace(-4.5, -2.3, num=30, base=10)) + [HASH_STD],
     )
 
     start_time = time.time()
@@ -91,5 +92,5 @@ if __name__ == "__main__":
     end_time = time.time()
     print(f"Computation completed in {end_time - start_time} seconds.")
 
-    with open(DATA_FOLDER / "rates_analytical_std_lomax.pkl", "wb") as f:
+    with open(DATA_FOLDER / "rates_analytical_heatmap.pkl", "wb") as f:
         pickle.dump(rates, f)
