@@ -46,8 +46,8 @@ simu_anal = [
         [],
         color="k",
         alpha=1,
-        linewidth=5,
-        linestyle="--",
+        linewidth=3,
+        # linestyle="--",
         label="analytical $C(\Delta_0)$",
     ),
     mlines.Line2D(
@@ -64,14 +64,14 @@ dist_handle = [
         [],
         [],
         color=DIST_COLORS[distribution],
-        linestyle="-" if distribution == "empirical" else "--",
+        linestyle="--" if distribution == "empirical" else "-",
         linewidth=1 if distribution == "empirical" else 3,
         label=DIST_LABELS[distribution],
     )
     for distribution in dist_keys
 ]
 
-for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
+for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
     df_simulation["rate"] = df_simulation["time_diffs"].apply(
         lambda x: np.mean(np.array(x) < block_propagation_time)
     )
@@ -116,7 +116,7 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
         frameon=False,
         loc="upper left",
         bbox_to_anchor=(1, 1),
-        handlelength=0.5,
+        handlelength=0.8,
     )
 
     plt.gca().add_artist(first_legend)
@@ -126,16 +126,19 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
         frameon=False,
         loc="lower left",
         bbox_to_anchor=(1, 0),
-        handlelength=0.5,
+        handlelength=0.8,
     )
 
     # set ylimit
     max_rate = df[df["block_propagation_time"] == block_propagation_time]["rate"].max()
 
-    # vertical line at n=19
     plt.axvline(x=N_MINER, color="black", linestyle=":")
+    # write N_MINER next to the vertical line
+    plt.text(N_MINER + 1, 0.00012, f"$N={N_MINER}$")
     # horizontal line at y=EMPRITICAL_FORK_RATE
     plt.axhline(y=EMPRITICAL_FORK_RATE, color="black", linestyle=":")
+    # write empirical fork rate next to the horizontal line
+    plt.text(2**8 * 0.5, 0.002, "0.41%")
 
     plt.xlabel("number of miners $N$")
     plt.ylabel("fork rate")
@@ -144,6 +147,8 @@ for block_propagation_time in EMPIRICAL_PROP_DELAY.values():
     plt.yscale("log", base=10)
     plt.xlim(7, 500)
     plt.ylim(0.0001, 1)
+    # title
+    plt.title(f"$\Delta_0 = {block_propagation_time}$ [s]")
 
     # make sure the plot is not cut off
     plt.tight_layout()
