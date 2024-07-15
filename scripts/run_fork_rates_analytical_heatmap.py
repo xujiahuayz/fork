@@ -11,6 +11,7 @@ from fork_env.constants import (
     DATA_FOLDER,
     HASH_STD,
     N_MINER,
+    SUM_HASH_RATE,
 )
 from fork_env.integration_ln import fork_rate_ln
 from fork_env.integration_lomax import fork_rate_lomax
@@ -41,7 +42,7 @@ def compute_rate(args) -> tuple[tuple, float]:
 if __name__ == "__main__":
     combinations = product(
         ["log_normal", "lomax"],
-        list(EMPIRICAL_PROP_DELAY.values()),
+        list(EMPIRICAL_PROP_DELAY.values()) + [8.7],
         [
             7,
             8,
@@ -78,7 +79,8 @@ if __name__ == "__main__":
             300,
         ]
         + [N_MINER],
-        SUM_HASHES,
+        [SUM_HASH_RATE],
+        # SUM_HASHES,
         list(np.logspace(-4.5, -2.3, num=30, base=10)) + [HASH_STD],
     )
 

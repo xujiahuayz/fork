@@ -11,14 +11,14 @@ from fork_env.constants import (
     DATA_FOLDER,
     EMPIRICAL_PROP_DELAY,
     N_MINER,
-    SUM_HASHES,
+    # SUM_HASHES,
+    SUM_HASH_RATE,
     hash_panel_last_row,
     BLOCK_WINDOW,
 )
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
 import numpy as np
-from scipy.stats import truncnorm
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             "log_normal": fork_rate_ln,
             "lomax": fork_rate_lomax,
         }.items():
-            for sumhash in SUM_HASHES:
+            for sumhash in [SUM_HASH_RATE]:
                 hash_mean = sumhash / N_MINER
                 hash_var = (
                     sum([(p * sumhash) ** 2 for p in ps]) - sumhash**2 / N_MINER
@@ -69,12 +69,12 @@ if __name__ == "__main__":
                     np.sqrt(2 / (N_MINER * (N_MINER - 1)) * sum_var_p2) * hash_mean
                 )
 
-                for delta in list(EMPIRICAL_PROP_DELAY.values()):
+                for delta in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
                     results = Parallel(n_jobs=-1)(
                         delayed(fork_temp)(
                             hash_mean, mean_std, hash_var, var_std, delta, dist
                         )
-                        for _ in range(int(1e3))
+                        for _ in range(int(1e2))
                     )
                     this_rate = {
                         "dist": dist_key,

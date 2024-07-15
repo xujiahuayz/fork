@@ -20,17 +20,17 @@ for sum_hash in SUM_HASHES:
     df_iid = df[df["iid"] == True]
     df_not_iid = df[df["iid"] == False]
     plt.plot(
+        df_not_iid["block_propagation_time"],
+        df_not_iid["rate"],
+        label="independent",
+        color="red",
+    )
+    plt.plot(
         df_iid["block_propagation_time"],
         df_iid["rate"],
         label="i.i.d.",
         color="red",
         linestyle="--",
-    )
-    plt.plot(
-        df_not_iid["block_propagation_time"],
-        df_not_iid["rate"],
-        label="independent",
-        color="red",
     )
     plt.xlabel("block propagation time $\\Delta_0$ [s]")
     plt.ylabel("fork rate $C(\\Delta_0)$")
