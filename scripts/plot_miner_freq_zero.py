@@ -86,7 +86,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
         (1 - ecdf(miner_hash)).tolist(),
         color="black",
         alpha=0.2,
-        label="$\{c \cdot b_i \}$ distribution",
+        label="$\{\\frac{b_i}{c}\}$ distribution",
         step="post",
     )
 
@@ -97,11 +97,11 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     # legend top of the plot, outside of the plot, no frame, short legend handles
     fig.legend(
         loc="upper right",
-        bbox_to_anchor=(0.95, 1.3),
+        bbox_to_anchor=(0.92, 1.3),
         frameon=False,
         ncol=2,
-        fontsize="small",
-        handlelength=0.5,
+        fontsize=9,
+        handlelength=1,
     )
 
     # fix x-axis and y-axis
