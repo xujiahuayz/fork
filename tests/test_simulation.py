@@ -15,7 +15,6 @@ def test_simulate_fork():
         hash_distribution=lambda n_miners: np.random.exponential(
             scale=SUM_HASH_RATE / n_miners, size=n_miners
         ),
-        block_propagation_time=0.1,
     )
 
     # calculate the mean of the last mining time

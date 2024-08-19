@@ -35,6 +35,24 @@ for index, row in hash_panel.iterrows():
             color=DIST_COLORS[key],
         )
 
+    # TODO: to clean up below
+
+    from scripts.check import alpha, ell, scaling_c
+    from scipy.integrate import quad_vec
+
+    ax.plot(
+        x,
+        [
+            quad_vec(
+                lambda xx: scaling_c * xx ** (-alpha) * np.exp(-ell * xx), xx, np.inf
+            )[0]
+            for xx in x
+        ],
+        label="truncated power law",
+        color="black",
+        linewidth=2,
+    )
+
     emp_x = bi_hash.sort_values().tolist()
     ecdf = sm.distributions.ECDF(emp_x, side="left")
     empfit_x = [0] + emp_x + [row["total_hash_rate"] / 3, row["total_hash_rate"] / 2]
