@@ -1,12 +1,37 @@
-from typing import Any
+from typing import Any, Iterable
 import numpy as np
-from scipy.stats import lognorm, lomax, expon
+from scipy.stats import lognorm, lomax, expon, rv_continuous
 from fork_env.constants import (
     HASH_STD,
     SUM_HASH_RATE,
     N_MINER,
 )
-from scipy.special import erf
+from scipy.special import erf, gamma, expn
+
+
+# create a new distribution class
+class truncpl(rv_continuous):
+
+    def __init__(self, alpha: float, ell: float, scaling_c: float, *args, **kwargs):
+        super().__init__(a=0, b=np.inf, *args, **kwargs)
+        self.alpha = alpha
+        self.ell = ell
+        self.scaling_c = scaling_c
+
+    def _pdf(self, x: float) -> float:
+        return self.scaling_c * x ** (-self.alpha) * np.exp(-self.ell * x)
+
+    # def pdf(self, x: float | Interable[float]) -> float | Iterable[float]:
+
+    # def _sf(self, x):
+    #     return (
+    #         self.scaling_c
+    #         * x ** (-self.alpha)
+    #         * (
+    #             x * expn(self.alpha, self.ell * x)
+    #             + (self.ell * x) ** self.alpha * gamma(1 - self.alpha) / self.ell
+    #         )
+    #     )
 
 
 def calc_ex_rate(hash_mean: float) -> float:
@@ -48,6 +73,23 @@ def calc_lmx_params(hash_mean: float, hash_std: float) -> tuple[float, float]:
 def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     lomax_shape, lmx_scale = calc_lmx_params(hash_mean, hash_std)
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
+
+
+def calc_truncpl_params(
+    hash_mean: float, hash_std: float
+) -> tuple[float, float, float]:
+    alpha = 1 - (hash_mean / hash_std) ** 2
+    ell = gamma(2 - alpha) / gamma(1 - alpha) / hash_mean
+
+    scaling_c = ell ** (1 - alpha) / gamma(1 - alpha)
+    return alpha, ell, scaling_c
+
+
+def gen_truncpl_dist(
+    hash_mean: float, hash_std: float
+) -> tuple[float, float, float, Any]:
+    alpha, ell, scaling_c = calc_truncpl_params(hash_mean, hash_std)
+    return (alpha, ell, scaling_c, truncpl(alpha=alpha, ell=ell, scaling_c=scaling_c))
 
 
 def expon_dist(hash_mean: float):

@@ -7,10 +7,10 @@ from scipy.stats import expon
 from fork_env.constants import (
     CLUSTER_PATH,
     DATA_FOLDER,
-    DIST_KEYS,
+    # DIST_KEYS,
 )
-from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist
-from fork_env.constants import BLOCK_WINDOW
+from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
+from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
 
@@ -77,13 +77,11 @@ block_time_df["miner_addresses"] = btc_tx_value_series
 block_time_df["miner_cluster"] = cluster_miner
 
 
-first_start_block = 530_000
-
 hash_panel = []
 
 
 for start_block in range(
-    first_start_block,
+    FIRST_START_BLOCK,
     max(btc_tx_value_series.index) - BLOCK_WINDOW + 1,
     BLOCK_WINDOW,
 ):
@@ -116,7 +114,14 @@ for start_block in range(
     lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
 
     # fit a lomax distribution  using moments
-    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
+    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(
+        hash_mean=hash_mean, hash_std=hash_std
+    )
+
+    # # fit a truncated power law distribution using moments
+    truncpl_alpha, truncpl_ell, truncpl_scaling_c, truncpl_dist = gen_truncpl_dist(
+        hash_mean=hash_mean, hash_std=hash_std
+    )
 
     # add a row to hash_panel
     row = {
@@ -131,21 +136,35 @@ for start_block in range(
         "hash_std": hash_std,
         "max_share": max_share * 100,
         "exp_rate": expon_rate,
-        "log_normal_loc": lognorm_loc,
-        "log_normal_sigma": lognorm_sigma,
+        # "log_normal_loc": lognorm_loc,
+        # "log_normal_sigma": lognorm_sigma,
         "lomax_c": lomax_shape,
         "lomax_scale": lomax_scale,
+        "truncpl_alpha": truncpl_alpha,
+        "truncpl_ell": truncpl_ell,
+        "truncpl_scaling_c": truncpl_scaling_c,
         "miner_hash": miner_hash,
         "bis": list(miner_hash_share_count.sort_values()),
         "distributions": {
-            DIST_KEYS[0]: expon_dist,
-            DIST_KEYS[1]: lognorm_dist,
-            DIST_KEYS[2]: lomax_dist,
+            "exp": expon_dist,
+            # DIST_KEYS[1]: lognorm_dist,
+            "lomax": lomax_dist,
+            "trunc_power_law": truncpl_dist,
         },
     }
     hash_panel.append(row)
 
 
-hash_panel = pd.DataFrame(hash_panel)
-# save to pickle
-hash_panel.to_pickle(DATA_FOLDER / "hash_panel.pkl")
+# hash_panel = pd.DataFrame(hash_panel)
+# # save to pickle
+# hash_panel.to_pickle(DATA_FOLDER / "hash_panel.pkl")
+
+
+# hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
+# # get the last row of hash panel
+# hash_panel_last_row = hash_panel.iloc[-1]
+
+# # get the last number of total hash rate
+# SUM_HASH_RATE = hash_panel_last_row["total_hash_rate"]
+# N_MINER = hash_panel_last_row["num_miners"]
+# HASH_STD = hash_panel_last_row["hash_std"]

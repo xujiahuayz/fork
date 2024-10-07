@@ -19,3 +19,5 @@ x = np.linspace(0, 2 * hash_mean, 1000)
 y = scaling_c * x ** (-alpha) * np.exp(-ell * x)
 
 plt.plot(x, y)
+
+# https://en.wikipedia.org/wiki/Power_law#Power_law_with_exponential_cutoff

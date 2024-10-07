@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 from fork_env.constants import (
     DATA_FOLDER,
-    DIST_COLORS,
+    # DIST_COLORS,
+    DIST_DICT,
     DIST_KEYS,
-    DIST_LABELS,
+    # DIST_LABELS,
     FIGURES_FOLDER,
 )
 from fork_env.utils import ccdf_p
@@ -28,49 +29,52 @@ for index, row in hash_panel.iterrows():
     bi_hash = row["miner_hash"]
 
     for key in DIST_KEYS:
-        ax.plot(
-            x,
-            1 - row["distributions"][key].cdf(x),
-            label=DIST_LABELS[key],
-            color=DIST_COLORS[key],
-        )
-
-    # TODO: to clean up below
-
-    from scripts.check import alpha, ell, scaling_c
-    from scipy.integrate import quad_vec
-
-    ax.plot(
-        x,
-        [
-            quad_vec(
-                lambda xx: scaling_c * xx ** (-alpha) * np.exp(-ell * xx), xx, np.inf
-            )[0]
-            for xx in x
-        ],
-        label="truncated power law",
-        color="black",
-        linewidth=2,
-    )
-
-    emp_x = bi_hash.sort_values().tolist()
-    ecdf = sm.distributions.ECDF(emp_x, side="left")
-    empfit_x = [0] + emp_x + [row["total_hash_rate"] / 3, row["total_hash_rate"] / 2]
-    bis = row["bis"]
-    ax.plot(
-        empfit_x,
-        [
-            ccdf_p(
-                lbda=lbda,
-                bis=bis,
-                factor=sum(bis) / row["total_hash_rate"],
+        if key == "empirical":
+            emp_x = bi_hash.sort_values().tolist()
+            ecdf = sm.distributions.ECDF(emp_x, side="left")
+            empfit_x = (
+                [0] + emp_x + [row["total_hash_rate"] / 3, row["total_hash_rate"] / 2]
             )
-            for lbda in empfit_x
-        ],
-        label="semi-empirical",
-        color="red",
-        linestyle="--",
-    )
+            bis = row["bis"]
+            ax.plot(
+                empfit_x,
+                [
+                    ccdf_p(
+                        lbda=lbda,
+                        bis=bis,
+                        factor=sum(bis) / row["total_hash_rate"],
+                    )
+                    for lbda in empfit_x
+                ],
+                label=DIST_DICT[key]["label"],
+                color=DIST_DICT[key]["color"],
+                linestyle="--",
+            )
+        else:
+            ax.plot(
+                x,
+                row["distributions"][key].sf(x),
+                label=DIST_DICT[key]["label"],
+                color=DIST_DICT[key]["color"],
+            )
+
+    # # TODO: to clean up below
+
+    # from scripts.check import alpha, ell, scaling_c
+    # from scipy.integrate import quad_vec
+
+    # ax.plot(
+    #     x,
+    #     [
+    #         quad_vec(
+    #             lambda xx: scaling_c * xx ** (-alpha) * np.exp(-ell * xx), xx, np.inf
+    #         )[0]
+    #         for xx in x
+    #     ],
+    #     label="truncated power law",
+    #     color="black",
+    #     linewidth=2,
+    # )
 
     # plot empirical ccdf as volume plot with steps
     ax.fill_between(

@@ -72,3 +72,11 @@ cd data
 wget https://raw.githubusercontent.com/blockchain/Blockchain-Known-Pools/master/pools.json
 curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/miner/list/all" > miner_rank.json
 ```
+
+## Run scripts
+
+### get frequency fitting parameters
+
+```zsh
+python scripts/get_miner_freq.py
+```
