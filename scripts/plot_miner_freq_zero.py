@@ -3,15 +3,14 @@ from matplotlib import pyplot as plt
 import statsmodels.api as sm  # recommended import according to the docs
 from fork_env.constants import (
     DATA_FOLDER,
-    DIST_COLORS,
-    DIST_KEYS,
-    DIST_LABELS,
+    # DIST_KEYS,
     FIGURES_FOLDER,
     SUM_HASH_RATE,
     BLOCK_WINDOW,
+    DIST_DICT,
 )
 
-from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist
+from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
 import pandas as pd
 import numpy as np
 
@@ -42,11 +41,15 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     expon_rate = calc_ex_rate(hash_mean)
     expon_dist = expon(scale=hash_mean)
 
-    # fit a lognormal distribution to miner_hash using moments
-    lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
+    # # fit a lognormal distribution to miner_hash using moments
+    # lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
 
     # fit a lomax distribution  using moments
     lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
+
+    truncpl_alpha, truncpl_ell, truncpl_scaling_c, truncpl_dist = gen_truncpl_dist(
+        hash_mean=hash_mean, hash_std=hash_std
+    )
 
     EMPFIT_Y = [
         ccdf_p(
@@ -60,12 +63,25 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     # Create a figure and a set of subplots
     fig, ax = plt.subplots(figsize=(3, 2))
 
-    for key, dist in zip(DIST_KEYS, [expon_dist, lognorm_dist, lomax_dist]):
+    for key, dist in zip(
+        [
+            "exp",
+            # 'lognorm',
+            "lomax",
+            "trunc_power_law",
+        ],
+        [
+            expon_dist,
+            #  lognorm_dist,
+            lomax_dist,
+            truncpl_dist,
+        ],
+    ):
         ax.plot(
             x,
-            1 - dist.cdf(x),
-            label=DIST_LABELS[key],
-            color=DIST_COLORS[key],
+            dist.sf(x),
+            label=DIST_DICT[key]["label"],
+            color=DIST_DICT[key]["color"],
         )
 
     miner_hash.sort()
@@ -74,7 +90,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
         EMPFIT_X,
         EMPFIT_Y,
         label="semi-empirical",
-        color="red",
+        color="black",
         # dashed line
         linestyle="--",
     )
@@ -105,7 +121,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     )
 
     # fix x-axis and y-axis
-    ax.set_xlim(4e-8, 6e-4)
+    ax.set_xlim(6e-8, 6e-4)
     ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis

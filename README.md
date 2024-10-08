@@ -80,3 +80,21 @@ curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/m
 ```zsh
 python scripts/get_miner_freq.py
 ```
+
+### tabulate the parameter values
+
+```zsh
+python scripts/tabulate_hash.py
+```
+
+### plot ccdf
+
+```zsh
+python scripts/plot_miner_freq.py
+```
+
+### plot ccdf with zero miners
+
+```zsh
+python scripts/plot_miner_freq_zero.py
+```

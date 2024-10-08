@@ -4,10 +4,8 @@ import numpy as np
 import pandas as pd
 from fork_env.constants import (
     DATA_FOLDER,
-    # DIST_COLORS,
     DIST_DICT,
     DIST_KEYS,
-    # DIST_LABELS,
     FIGURES_FOLDER,
 )
 from fork_env.utils import ccdf_p

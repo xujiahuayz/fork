@@ -11,6 +11,7 @@ from scipy.special import erf, gamma, expn
 
 # create a new distribution class
 class truncpl(rv_continuous):
+    # https://en.wikipedia.org/wiki/Power_law#Power_law_with_exponential_cutoff
 
     def __init__(self, alpha: float, ell: float, scaling_c: float, *args, **kwargs):
         super().__init__(a=0, b=np.inf, *args, **kwargs)
@@ -78,6 +79,8 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
 def calc_truncpl_params(
     hash_mean: float, hash_std: float
 ) -> tuple[float, float, float]:
+    # parameter fitting using MoM - check mathematica
+
     alpha = 1 - (hash_mean / hash_std) ** 2
     ell = gamma(2 - alpha) / gamma(1 - alpha) / hash_mean
 
@@ -107,6 +110,11 @@ def lognorm_dist(
 def lomax_dist(hash_mean: float, hash_std: float = HASH_STD):
     _, _, lmx_dist = gen_lmx_dist(hash_mean=hash_mean, hash_std=hash_std)
     return lmx_dist
+
+
+def truncpl_dist(hash_mean: float, hash_std: float = HASH_STD):
+    _, _, _, tp_dist = gen_truncpl_dist(hash_mean=hash_mean, hash_std=hash_std)
+    return tp_dist
 
 
 def ccdf_p(lbda: float, bis: list[int], factor: float) -> float:
