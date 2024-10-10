@@ -81,10 +81,12 @@ def calc_truncpl_params(
 ) -> tuple[float, float, float]:
     # parameter fitting using MoM - check mathematica
 
-    alpha = 1 - (hash_mean / hash_std) ** 2
-    ell = gamma(2 - alpha) / gamma(1 - alpha) / hash_mean
+    one_minus_alpha = (hash_mean / hash_std) ** 2
+    alpha = 1 - one_minus_alpha
+    # ell = gamma(2 - alpha) / gamma(1 - alpha) / hash_mean
+    ell = hash_mean / hash_std**2
 
-    scaling_c = ell ** (1 - alpha) / gamma(1 - alpha)
+    scaling_c = ell**one_minus_alpha / gamma(one_minus_alpha)
     return alpha, ell, scaling_c
 
 

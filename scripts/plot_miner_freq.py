@@ -99,7 +99,7 @@ for index, row in hash_panel.iterrows():
     )
 
     # fix x-axis and y-axis
-    ax.set_xlim(4e-8, 6e-4)
+    ax.set_xlim(6e-8, 6e-4)
     ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis

@@ -70,6 +70,7 @@ mkdir data
 ```
 cd data
 wget https://raw.githubusercontent.com/blockchain/Blockchain-Known-Pools/master/pools.json
+wget https://api.blockchain.info/charts/difficulty?timespan=all
 curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/miner/list/all" > miner_rank.json
 ```
 
@@ -79,6 +80,12 @@ curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/m
 
 ```zsh
 python scripts/get_miner_freq.py
+```
+
+### build the hash panel data table
+
+```zsh
+python scripts/build_hash_panel.py
 ```
 
 ### tabulate the parameter values
@@ -98,3 +105,5 @@ python scripts/plot_miner_freq.py
 ```zsh
 python scripts/plot_miner_freq_zero.py
 ```
+
+<!-- https://api.blockchain.info/charts/difficulty?timespan=all -->

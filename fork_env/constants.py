@@ -16,7 +16,7 @@ SIMULATED_FORK_RATES_EMP_DIST = DATA_FOLDER / "rates_simulated_emp_dist.jsonl"
 
 EMPRITICAL_FORK_RATE = 0.0041
 BLOCK_WINDOW = 20_000
-FIRST_START_BLOCK = 500_000
+FIRST_START_BLOCK = 100_000  # 500_000
 
 
 # DIST_KEYS = [
@@ -31,16 +31,16 @@ DIST_DICT = {
         "label": "$\\text{Exp}(r)$",
         "color": "blue",
     },
-    # "log_normal": {
-    #     "label": "$\\text{LN}(\\mu, \\sigma^2)$",
-    #     "color": "purple",
-    # },
-    "lomax": {
-        "label": "$\\text{Lomax}(\\alpha, \\ell)$",
-        "color": "green",
+    "log_normal": {
+        "label": "$\\text{LN}(\\mu, \\sigma^2)$",
+        "color": "orange",
     },
+    # "lomax": {
+    #     "label": "$\\text{Lomax}(c, \\ell)$",
+    #     "color": "green",
+    # },
     "trunc_power_law": {
-        "label": "truncated power law",
+        "label": "$\\text{TPL}(\\alpha, \\beta)$",
         "color": "red",
     },
     "empirical": {
@@ -51,19 +51,6 @@ DIST_DICT = {
 
 DIST_KEYS = list(DIST_DICT.keys())
 
-# DIST_COLORS = {
-#     DIST_KEYS[0]: "blue",
-#     DIST_KEYS[1]: "orange",
-#     DIST_KEYS[2]: "green",
-#     "empirical": "red",
-# }
-
-# DIST_LABELS = {
-#     DIST_KEYS[0]: "$\\text{Exp}(r)$",
-#     DIST_KEYS[1]: "$\\text{LN}(\\mu, \\sigma^2)$",
-#     DIST_KEYS[2]: "$\\text{Lomax}(\\alpha, \\ell)$",
-#     "empirical": "semi-empirical",
-# }
 
 # hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 # # get the last row of hash panel

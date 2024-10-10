@@ -2,15 +2,16 @@ import json
 import pickle
 
 import pandas as pd
-from scipy.stats import expon
+
+# from scipy.stats import expon
 
 from fork_env.constants import (
     CLUSTER_PATH,
     DATA_FOLDER,
     # DIST_KEYS,
 )
-from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
-from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
+
+# from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
 
@@ -76,95 +77,5 @@ block_time_df = (
 block_time_df["miner_addresses"] = btc_tx_value_series
 block_time_df["miner_cluster"] = cluster_miner
 
-
-hash_panel = []
-
-
-for start_block in range(
-    FIRST_START_BLOCK,
-    max(btc_tx_value_series.index) - BLOCK_WINDOW + 1,
-    BLOCK_WINDOW,
-):
-    end_block = start_block + BLOCK_WINDOW
-
-    df_in_scope = block_time_df.loc[start_block:end_block]
-    block_times = df_in_scope["block_timestamp"].to_list()
-    # time difference between the first and last block in seconds
-    start_time = block_times[0]
-    end_time = block_times[-1]
-    # use miliseconds for time difference
-    average_block_time = (end_time - start_time).total_seconds() / BLOCK_WINDOW
-    total_hash_rate = 1 / average_block_time
-    miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
-    miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
-
-    max_share = miner_hash_share.max()
-    min_share = miner_hash_share.min()
-
-    miner_hash = miner_hash_share * total_hash_rate
-
-    num_miners = len(miner_hash)
-    hash_mean = miner_hash.mean()
-    hash_std = miner_hash.std(ddof=0)
-
-    expon_rate = calc_ex_rate(hash_mean)
-    expon_dist = expon(scale=hash_mean)
-
-    # fit a lognormal distribution to miner_hash using moments
-    lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
-
-    # fit a lomax distribution  using moments
-    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(
-        hash_mean=hash_mean, hash_std=hash_std
-    )
-
-    # # fit a truncated power law distribution using moments
-    truncpl_alpha, truncpl_ell, truncpl_scaling_c, truncpl_dist = gen_truncpl_dist(
-        hash_mean=hash_mean, hash_std=hash_std
-    )
-
-    # add a row to hash_panel
-    row = {
-        "start_block": start_block,
-        "end_block": end_block,
-        "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "average_block_time": average_block_time,
-        "total_hash_rate": total_hash_rate,
-        "num_miners": num_miners,
-        "hash_mean": hash_mean,
-        "hash_std": hash_std,
-        "max_share": max_share * 100,
-        "exp_rate": expon_rate,
-        # "log_normal_loc": lognorm_loc,
-        # "log_normal_sigma": lognorm_sigma,
-        "lomax_c": lomax_shape,
-        "lomax_scale": lomax_scale,
-        "truncpl_alpha": truncpl_alpha,
-        "truncpl_ell": truncpl_ell,
-        "truncpl_scaling_c": truncpl_scaling_c,
-        "miner_hash": miner_hash,
-        "bis": list(miner_hash_share_count.sort_values()),
-        "distributions": {
-            "exp": expon_dist,
-            # DIST_KEYS[1]: lognorm_dist,
-            "lomax": lomax_dist,
-            "trunc_power_law": truncpl_dist,
-        },
-    }
-    hash_panel.append(row)
-
-
-# hash_panel = pd.DataFrame(hash_panel)
-# # save to pickle
-# hash_panel.to_pickle(DATA_FOLDER / "hash_panel.pkl")
-
-
-# hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
-# # get the last row of hash panel
-# hash_panel_last_row = hash_panel.iloc[-1]
-
-# # get the last number of total hash rate
-# SUM_HASH_RATE = hash_panel_last_row["total_hash_rate"]
-# N_MINER = hash_panel_last_row["num_miners"]
-# HASH_STD = hash_panel_last_row["hash_std"]
+# pickle the block_time_df
+block_time_df.to_pickle(DATA_FOLDER / "block_time_df.pkl")
