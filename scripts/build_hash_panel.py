@@ -10,6 +10,11 @@ from fork_env.constants import (
 from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
 from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
 from scripts.get_clusters import btc_tx_value_series
+from fork_env.integration_exp import fork_rate_exp
+from fork_env.integration_ln import fork_rate_ln
+from fork_env.integration_lomax import fork_rate_lomax
+from fork_env.integration_tpl import fork_rate_tpl
+from fork_env.integration_empirical import fork_rate_empirical
 
 
 def bits_to_difficulty(bits_hex_str: str) -> float:
@@ -129,22 +134,13 @@ for start_block in range(
     end_time = block_times[-1]
 
 
-    # find the chunk of invstat_df that corresponds to the block times
-    invstat_chunk = invstat_df[
-        (invstat_df["start_unix"] >= start_time.timestamp() )
-        & (invstat_df["end_unix"] <= end_time.timestamp() )
-    ]
-
-    block50 = invstat_chunk["block50"].mean()
-    block90 = invstat_chunk["block90"].mean()
-    block99 = invstat_chunk["block99"].mean()
-
-
     # use miliseconds for time difference
     average_block_time = (end_time - start_time).total_seconds() / BLOCK_WINDOW
     total_hash_rate = 1 / average_block_time
     miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
     miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
+    bis = list(miner_hash_share_count.sort_values())
+
     avg_logged_difficulty = df_in_scope["difficulty"].mean()
 
     max_share = miner_hash_share.max()
@@ -160,8 +156,62 @@ for start_block in range(
     # kurtosis
     hash_kurt = miner_hash.kurt()
 
+    # find the chunk of invstat_df that corresponds to the block times
+    invstat_chunk = invstat_df[
+        (invstat_df["start_unix"] >= start_time.timestamp() )
+        & (invstat_df["end_unix"] <= end_time.timestamp() )
+    ]
+
+    block_dict = {}
+    for percentile in ["50", "90", "99"]:
+        proptime = invstat_chunk[f"block{percentile}"].mean()
+        this_block_dict = {
+            "proptime": proptime,
+            "exp": fork_rate_exp(
+            proptime=proptime,
+            n=num_miners,
+            sum_lambda=total_hash_rate,
+            hash_mean=hash_mean,
+        ),
+            "log_normal": fork_rate_ln(
+            proptime=proptime,
+            n=num_miners,
+            sum_lambda=total_hash_rate,
+            hash_mean=hash_mean,
+            std=hash_std,
+        ),
+            "lomax": fork_rate_lomax(
+            proptime=proptime,
+            n=num_miners,
+            sum_lambda=total_hash_rate,
+            hash_mean=hash_mean,
+            std=hash_std,
+        ),
+            "trunc_power_law": fork_rate_tpl(
+            proptime=proptime,
+            n=num_miners,
+            sum_lambda=total_hash_rate,
+            hash_mean=hash_mean,
+            std=hash_std,
+        ),
+            "empirical": fork_rate_empirical(
+            proptime=proptime,
+            n=num_miners,
+            sum_lambda=total_hash_rate,
+            bis=bis,
+        )}
+        block_dict[percentile] = this_block_dict
+        
+        
+      
+
+    # block50 = invstat_chunk["block50"].mean()
+    # block90 = invstat_chunk["block90"].mean()
+    # block99 = invstat_chunk["block99"].mean()
+
     expon_rate = calc_ex_rate(hash_mean)
     expon_dist = expon(scale=hash_mean)
+
 
     # fit a lognormal distribution to miner_hash using moments
     lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
@@ -200,10 +250,8 @@ for start_block in range(
         "truncpl_ell": truncpl_ell,
         "truncpl_scaling_c": truncpl_scaling_c,
         "miner_hash": miner_hash,
-        "block50": block50,
-        "block90": block90,
-        "block99": block99,
-        "bis": list(miner_hash_share_count.sort_values()),
+        "bis": bis,
+        "block_dict": block_dict,
         "distributions": {
             "exp": expon_dist,
             "log_normal": lognorm_dist,

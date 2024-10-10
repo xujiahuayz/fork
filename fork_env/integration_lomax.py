@@ -109,6 +109,6 @@ if __name__ == "__main__":
         proptime=1,
         hash_mean=0.31 / 42,
         n=42,
-        std=6,
+        std=0.06,
     )
     print(res)
