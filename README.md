@@ -71,7 +71,10 @@ mkdir data
 cd data
 wget https://raw.githubusercontent.com/blockchain/Blockchain-Known-Pools/master/pools.json
 wget https://api.blockchain.info/charts/difficulty?timespan=all
+wget https://raw.githubusercontent.com/bitcoin-data/stale-blocks/refs/heads/master/stale-blocks.csv
+<!-- wget https://api.blockchain.info/charts/n-orphaned-blocks?timespan=all&sampled=true&metadata=false&daysAverageString=1d&cors=true&format=json -->
 curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/miner/list/all" > miner_rank.json
+<!-- curl "https://api.blockchain.info/charts/n-orphaned-blocks?timespan=all&sampled=true&metadata=false&daysAverageString=1d&cors=true&format=json" -> "orphans.json" -->
 ```
 
 ## Run scripts

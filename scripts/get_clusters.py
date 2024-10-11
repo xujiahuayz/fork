@@ -4,8 +4,6 @@ import pandas as pd
 
 from fork_env.constants import BITCOIN_MINER_JSON_PATH, CLUSTER_PATH, BITCOIN_MINER_PATH
 
-# # Directly read the JSON lines file into a DataFrame
-# btc_tx_value_df = pd.read_json(BITCOIN_MINER_JSON_PATH, lines=True)
 
 # make dataframes from the dict
 btc_tx_value_df = pd.DataFrame(pd.read_pickle(BITCOIN_MINER_PATH))
@@ -95,42 +93,3 @@ if __name__ == "__main__":
     # save clusters to a pickle file
     with open(CLUSTER_PATH, "wb") as f:
         pickle.dump(clusters, f)
-    # print(clusters)
-
-    # # Convert each set to a frozenset for deduplication
-    # frozenset_list = [frozenset(s) for s in btc_tx_value_series]
-
-    # # Deduplicate by converting the list of frozensets to a set
-    # unique_frozensets = set(frozenset_list)
-
-    # unique_sets = [set(fs) for fs in unique_frozensets]
-
-    # clusters = []
-
-    # # unique_sets = [{"a", "b"}, {"a"}, {"b", "c"}, {"d"}, {"a", "c"}, {"d", "f"}]
-
-    # for i, addresses in enumerate(unique_sets):
-    #     if i % 1000 == 0:
-    #         print(i)
-    #     # print(addresses)
-    #     # check if any cluster contains any of the addresses
-    #     cluster_index = [
-    #         i for i, cluster in enumerate(clusters) if cluster.intersection(addresses)
-    #     ]
-    #     if len(cluster_index) == 0:
-    #         # if no cluster contains any of the addresses, create a new cluster
-    #         clusters.append(addresses)
-    #     else:
-    #         # if a cluster contains any of the addresses, merge the addresses and the clusters
-    #         cluster = set().union(*[clusters[i] for i in cluster_index])
-    #         cluster.update(addresses)
-    #         # remove the clusters that have been merged
-    #         clusters = [
-    #             cluster for i, cluster in enumerate(clusters) if i not in cluster_index
-    #         ]
-    #         # add the merged cluster
-    #         clusters.append(cluster)
-
-    # # save clusters to a pickle file
-    # with open(CLUSTER_PATH, "wb") as f:
-    #     pickle.dump(clusters, f)
