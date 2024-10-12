@@ -13,7 +13,7 @@ from fork_env.constants import (
     N_MINER,
     # SUM_HASHES,
     SUM_HASH_RATE,
-    hash_panel_last_row,
+    # hash_panel_last_row,
     BLOCK_WINDOW,
 )
 from fork_env.integration_lomax import fork_rate_lomax

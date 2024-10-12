@@ -15,12 +15,19 @@ def manipulate_precision(col_ame: str, precision: int) -> None:
     )
 
 
-manipulate_precision("average_block_time", 2)
+for proptime in ["50", "90", "99"]:
+    hash_panel[f"proptime_{proptime}"] = [
+        w[proptime]["proptime"] for w in hash_panel["block_dict"]
+    ]
+    manipulate_precision(f"proptime_{proptime}", 2)
+
+hash_panel["stale_rate_100"] = hash_panel["stale_rate"] * 100
+manipulate_precision("average_block_time", 1)
 manipulate_precision("total_hash_rate", 5)
 manipulate_precision("max_share", 2)
 manipulate_precision("exp_rate", 0)
-# manipulate_precision("log_normal_loc", 2)
-# manipulate_precision("log_normal_sigma", 2)
+manipulate_precision("log_normal_loc", 2)
+manipulate_precision("log_normal_sigma", 2)
 manipulate_precision("lomax_c", 2)
 manipulate_precision("lomax_scale", 6)
 manipulate_precision("truncpl_alpha", 2)
@@ -28,23 +35,34 @@ manipulate_precision("truncpl_ell", 0)
 manipulate_precision("hash_mean", 6)
 manipulate_precision("num_miners", 0)
 manipulate_precision("hash_std", 6)
+manipulate_precision("hash_skew", 2)
+manipulate_precision("hash_kurt", 2)
+manipulate_precision("avg_logged_difficulty", 2)
+manipulate_precision("stale_rate_100", 3)
 
 
 hash_panel_to_latex = hash_panel[
     [
         "start_block",
         "start_time",
+        "proptime_50",
+        "proptime_90",
+        "proptime_99",
         "average_block_time",
-        "total_hash_rate",
+        "avg_logged_difficulty",
+        "stale_rate_100",
         "num_miners",
+        "total_hash_rate",
         "hash_mean",
         "hash_std",
+        "hash_skew",
+        "hash_kurt",
         "max_share",
         "exp_rate",
-        # "log_normal_loc",
-        # "log_normal_sigma",
-        "lomax_c",
-        "lomax_scale",
+        "log_normal_loc",
+        "log_normal_sigma",
+        # "lomax_c",
+        # "lomax_scale",
         "truncpl_alpha",
         "truncpl_ell",
     ]

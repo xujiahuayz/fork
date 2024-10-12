@@ -38,10 +38,14 @@ def fork_rate_tpl(
 
 
 if __name__ == "__main__":
-    res = fork_rate_tpl(
-        proptime=100000000000,
-        hash_mean=0.31 / 42,
-        n=42,
-        std=0.06,
+    proptime = 5
+    res = (
+        fork_rate_tpl(
+            proptime=proptime,
+            sum_lambda=0.0017,
+            n=33,
+            std=0.000135,
+        )
+        # / proptime
     )
     print(res)

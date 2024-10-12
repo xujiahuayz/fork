@@ -14,11 +14,14 @@ from fork_env.constants import (
     SUM_HASH_RATE,
 )
 from fork_env.integration_ln import fork_rate_ln
-from fork_env.integration_lomax import fork_rate_lomax
+
+# from fork_env.integration_lomax import fork_rate_lomax
+from fork_env.integration_tpl import fork_rate_tpl
 
 dist_dict = {
-    "lomax": fork_rate_lomax,
+    # "lomax": fork_rate_lomax,
     "log_normal": fork_rate_ln,
+    "trunc_power_law": fork_rate_tpl,
 }
 
 
@@ -41,7 +44,7 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        ["log_normal", "lomax"],
+        ["log_normal", "trunc_power_law"],
         set(list(EMPIRICAL_PROP_DELAY.values()) + [8.7]),
         set(
             [
