@@ -47,7 +47,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     # fit a lomax distribution  using moments
     # lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
 
-    truncpl_alpha, truncpl_ell, truncpl_scaling_c, truncpl_dist = gen_truncpl_dist(
+    truncpl_alpha, truncpl_ell, truncpl_dist = gen_truncpl_dist(
         hash_mean=hash_mean, hash_std=hash_std
     )
 
@@ -121,7 +121,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     )
 
     # fix x-axis and y-axis
-    ax.set_xlim(6e-8, 6e-4)
+    ax.set_xlim(6e-8, 8e-4)
     ax.set_ylim(2e-3, 1.8)
 
     # log x-axis and y-axis

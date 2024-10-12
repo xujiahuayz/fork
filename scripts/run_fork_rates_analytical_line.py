@@ -11,20 +11,28 @@ from fork_env.constants import (
     DATA_FOLDER,
     HASH_STD,
     N_MINER,
-    hash_panel_last_row,
+    # hash_panel_last_row,
 )
 from fork_env.integration_empirical import fork_rate_empirical
 from fork_env.integration_ln import fork_rate_ln
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_exp import fork_rate_exp
+from fork_env.integration_tpl import fork_rate_tpl
 
 dist_dict = {
     "exp": fork_rate_exp,
-    "lomax": fork_rate_lomax,
+    # "lomax": fork_rate_lomax,
     "log_normal": fork_rate_ln,
+    "trunc_power_law": fork_rate_tpl,
 }
 
 HASH_MEAN = SUM_HASH_RATE / N_MINER
+
+# load hash_panel_last_row
+with open(DATA_FOLDER / "hash_panel.pkl", "rb") as f:
+    hash_panel = pickle.load(f)
+
+hash_panel_last_row = hash_panel.iloc[-1]
 
 
 def compute_rate(args) -> tuple[tuple, float]:
@@ -50,10 +58,18 @@ def compute_rate(args) -> tuple[tuple, float]:
                 hash_mean=HASH_MEAN,
                 std=HASH_STD,
             )
-        elif distribution == "lomax":
-            the_rate = fork_rate_lomax(
+        # elif distribution == "lomax":
+        #     the_rate = fork_rate_lomax(
+        #         proptime=block_propagation_time,
+        #         n=n,
+        #         hash_mean=HASH_MEAN,
+        #         std=HASH_STD,
+        #     )
+        elif distribution == "trunc_power_law":
+            the_rate = fork_rate_tpl(
                 proptime=block_propagation_time,
                 n=n,
+                sum_lambda=SUM_HASH_RATE,
                 hash_mean=HASH_MEAN,
                 std=HASH_STD,
             )
@@ -67,8 +83,8 @@ def compute_rate(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        ["empirical", "exp", "log_normal", "lomax"],
-        list(EMPIRICAL_PROP_DELAY.values()) + [8.7],
+        ["empirical", "exp", "log_normal", "trunc_power_law"],
+        list(EMPIRICAL_PROP_DELAY.values()),
         [
             2,
             3,
@@ -108,9 +124,9 @@ if __name__ == "__main__":
             180,
             200,
             250,
-            300,
-            400,
-            500,
+            # 300,
+            # 400,
+            # 500,
         ]
         + [N_MINER],
     )

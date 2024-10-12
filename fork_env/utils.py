@@ -6,7 +6,7 @@ from fork_env.constants import (
     SUM_HASH_RATE,
     N_MINER,
 )
-from scipy.special import erf, gamma, expn, gammaincc
+from scipy.special import erf, gamma, expn, gammaincc, gammainccinv
 
 
 # create a new distribution class
@@ -33,6 +33,9 @@ class truncpl(rv_continuous):
 
     def _cdf(self, x: float) -> float:
         return 1 - self._sf(x)
+
+    def _ppf(self, q: float) -> float:
+        return gammainccinv(self.one_minus_alpha, 1 - q) / self.ell
 
     # def pdf(self, x: float | Interable[float]) -> float | Iterable[float]:
 
@@ -153,6 +156,9 @@ if __name__ == "__main__":
     print(tp_dist.sf(1))
     tp_dist.rvs(size=20)
     print(tp_dist.stats(moments="mvsk"))
+    tp_dist.cdf(1.04992708)
+
+    tp_dist._ppf(0.7)
 
     # # test lognorm
     # lognorm_loc, lognorm_sigma, lognorm_scale = calc_ln_params(hash_mean, hash_std)

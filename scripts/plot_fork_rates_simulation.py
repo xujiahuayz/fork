@@ -9,8 +9,7 @@ from matplotlib.ticker import ScalarFormatter
 from fork_env.constants import (
     FIGURES_FOLDER,
     EMPIRICAL_PROP_DELAY,
-    DIST_COLORS,
-    DIST_LABELS,
+    DIST_DICT,
     SIMULATED_FORK_RATES_PATH,
     N_MINER,
     DATA_FOLDER,
@@ -19,7 +18,7 @@ from fork_env.constants import (
 import numpy as np
 import gzip
 
-dist_keys = list(DIST_COLORS.keys())
+dist_keys = list(DIST_DICT.keys())
 # load rates from jsonl
 with gzip.open(SIMULATED_FORK_RATES_PATH, "rt") as f:
     rates_simulation = [json.loads(line) for line in f]
@@ -33,8 +32,11 @@ rates.columns = ["distribution", "block_propagation_time", "n", "rate"]
 rates = rates.sort_values(by="n")
 
 df = pd.DataFrame(rates)
+df["rate"] *= 100
+df = df[(df["n"] >= 5) & (df["n"] <= 220)]
 
 df_simulation = pd.DataFrame(rates_simulation)
+df_simulation = df_simulation[(df_simulation["n"] >= 5) & (df_simulation["n"] <= 220)]
 
 
 # increase font size of plots
@@ -63,22 +65,25 @@ dist_handle = [
     mlines.Line2D(
         [],
         [],
-        color=DIST_COLORS[distribution],
+        color=DIST_DICT[distribution]["color"],
         linestyle="--" if distribution == "empirical" else "-",
         linewidth=1 if distribution == "empirical" else 3,
-        label=DIST_LABELS[distribution],
+        label=DIST_DICT[distribution]["label"],
     )
     for distribution in dist_keys
 ]
 
-for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
-    df_simulation["rate"] = df_simulation["time_diffs"].apply(
-        lambda x: np.mean(np.array(x) < block_propagation_time)
+for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()):
+    df_simulation["rate"] = (
+        df_simulation["time_diffs"].apply(
+            lambda x: np.mean(np.array(x) < block_propagation_time)
+        )
+        * 100
     )
 
     plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
 
-    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
+    # plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0), useMathText=True)
 
     for distribution in dist_keys + ["empirical"]:
 
@@ -91,7 +96,7 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
             plt.plot(
                 df_distribution_simulated["n"],
                 df_distribution_simulated["rate"],
-                color=DIST_COLORS[distribution],
+                color=DIST_DICT[distribution]["color"],
                 alpha=0.2,  # Making simulated data slightly transparent
                 linewidth=10,
             )
@@ -105,7 +110,7 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
         plt.plot(
             df_distribution["n"],
             df_distribution["rate"],
-            color=DIST_COLORS[distribution],
+            color=DIST_DICT[distribution]["color"],
             linestyle="--" if distribution == "empirical" else "-",
             linewidth=1 if distribution == "empirical" else 3,
         )
@@ -134,21 +139,21 @@ for block_propagation_time in list(EMPIRICAL_PROP_DELAY.values()) + [8.7]:
 
     plt.axvline(x=N_MINER, color="black", linestyle=":")
     # write N_MINER next to the vertical line
-    plt.text(N_MINER + 1, 0.00012, f"$N={N_MINER}$")
+    plt.text(N_MINER + 1, 12, f"$N={N_MINER}$")
     # horizontal line at y=EMPRITICAL_FORK_RATE
-    plt.axhline(y=EMPRITICAL_FORK_RATE, color="black", linestyle=":")
+    # plt.axhline(y=EMPRITICAL_FORK_RATE, color="black", linestyle=":")
     # write empirical fork rate next to the horizontal line
-    plt.text(2**8 * 0.5, 0.002, "0.41%")
+    # plt.text(2**8 * 0.5, 0.002, "0.01%")
 
     plt.xlabel("number of miners $N$")
-    plt.ylabel("fork rate")
+    plt.ylabel("fork rate [%]")
 
-    plt.xscale("log", base=2)
-    plt.yscale("log", base=10)
-    plt.xlim(7, 500)
-    plt.ylim(0.0001, 1)
+    # plt.xscale("log", base=2)
+    # plt.yscale("log", base=10)
+    plt.xlim(7, 160)
+    plt.ylim(0.0001, 13)
     # title
-    plt.title(f"$\Delta_0 = {block_propagation_time}$ [s]")
+    # plt.title(f"$\Delta_0 = {block_propagation_time}$ [s]")
 
     # make sure the plot is not cut off
     plt.tight_layout()
