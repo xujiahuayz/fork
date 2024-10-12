@@ -6,21 +6,33 @@ from fork_env.constants import (
     SUM_HASH_RATE,
     N_MINER,
 )
-from scipy.special import erf, gamma, expn
+from scipy.special import erf, gamma, expn, gammaincc
 
 
 # create a new distribution class
 class truncpl(rv_continuous):
     # https://en.wikipedia.org/wiki/Power_law#Power_law_with_exponential_cutoff
 
-    def __init__(self, alpha: float, ell: float, scaling_c: float, *args, **kwargs):
+    def __init__(self, alpha: float, ell: float, *args, **kwargs):
         super().__init__(a=0, b=np.inf, *args, **kwargs)
         self.alpha = alpha
         self.ell = ell
-        self.scaling_c = scaling_c
+        self.one_minus_alpha = 1 - alpha
+        # self.scaling_c = ell**one_minus_alpha / gamma(one_minus_alpha)
 
     def _pdf(self, x: float) -> float:
-        return self.scaling_c * x ** (-self.alpha) * np.exp(-self.ell * x)
+        return (
+            self.ell**self.one_minus_alpha
+            * x ** (-self.alpha)
+            * np.exp(-self.ell * x)
+            / gamma(self.one_minus_alpha)
+        )
+
+    def _sf(self, x: float) -> float:
+        return gammaincc(1 - self.alpha, self.ell * x)
+
+    def _cdf(self, x: float) -> float:
+        return 1 - self._sf(x)
 
     # def pdf(self, x: float | Interable[float]) -> float | Iterable[float]:
 
@@ -76,9 +88,7 @@ def gen_lmx_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
     return lomax_shape, lmx_scale, lomax(lomax_shape, scale=lmx_scale)
 
 
-def calc_truncpl_params(
-    hash_mean: float, hash_std: float
-) -> tuple[float, float, float]:
+def calc_truncpl_params(hash_mean: float, hash_std: float) -> tuple[float, float]:
     # parameter fitting using MoM - check mathematica
 
     one_minus_alpha = (hash_mean / hash_std) ** 2
@@ -86,15 +96,13 @@ def calc_truncpl_params(
     # ell = gamma(2 - alpha) / gamma(1 - alpha) / hash_mean
     ell = hash_mean / hash_std**2
 
-    scaling_c = ell**one_minus_alpha / gamma(one_minus_alpha)
-    return alpha, ell, scaling_c
+    # scaling_c = ell**one_minus_alpha / gamma(one_minus_alpha)
+    return alpha, ell
 
 
-def gen_truncpl_dist(
-    hash_mean: float, hash_std: float
-) -> tuple[float, float, float, Any]:
-    alpha, ell, scaling_c = calc_truncpl_params(hash_mean, hash_std)
-    return (alpha, ell, scaling_c, truncpl(alpha=alpha, ell=ell, scaling_c=scaling_c))
+def gen_truncpl_dist(hash_mean: float, hash_std: float) -> tuple[float, float, Any]:
+    alpha, ell = calc_truncpl_params(hash_mean, hash_std)
+    return (alpha, ell, truncpl(alpha=alpha, ell=ell))
 
 
 def expon_dist(hash_mean: float):
@@ -115,7 +123,7 @@ def lomax_dist(hash_mean: float, hash_std: float = HASH_STD):
 
 
 def truncpl_dist(hash_mean: float, hash_std: float = HASH_STD):
-    _, _, _, tp_dist = gen_truncpl_dist(hash_mean=hash_mean, hash_std=hash_std)
+    _, _, tp_dist = gen_truncpl_dist(hash_mean=hash_mean, hash_std=hash_std)
     return tp_dist
 
 
@@ -130,3 +138,57 @@ def ccdf_p(lbda: float, bis: list[int], factor: float) -> float:
         )
         / 2
     )
+
+
+# if name is main
+if __name__ == "__main__":
+    # test truncpl
+    hash_mean = 1
+    hash_std = 0.1
+    alpha, ell = calc_truncpl_params(hash_mean, hash_std)
+    print(alpha, ell)
+    alpha, ell, tp_dist = gen_truncpl_dist(hash_mean, hash_std)
+    print(tp_dist.pdf(1))
+    print(tp_dist.cdf(1))
+    print(tp_dist.sf(1))
+    tp_dist.rvs(size=20)
+    print(tp_dist.stats(moments="mvsk"))
+
+    # # test lognorm
+    # lognorm_loc, lognorm_sigma, lognorm_scale = calc_ln_params(hash_mean, hash_std)
+    # print(lognorm_loc, lognorm_sigma, lognorm_scale)
+    # lognorm_loc, lognorm_sigma, lognorm_scale, ln_dist = gen_ln_dist(
+    #     hash_mean, hash_std
+    # )
+    # print(ln_dist.pdf(1))
+    # print(ln_dist.cdf(1))
+    # print(ln_dist.sf(1))
+    # print(ln_dist.rvs(size=10))
+    # print(ln_dist.stats(moments="mvsk"))
+
+    # # test lomax
+    # lmx_shape, lmx_scale = calc_lmx_params(hash_mean, hash_std)
+    # print(lmx_shape, lmx_scale)
+    # lmx_shape, lmx_scale, lmx_dist = gen_lmx_dist(hash_mean, hash_std)
+    # print(lmx_dist.pdf(1))
+    # print(lmx_dist.cdf(1))
+    # print(lmx_dist.sf(1))
+    # print(lmx_dist.rvs(size=10))
+    # print(lmx_dist.stats(moments="mvsk"))
+
+    # # test expon
+    # expon_dist = expon_dist(hash_mean)
+    # print(expon_dist.pdf(1))
+    # print(expon_dist.cdf(1))
+    # print(expon_dist.sf(1))
+    # print(expon_dist.rvs(size=10))
+    # print(expon_dist.stats(moments="mvsk"))
+
+    # # test ccdf_p
+    # lbda = 1
+    # bis = [1, 2, 3]
+    # factor = 1
+    # print(ccdf_p(lbda, bis, factor))
+    # print(ccdf_p(lbda, bis, factor))
+    # print(ccdf_p(lbda, bis, factor))
+    # print(ccdf_p

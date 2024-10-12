@@ -109,6 +109,6 @@ for index, row in hash_panel.iterrows():
     fig.tight_layout()  # adjust the layout to make room for the second y-label
     # save the plot
     plt.savefig(
-        FIGURES_FOLDER / f"hash_dist_{index}.pdf",
+        FIGURES_FOLDER / f"hash_dist_{row['start_block']}.pdf",
         bbox_inches="tight",
     )

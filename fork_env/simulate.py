@@ -27,3 +27,13 @@ def simulate_fork_repeat(repeat: int, **kwargs) -> list[tuple[float, float | Non
         delayed(simulate_fork)(**kwargs) for _ in range(repeat)
     )
     return results  # type: ignore
+
+
+if __name__ == "__main__":
+    from fork_env.utils import expon_dist, lognorm_dist, lomax_dist, truncpl_dist
+
+    x = simulate_fork(
+        n_miners=10,
+        hash_distribution=lambda n: truncpl_dist(hash_mean=1 / 60).rvs(size=n),
+    )
+    print(x)

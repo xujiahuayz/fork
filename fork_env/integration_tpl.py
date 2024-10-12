@@ -17,7 +17,7 @@ def fork_rate_tpl(
 ) -> float:
     if hash_mean is None:
         hash_mean = sum_lambda / n
-    alpha, beta, _ = calc_truncpl_params(hash_mean=hash_mean, hash_std=std)
+    alpha, beta = calc_truncpl_params(hash_mean=hash_mean, hash_std=std)
 
     def pdelta_integrand(x: float) -> float:
         return (beta + x) ** (-2 + alpha) * (beta + proptime + x) ** (

@@ -42,10 +42,10 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     expon_dist = expon(scale=hash_mean)
 
     # # fit a lognormal distribution to miner_hash using moments
-    # lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
+    lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
 
     # fit a lomax distribution  using moments
-    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
+    # lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(hash_mean, hash_std)
 
     truncpl_alpha, truncpl_ell, truncpl_scaling_c, truncpl_dist = gen_truncpl_dist(
         hash_mean=hash_mean, hash_std=hash_std
@@ -66,14 +66,14 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     for key, dist in zip(
         [
             "exp",
-            # 'lognorm',
-            "lomax",
+            "log_normal",
+            # "lomax",
             "trunc_power_law",
         ],
         [
             expon_dist,
-            #  lognorm_dist,
-            lomax_dist,
+            lognorm_dist,
+            # lomax_dist,
             truncpl_dist,
         ],
     ):

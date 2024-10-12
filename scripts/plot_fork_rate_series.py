@@ -13,7 +13,7 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 block_dicts = hash_panel["block_dict"]
 end_times = pd.to_datetime(hash_panel["end_time"])
 emp_rate_in_percent = "{:.2%}".format(EMPRITICAL_FORK_RATE)
-
+plt.rcParams.update({"font.size": 15})
 
 for proptime in ["50", "90", "99"]:
     # Create the plot
@@ -30,7 +30,7 @@ for proptime in ["50", "90", "99"]:
         label="actual fork rate",
     )
 
-    ax3.set_title(f"to propagate to {proptime} percent of network")
+    # ax3.set_title(f"to propagate to {proptime} percent of network")
 
     # Horizontal line for empirical fork rate
     ax3.set_ylabel("block propagation time $\Delta_0$ (s)", color="olive")
@@ -74,7 +74,7 @@ for proptime in ["50", "90", "99"]:
     # Format the x-axis as dates
     fig.autofmt_xdate()
     ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax3.xaxis.set_major_locator(MaxNLocator(nbins=11))
+    ax3.xaxis.set_major_locator(MaxNLocator(nbins=9))
 
     # Display the legend for the second y-axis
     if proptime == "50":

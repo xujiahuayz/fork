@@ -62,6 +62,7 @@ for key, dict_items in {
             ((df["block_propagation_time"] == block_propagation_time))
             & (df["sumhash"] == SUM_HASH_RATE)
             & (df["n"] < 152)
+            # & (df["n"] > 8)
             & (df["std"] < 0.00102)
             & (df["rate"] > 1e-5)
         ]

@@ -42,7 +42,8 @@ with gzip.open(SIMULATED_FORK_RATES_PATH, "wt") as f:
 
         for dist, dist_func in {
             "truncate_power_law": truncpl_dist,
-            "lomax": lomax_dist,
+            "log_normal": lognorm_dist,
+            # "lomax": lomax_dist,
             "exp": expon_dist,
         }.items():
             print(f"n: {n}, dist: {dist}")
