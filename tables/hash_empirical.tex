@@ -1,0 +1,34 @@
+\begin{tabular}{@{}cccccccccccrrrr@{}}
+\toprule
+\multicolumn{2}{c}{period of blocks}  &  \multicolumn{3}{c}{propagation time} & & & & &  \multicolumn{6}{c}{empirical miner hash rate}\\
+\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){10-15}
+start \# & start time & 50\% & 90\% & 99\% & $\overline{\text{block time}}$ & $\overline{\ln(\text{difficulty})}$ & fork rate & miners & $\sum(\text{hash rate})$ & mean & std & skewness & kurtosis & max share\\
+ &  & [s] & [s] & [s] & $\frac{1}{\Lambda}$ [s] &  & [\%] & $N$ & $\Lambda$ [s$^{-1}$] & $m$ [s$^{-1}$] & $s$ [s$^{-1}$] &  &  & [\%]\\
+\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-9} \cmidrule(lr){10-15}
+360000 & 2015-06-08 & \databarred{7.01} & 16.51 & 26.61 & 586.1 & 24.71 & \databarblue{0.620} & \databarpurple{90} & 0.00171 & \databarorange{0.000019} & \databarorange{0.000054} & 4.01 & 17.42 & \databarbrown{19.34} \\
+380000 & 2015-10-22 & \databarred{7.11} & 18.03 & 27.73 & 546.2 & 25.24 & \databarblue{0.495} & \databarpurple{86} & 0.00183 & \databarorange{0.000021} & \databarorange{0.000059} & 4.63 & 25.98 & \databarbrown{22.88} \\
+400000 & 2016-02-25 & \databarred{5.87} & 15.68 & 27.24 & 583.3 & 25.93 & \databarblue{0.200} & \databarpurple{135} & 0.00171 & \databarorange{0.000013} & \databarorange{0.000048} & 5.88 & 41.04 & \databarbrown{24.44} \\
+420000 & 2016-07-09 & \databarred{4.09} & 12.33 & 25.67 & 584.8 & 26.17 & \databarblue{0.240} & \databarpurple{94} & 0.00171 & \databarorange{0.000018} & \databarorange{0.000047} & 4.06 & 18.28 & \databarbrown{17.80} \\
+440000 & 2016-11-22 & \databarred{3.11} & 10.49 & 24.24 & 566.5 & 26.64 & \databarblue{0.185} & \databarpurple{63} & 0.00177 & \databarorange{0.000028} & \databarorange{0.000046} & 2.59 & 8.22 & \databarbrown{14.12} \\
+460000 & 2017-04-02 & \databarred{1.96} & 10.13 & 23.63 & 565.0 & 27.19 & \databarblue{0.185} & \databarpurple{67} & 0.00177 & \databarorange{0.000026} & \databarorange{0.000046} & 2.10 & 3.38 & \databarbrown{10.53} \\
+480000 & 2017-08-10 & \databarred{1.09} & 7.39 & 19.98 & 560.7 & 27.79 & \databarblue{0.125} & \databarpurple{71} & 0.00178 & \databarorange{0.000025} & \databarorange{0.000056} & 2.74 & 6.84 & \databarbrown{14.16} \\
+500000 & 2017-12-18 & \databarred{0.54} & 4.06 & 16.25 & 555.9 & 28.65 & \databarblue{0.085} & \databarpurple{65} & 0.00180 & \databarorange{0.000028} & \databarorange{0.000071} & 3.65 & 14.27 & \databarbrown{22.42} \\
+520000 & 2018-04-26 & \databarred{0.41} & 2.08 & 13.33 & 569.1 & 29.26 & \databarblue{0.035} & \databarpurple{71} & 0.00176 & \databarorange{0.000025} & \databarorange{0.000062} & 3.26 & 10.59 & \databarbrown{17.90} \\
+540000 & 2018-09-05 & \databarred{0.47} & 2.27 & 14.77 & 613.4 & 29.50 & \databarblue{0.025} & \databarpurple{88} & 0.00163 & \databarorange{0.000019} & \databarorange{0.000050} & 3.45 & 11.86 & \databarbrown{16.75} \\
+560000 & 2019-01-25 & \databarred{0.57} & 3.84 & 18.10 & 586.2 & 29.48 & \databarblue{0.030} & \databarpurple{75} & 0.00171 & \databarorange{0.000023} & \databarorange{0.000053} & 3.37 & 11.86 & \databarbrown{17.21} \\
+580000 & 2019-06-09 & \databarred{0.46} & 3.22 & 17.83 & 566.5 & 29.92 & \databarblue{0.045} & \databarpurple{66} & 0.00177 & \databarorange{0.000027} & \databarorange{0.000060} & 3.31 & 11.66 & \databarbrown{18.39} \\
+600000 & 2019-10-19 & \databarred{0.40} & 2.15 & 14.41 & 590.2 & 30.26 & \databarblue{0.030} & \databarpurple{54} & 0.00169 & \databarorange{0.000031} & \databarorange{0.000059} & 2.62 & 7.35 & \databarbrown{16.89} \\
+620000 & 2020-03-03 & \databarred{0.49} & 3.19 & 15.78 & 599.2 & 30.36 & \databarblue{0.050} & \databarpurple{45} & 0.00167 & \databarorange{0.000037} & \databarorange{0.000064} & 2.58 & 7.26 & \databarbrown{18.34} \\
+640000 & 2020-07-20 & \databarred{0.60} & 3.89 & 17.15 & 595.1 & 30.52 & \databarblue{0.075} & \databarpurple{41} & 0.00168 & \databarorange{0.000041} & \databarorange{0.000069} & 1.87 & 2.75 & \databarbrown{16.30} \\
+660000 & 2020-12-05 & \databarred{0.75} & 4.44 & 19.22 & 593.3 & 30.67 & \databarblue{0.095} & \databarpurple{49} & 0.00169 & \databarorange{0.000034} & \databarorange{0.000068} & 2.25 & 4.15 & \databarbrown{16.81} \\
+680000 & 2021-04-21 & \databarred{0.46} & 2.32 & 13.70 & 616.7 & 30.52 & \databarblue{0.040} & \databarpurple{40} & 0.00162 & \databarorange{0.000041} & \databarorange{0.000072} & 1.92 & 2.48 & \databarbrown{15.92} \\
+700000 & 2021-09-11 & \databarred{0.38} & 1.58 & 14.13 & 579.3 & 30.71 & \databarblue{0.045} & \databarpurple{35} & 0.00173 & \databarorange{0.000049} & \databarorange{0.000084} & 1.78 & 1.98 & \databarbrown{16.16} \\
+720000 & 2022-01-23 & \databarred{0.40} & 1.72 & 14.32 & 591.6 & 30.98 & \databarblue{0.020} & \databarpurple{33} & 0.00169 & \databarorange{0.000051} & \databarorange{0.000090} & 1.77 & 2.08 & \databarbrown{19.38} \\
+740000 & 2022-06-09 & \databarred{0.34} & 1.26 & 11.30 & 589.8 & 31.04 & \databarblue{0.005} & \databarpurple{26} & 0.00170 & \databarorange{0.000065} & \databarorange{0.000109} & 1.90 & 3.10 & \databarbrown{24.06} \\
+760000 & 2022-10-23 & \databarred{0.43} & 1.95 & 13.28 & 590.7 & 31.25 & \databarblue{0.030} & \databarpurple{37} & 0.00169 & \databarorange{0.000046} & \databarorange{0.000108} & 3.05 & 9.62 & \databarbrown{29.75} \\
+780000 & 2023-03-09 & \databarred{0.86} & 4.65 & 20.23 & 590.3 & 31.52 & \databarblue{0.100} & \databarpurple{38} & 0.00169 & \databarorange{0.000045} & \databarorange{0.000111} & 3.31 & 11.43 & \databarbrown{31.38} \\
+800000 & 2023-07-24 & \databarred{0.87} & 4.46 & 21.92 & 584.6 & 31.69 & \databarblue{0.070} & \databarpurple{33} & 0.00171 & \databarorange{0.000052} & \databarorange{0.000118} & 2.91 & 8.25 & \databarbrown{28.84} \\
+820000 & 2023-12-06 & \databarred{0.89} & 4.39 & 19.81 & 585.5 & 31.97 & \databarblue{0.065} & \databarpurple{33} & 0.00171 & \databarorange{0.000052} & \databarorange{0.000111} & 2.91 & 8.79 & \databarbrown{29.19} \\
+840000 & 2024-04-20 & \databarred{0.88} & 3.86 & 21.14 & 598.4 & 32.07 & \databarblue{0.065} & \databarpurple{33} & 0.00167 & \databarorange{0.000051} & \databarorange{0.000135} & 3.28 & 10.46 & \databarbrown{35.38} \\
+\bottomrule
+\end{tabular}

@@ -122,3 +122,96 @@ BLOCK_PROP_TIMES.sort()
 
 SUM_HASHES = [1e-3, 5e-3, SUM_HASH_RATE]
 SUM_HASHES.sort()
+
+VAR_HEADER_UNIT_MAP = {
+    "start_block": {"header": r"start \#", "unit": "", "precision": None, "subtab": 1},
+    "start_time": {"header": r"start time", "unit": "", "precision": None, "subtab": 1},
+    "proptime_50": {"header": r"50\%", "unit": r"[s]", "precision": 2, "subtab": 1},
+    "proptime_90": {"header": r"90\%", "unit": r"[s]", "precision": 2, "subtab": 1},
+    "proptime_99": {"header": r"99\%", "unit": r"[s]", "precision": 2, "subtab": 1},
+    "average_block_time": {
+        "header": r"$\overline{\text{block time}}$",
+        "unit": r"$\frac{1}{\Lambda}$ [s]",
+        "precision": 1,
+        "subtab": 1,
+    },
+    "avg_logged_difficulty": {
+        "header": r"$\overline{\ln(\text{difficulty})}$",
+        "unit": "",
+        "precision": 2,
+        "subtab": 1,
+    },
+    "stale_rate_100": {
+        "header": r"fork rate",
+        "unit": r"[\%]",
+        "precision": 3,
+        "subtab": 1,
+    },
+    "num_miners": {"header": r"miners", "unit": r"$N$", "precision": 0, "subtab": 1},
+    "total_hash_rate": {
+        "header": r"$\sum(\text{hash rate})$",
+        "unit": r"$\Lambda$ [s$^{-1}$]",
+        "precision": 5,
+        "subtab": 1,
+    },
+    "hash_mean": {
+        "header": r"mean",
+        "unit": r"$m$ [s$^{-1}$]",
+        "precision": 6,
+        "subtab": 1,
+    },
+    "hash_std": {
+        "header": r"std",
+        "unit": r"$s$ [s$^{-1}$]",
+        "precision": 6,
+        "subtab": 1,
+    },
+    "hash_skew": {
+        "header": r"skewness",
+        "unit": "",
+        "precision": 2,
+        "subtab": 1,
+    },
+    "hash_kurt": {
+        "header": r"kurtosis",
+        "unit": "",
+        "precision": 2,
+        "subtab": 1,
+    },
+    "max_share": {
+        "header": r"max share",
+        "unit": r"[\%]",
+        "precision": 2,
+        "subtab": 1,
+    },
+    "exp_rate": {
+        "header": r"$\text{Exp}(r)$",
+        "unit": r"$r$",
+        "precision": 0,
+        "subtab": 2,
+    },
+    "log_normal_loc": {
+        "header": r"\multicolumn{2}{c}{$\text{LN}(\mu, \sigma^2)$}",
+        "unit": r"$\mu$",
+        "precision": 2,
+        "subtab": 2,
+    },
+    "log_normal_sigma": {
+        "header": r"\multicolumn{2}{c}{$\text{LN}(\mu, \sigma^2)$}",
+        "unit": r"$\sigma$",
+        "precision": 2,
+        "subtab": 2,
+    },
+    "truncpl_alpha": {
+        "header": r"\multicolumn{2}{c}{$\text{TPL}(\alpha, \beta)$",
+        "unit": r"$\alpha$",
+        "precision": 2,
+        "subtab": 2,
+    },
+    "truncpl_ell": {
+        "header": r"\multicolumn{2}{c}{$\text{TPL}(\alpha, \beta)$",
+        "unit": r"$\beta$",
+        "precision": 0,
+        "subtab": 2,
+    },
+}
