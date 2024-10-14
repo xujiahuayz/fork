@@ -24,7 +24,7 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 # get the last number of total hash rate
 
-bis = hash_panel_last_row["bis"]
+# bis = hash_panel_last_row["bis"]
 ps = [b / BLOCK_WINDOW for b in bis]
 var_pi = [p * (1 - p) / BLOCK_WINDOW for p in ps]
 sum_var_p = sum(var_pi)
