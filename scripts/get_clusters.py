@@ -2,7 +2,7 @@ import pickle
 
 import pandas as pd
 
-from fork_env.constants import BITCOIN_MINER_JSON_PATH, CLUSTER_PATH, BITCOIN_MINER_PATH
+from fork_env.constants import CLUSTER_PATH, BITCOIN_MINER_PATH
 
 
 # make dataframes from the dict

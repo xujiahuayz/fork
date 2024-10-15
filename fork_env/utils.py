@@ -143,6 +143,33 @@ def ccdf_p(lbda: float, bis: list[int], factor: float) -> float:
     )
 
 
+# Maximum target value (for difficulty 1, i.e., the easiest level)
+MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+
+
+def bits_to_difficulty(bits_hex_str: str) -> float:
+    """
+    Convert 'bits' field from Bitcoin block header to the expected number of hashes needed
+    to mine a block at this difficulty.
+
+    :param bits_hex_str: Hex string representing the 'bits' field (e.g., '1b00dc31').
+    :return: Expected number of hashes needed to find a valid block.
+    """
+    # Validate input length (should be 8 characters representing 4 bytes)
+    if len(bits_hex_str) != 8:
+        raise ValueError("Invalid bits string. It should be exactly 8 characters long.")
+
+    # Extract exponent (first byte) and coefficient (next three bytes)
+    exponent = int(bits_hex_str[:2], 16)
+    coefficient = int(bits_hex_str[2:], 16)
+
+    # Calculate the current target value
+    target = coefficient * (256 ** (exponent - 3))
+
+    # Difficulty is the ratio of max_target to the current target, scaled by 2^32
+    return (MAX_TARGET / target) * (2**32)
+
+
 # if name is main
 if __name__ == "__main__":
     # test truncpl

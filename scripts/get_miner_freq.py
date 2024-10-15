@@ -14,6 +14,31 @@ from fork_env.constants import (
 # from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
 from scripts.get_clusters import btc_tx_value_df, btc_tx_value_series
 
+fork_df = pd.read_pickle(DATA_FOLDER / "forks.pkl")
+fork_df[["miner_main", "miner_orphan", "miner_subsequent"]] = pd.DataFrame.map(
+    fork_df[["miner_main", "miner_orphan", "miner_subsequent"]],
+    lambda x: x.replace('"', "")
+    .replace("Solo CKPool", "CKPool Fee")
+    .replace("SlushPool", "Braiins Pool")
+    .replace("AntPool", "Antpool"),
+)
+# set block_number as int and index
+fork_df["block_number"] = fork_df["block_number"].astype(int)
+# merge btc_tx_value_df with fork_df
+merged_df = fork_df[["block_number", "miner_main"]].merge(
+    btc_tx_value_df[["block_number", "addresses"]],
+    left_on="block_number",
+    right_on="block_number",
+)
+
+# read pool json file as dict
+with open(DATA_FOLDER / "pools.json", "r") as f:
+    pool_dict = json.load(f)["payout_addresses"]
+
+pool_dict.update(
+    {row["addresses"]: {"name": row["miner_main"]} for _, row in merged_df.iterrows()}
+)
+
 
 with open(CLUSTER_PATH, "rb") as f:
     clusters = pickle.load(f)
@@ -23,10 +48,6 @@ address_cluster_dict = {
     for cluster_index, cluster in enumerate(clusters)
     for address in cluster
 }
-
-# read pool json file as dict
-with open(DATA_FOLDER / "pools.json", "r") as f:
-    pool_dict = json.load(f)["payout_addresses"]
 
 
 # for each block, find out which cluster the miner belongs to
@@ -53,6 +74,7 @@ sum([-1 in cluster[0] for cluster in cluster_miner_full.values()])  # 0
 
 # check if all blocks's cluster length is 1
 sum([len(cluster[1]) >= 3 for cluster in cluster_miner_full.values()])  # 0
+
 # find out which cluster has more than 3 pools
 cluster_miner_subset = {
     block: cluster
@@ -68,6 +90,7 @@ cluster_miner = pd.Series(
         for i, cluster in cluster_miner_full.items()
     }
 )
+
 
 block_time_df = (
     btc_tx_value_df.groupby("block_number")["block_timestamp"]

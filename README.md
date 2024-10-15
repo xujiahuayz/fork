@@ -74,7 +74,9 @@ wget https://api.blockchain.info/charts/difficulty?timespan=all
 wget https://raw.githubusercontent.com/bitcoin-data/stale-blocks/refs/heads/master/stale-blocks.csv
 <!-- wget https://api.blockchain.info/charts/n-orphaned-blocks?timespan=all&sampled=true&metadata=false&daysAverageString=1d&cors=true&format=json -->
 curl -H "authority: www.antpool.com" "https://www.antpool.com/api/v3/minerInfo/miner/list/all" > miner_rank.json
+<!-- curl https://api.blockchain.info/charts/hash-rate?timespan=all&sampled=true&metadata=false&daysAverageString=1D&cors=true&format=json -> "hash-rate.json" -->
 <!-- curl "https://api.blockchain.info/charts/n-orphaned-blocks?timespan=all&sampled=true&metadata=false&daysAverageString=1d&cors=true&format=json" -> "orphans.json" -->
+<!-- https://api.glassnode.com/v1/metrics/mining/hash_rate_mean?a=BTC&c=native&i=24h&referrer=charts -->
 ```
 
 ## Run scripts

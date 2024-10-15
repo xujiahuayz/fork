@@ -2,17 +2,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.ticker import MaxNLocator
-from fork_env.constants import (
-    DATA_FOLDER,
-    EMPRITICAL_FORK_RATE,
-    DIST_DICT,
-    FIGURES_FOLDER,
-)
+from fork_env.constants import DATA_FOLDER, DIST_DICT, FIGURES_FOLDER, BLOCK_WINDOW
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 block_dicts = hash_panel["block_dict"]
 end_times = pd.to_datetime(hash_panel["end_time"])
-emp_rate_in_percent = "{:.2%}".format(EMPRITICAL_FORK_RATE)
+
+# hash_panel["fork_rate_std"] = (
+#     (hash_panel["fork_rate"] / 100 * (1 - hash_panel["fork_rate"] / 100))
+#     / BLOCK_WINDOW
+# ).sqrt()
+# calculate the standard deviation of fork rate, (p*(1-p)/Block_window)^0.5
+hash_panel["fork_rate_std"] = (
+    (hash_panel["fork_rate"] / 100 * (1 - hash_panel["fork_rate"] / 100)) / BLOCK_WINDOW
+).pow(0.5) * 100
+
+
+# hash_panel["stale_rate"] / [w["50"]["proptime"] for w in block_dicts]
+# [w["50"]["empirical"] for w in block_dicts] / hash_panel["stale_rate"]
 plt.rcParams.update({"font.size": 15})
 
 for proptime in ["50", "90", "99"]:
@@ -23,16 +30,25 @@ for proptime in ["50", "90", "99"]:
 
     ax1.plot(
         end_times,
-        hash_panel["stale_rate"],
+        hash_panel["fork_rate"],
         linestyle=":",
         linewidth=3,
         alpha=0.8,
         label="actual fork rate",
+        color="purple",
     )
 
-    # ax3.set_title(f"to propagate to {proptime} percent of network")
+    # plot 90% confidence interval
 
-    # Horizontal line for empirical fork rate
+    ax1.fill_between(
+        end_times,
+        hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * 1.645,
+        hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * 1.645,
+        color="purple",
+        alpha=0.1,
+        # label="90% confidence interval",
+    )
+
     ax3.set_ylabel("block propagation time $\Delta_0$ (s)", color="olive")
     ax3.plot(
         end_times,
@@ -49,17 +65,8 @@ for proptime in ["50", "90", "99"]:
     # Make the left y-axis cyan
     ax3.spines["right"].set_color("olive")
 
-    # # write EMPRITICAL_FORK_RATE above the line
-    # ax1.text(
-    #     end_times[2],
-    #     EMPRITICAL_FORK_RATE,
-    #     emp_rate_in_percent,
-    #     ha="right",
-    #     va="bottom",
-    # )
-
     for key, value in DIST_DICT.items():
-        rates = [w[proptime][key] for w in block_dicts]
+        rates = [w[proptime][key] * 100 for w in block_dicts]
         ax1.plot(
             end_times,
             rates,
@@ -68,8 +75,7 @@ for proptime in ["50", "90", "99"]:
             linestyle="--" if key == "empirical" else "-",
         )
     ax1.set_ylabel("fork rate $C(\Delta_0)$")
-    ax1.set_ylim(0.0001, 0.049)
-    # ax1.set_yscale("log")
+    ax1.set_ylim(0.0001, 5)
 
     # Format the x-axis as dates
     fig.autofmt_xdate()
@@ -79,7 +85,6 @@ for proptime in ["50", "90", "99"]:
     # Display the legend for the second y-axis
     if proptime == "50":
         ax1.legend(loc="upper left")
-    # ax2.legend()
 
     # Save the plot
     plt.savefig(

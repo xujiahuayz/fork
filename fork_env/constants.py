@@ -135,13 +135,13 @@ VAR_HEADER_UNIT_MAP = {
         "precision": 1,
         "subtab": 1,
     },
-    "avg_logged_difficulty": {
-        "header": r"$\overline{\ln(\text{difficulty})}$",
-        "unit": "",
-        "precision": 2,
-        "subtab": 1,
-    },
-    "stale_rate_100": {
+    # "avg_logged_difficulty": {
+    #     "header": r"$\overline{\ln(\text{difficulty})}$",
+    #     "unit": "",
+    #     "precision": 2,
+    #     "subtab": 1,
+    # },
+    "fork_rate": {
         "header": r"fork rate",
         "unit": r"[\%]",
         "precision": 3,
