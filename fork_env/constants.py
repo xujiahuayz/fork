@@ -131,7 +131,7 @@ VAR_HEADER_UNIT_MAP = {
     "proptime_99": {"header": r"99\%", "unit": r"[s]", "precision": 2, "subtab": 1},
     "average_block_time": {
         "header": r"$\overline{\text{block time}}$",
-        "unit": r"$\frac{1}{\Lambda}$ [s]",
+        "unit": r"$t_{\text {min }}$ [s]",
         "precision": 1,
         "subtab": 1,
     },
