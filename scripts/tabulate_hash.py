@@ -72,7 +72,7 @@ with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
         )
 
     f.write(
-        r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-9} \cmidrule(lr){10-15}"
+        r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-14}"
         + "\n"
     )
     f.write("\n".join(hash_panel_to_latex_subtab_1.split("\n")[3:]))
