@@ -45,6 +45,7 @@ for start_block in range(
     870_000,
     BLOCK_WINDOW,
 ):
+
     print(start_block)
     end_block = start_block + BLOCK_WINDOW - 1
 
@@ -67,7 +68,7 @@ for start_block in range(
         for miner, value in value_counts.items()
     ]
 
-    plt.figure()
+    plt.figure(figsize=(6, 6))
 
     # plot df_in_scope["miner_cluster"] as pie plot with fixed colors, explode, and custom labels
     value_counts.plot.pie(
@@ -82,6 +83,9 @@ for start_block in range(
 
     # remove the y-axis label
     plt.ylabel("")
+
+    plt.tight_layout()
+
     # save to file
     plt.savefig(
         FIGURES_FOLDER / f"pie_miner_{start_block}_{end_block}.pdf",

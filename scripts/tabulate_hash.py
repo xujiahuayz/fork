@@ -49,7 +49,7 @@ hash_panel_to_latex_subtab_2 = hash_panel[
 
 # first subtable
 with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
-    f.write(r"\begin{tabular}{@{}rrrrrrrrrrrrrr@{}}" + "\n")
+    f.write(r"\begin{tabular}{@{}llrrrrrrrrrrrr@{}}" + "\n")
     f.write(r"\toprule" + "\n")
     f.write(
         r"\multicolumn{2}{c}{period of blocks}"
