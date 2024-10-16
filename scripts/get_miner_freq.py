@@ -97,7 +97,7 @@ block_time_df = (
     .first()
     .to_frame(name="block_timestamp")
 )
-block_time_df["miner_addresses"] = btc_tx_value_series
+# block_time_df["miner_addresses"] = btc_tx_value_series
 block_time_df["miner_cluster"] = cluster_miner
 
 # pickle the block_time_df

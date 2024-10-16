@@ -11,9 +11,6 @@ from fork_env.constants import (
 # unpickle block_time_df
 block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
 
-# Get all unique values in the entire dataset for miner_cluster to assign fixed colors
-unique_miners = block_time_df["miner_cluster"].unique()
-
 # Create a color map for each unique miner_cluster
 color_map = {
     miner: color
