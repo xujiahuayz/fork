@@ -68,7 +68,7 @@ for start_block in range(
         for miner, value in value_counts.items()
     ]
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(8, 8))
 
     # plot df_in_scope["miner_cluster"] as pie plot with fixed colors, explode, and custom labels
     value_counts.plot.pie(
@@ -83,6 +83,8 @@ for start_block in range(
 
     # remove the y-axis label
     plt.ylabel("")
+
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
     plt.tight_layout()
 
