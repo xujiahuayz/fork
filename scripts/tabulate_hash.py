@@ -34,8 +34,8 @@ for var, header_unit in VAR_HEADER_UNIT_MAP.items():
 conditional_formatting("proptime_50", "red")
 conditional_formatting("fork_rate", "blue")
 conditional_formatting("num_miners", "purple")
-conditional_formatting("hash_mean", "orange1")
-conditional_formatting("hash_std", "orange2")
+conditional_formatting("hash_mean", "orangeone")
+conditional_formatting("hash_std", "orangetwo")
 conditional_formatting("max_share", "brown")
 
 
