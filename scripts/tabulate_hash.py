@@ -34,8 +34,8 @@ for var, header_unit in VAR_HEADER_UNIT_MAP.items():
 conditional_formatting("proptime_50", "red")
 conditional_formatting("fork_rate", "blue")
 conditional_formatting("num_miners", "purple")
-conditional_formatting("hash_mean", "orange")
-conditional_formatting("hash_std", "orange")
+conditional_formatting("hash_mean", "orange1")
+conditional_formatting("hash_std", "orange2")
 conditional_formatting("max_share", "brown")
 
 
@@ -49,7 +49,7 @@ hash_panel_to_latex_subtab_2 = hash_panel[
 
 # first subtable
 with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
-    f.write(r"\begin{tabular}{@{}ccccccccccrrrr@{}}" + "\n")
+    f.write(r"\begin{tabular}{@{}rrrrrrrrrrrrrr@{}}" + "\n")
     f.write(r"\toprule" + "\n")
     f.write(
         r"\multicolumn{2}{c}{period of blocks}"

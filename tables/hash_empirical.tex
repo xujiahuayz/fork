@@ -1,34 +1,34 @@
-\begin{tabular}{@{}ccccccccccrrrr@{}}
+\begin{tabular}{@{}rrrrrrrrrrrrrr@{}}
 \toprule
 \multicolumn{2}{c}{period of blocks}  &  \multicolumn{3}{c}{propagation time} & & &  &  \multicolumn{6}{c}{empirical miner hash rate}\\
 \cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){9-14}
 start \# & start time & 50\% & 90\% & 99\% & $\overline{\text{block time}}$ & fork rate & miners & $\sum(\text{hash rate})$ & mean & std & skewness & kurtosis & max share\\
  &  & [s] & [s] & [s] & $t_{\text {min }}$ [s] & [\%] & $N$ & $\Lambda$ [s$^{-1}$] & $m$ [s$^{-1}$] & $s$ [s$^{-1}$] &  &  & [\%]\\
 \cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-14}
-360000 & 2015-06-08 & \databarred{7.01} & 16.51 & 26.61 & 586.1 & \databarblue{0.982} & \databarpurple{85} & 0.00171 & \databarorange{0.000020} & \databarorange{0.000060} & 3.85 & 14.96 & \databarbrown{19.34} \\
-380000 & 2015-10-22 & \databarred{7.11} & 18.03 & 27.73 & 546.2 & \databarblue{0.856} & \databarpurple{78} & 0.00185 & \databarorange{0.000024} & \databarorange{0.000078} & 4.09 & 16.87 & \databarbrown{22.88} \\
-400000 & 2016-02-25 & \databarred{5.87} & 15.68 & 27.24 & 583.3 & \databarblue{0.339} & \databarpurple{128} & 0.00172 & \databarorange{0.000013} & \databarorange{0.000059} & 5.68 & 34.34 & \databarbrown{24.44} \\
-420000 & 2016-07-09 & \databarred{4.09} & 12.33 & 25.67 & 584.8 & \databarblue{0.384} & \databarpurple{84} & 0.00172 & \databarorange{0.000021} & \databarorange{0.000055} & 3.42 & 12.02 & \databarbrown{17.80} \\
-440000 & 2016-11-22 & \databarred{3.11} & 10.49 & 24.24 & 566.5 & \databarblue{0.273} & \databarpurple{56} & 0.00177 & \databarorange{0.000032} & \databarorange{0.000058} & 2.32 & 5.12 & \databarbrown{14.12} \\
-460000 & 2017-04-02 & \databarred{1.96} & 10.13 & 23.63 & 565.0 & \databarblue{0.280} & \databarpurple{62} & 0.00179 & \databarorange{0.000029} & \databarorange{0.000052} & 2.20 & 4.18 & \databarbrown{12.55} \\
-480000 & 2017-08-10 & \databarred{1.09} & 7.39 & 19.98 & 560.7 & \databarblue{0.184} & \databarpurple{75} & 0.00183 & \databarorange{0.000024} & \databarorange{0.000053} & 2.73 & 6.70 & \databarbrown{12.80} \\
-500000 & 2017-12-18 & \databarred{0.54} & 4.06 & 16.25 & 555.9 & \databarblue{0.125} & \databarpurple{67} & 0.00180 & \databarorange{0.000027} & \databarorange{0.000068} & 3.76 & 15.91 & \databarbrown{22.42} \\
-520000 & 2018-04-26 & \databarred{0.41} & 2.08 & 13.33 & 569.1 & \databarblue{0.052} & \databarpurple{72} & 0.00177 & \databarorange{0.000025} & \databarorange{0.000060} & 3.22 & 10.47 & \databarbrown{17.90} \\
-540000 & 2018-09-05 & \databarred{0.47} & 2.27 & 14.77 & 613.4 & \databarblue{0.037} & \databarpurple{89} & 0.00165 & \databarorange{0.000018} & \databarorange{0.000050} & 3.45 & 11.99 & \databarbrown{16.75} \\
-560000 & 2019-01-25 & \databarred{0.57} & 3.84 & 18.10 & 586.2 & \databarblue{0.044} & \databarpurple{76} & 0.00172 & \databarorange{0.000023} & \databarorange{0.000053} & 3.40 & 12.08 & \databarbrown{17.21} \\
-580000 & 2019-06-09 & \databarred{0.46} & 3.22 & 17.83 & 566.5 & \databarblue{0.066} & \databarpurple{67} & 0.00178 & \databarorange{0.000027} & \databarorange{0.000060} & 3.34 & 11.90 & \databarbrown{18.39} \\
-600000 & 2019-10-19 & \databarred{0.40} & 2.15 & 14.41 & 590.2 & \databarblue{0.044} & \databarpurple{53} & 0.00171 & \databarorange{0.000032} & \databarorange{0.000061} & 2.56 & 6.76 & \databarbrown{16.89} \\
-620000 & 2020-03-03 & \databarred{0.49} & 3.19 & 15.78 & 599.2 & \databarblue{0.074} & \databarpurple{45} & 0.00169 & \databarorange{0.000038} & \databarorange{0.000065} & 2.58 & 7.26 & \databarbrown{18.34} \\
-640000 & 2020-07-20 & \databarred{0.60} & 3.89 & 17.15 & 595.1 & \databarblue{0.111} & \databarpurple{41} & 0.00170 & \databarorange{0.000041} & \databarorange{0.000070} & 1.87 & 2.75 & \databarbrown{16.30} \\
-660000 & 2020-12-05 & \databarred{0.75} & 4.44 & 19.22 & 593.3 & \databarblue{0.140} & \databarpurple{49} & 0.00170 & \databarorange{0.000035} & \databarorange{0.000069} & 2.25 & 4.15 & \databarbrown{16.81} \\
-680000 & 2021-04-21 & \databarred{0.46} & 2.32 & 13.70 & 616.7 & \databarblue{0.059} & \databarpurple{40} & 0.00165 & \databarorange{0.000041} & \databarorange{0.000073} & 1.92 & 2.48 & \databarbrown{15.92} \\
-700000 & 2021-09-11 & \databarred{0.38} & 1.58 & 14.13 & 579.3 & \databarblue{0.066} & \databarpurple{35} & 0.00174 & \databarorange{0.000050} & \databarorange{0.000084} & 1.78 & 1.98 & \databarbrown{16.16} \\
-720000 & 2022-01-23 & \databarred{0.40} & 1.72 & 14.32 & 591.6 & \databarblue{0.030} & \databarpurple{33} & 0.00170 & \databarorange{0.000052} & \databarorange{0.000091} & 1.77 & 2.08 & \databarbrown{19.38} \\
-740000 & 2022-06-09 & \databarred{0.34} & 1.26 & 11.30 & 589.8 & \databarblue{0.007} & \databarpurple{26} & 0.00171 & \databarorange{0.000066} & \databarorange{0.000110} & 1.90 & 3.10 & \databarbrown{24.06} \\
-760000 & 2022-10-23 & \databarred{0.43} & 1.95 & 13.28 & 590.7 & \databarblue{0.044} & \databarpurple{37} & 0.00171 & \databarorange{0.000046} & \databarorange{0.000109} & 3.05 & 9.62 & \databarbrown{29.75} \\
-780000 & 2023-03-09 & \databarred{0.86} & 4.65 & 20.23 & 590.3 & \databarblue{0.148} & \databarpurple{38} & 0.00171 & \databarorange{0.000045} & \databarorange{0.000111} & 3.31 & 11.43 & \databarbrown{31.38} \\
-800000 & 2023-07-24 & \databarred{0.87} & 4.46 & 21.92 & 584.6 & \databarblue{0.103} & \databarpurple{33} & 0.00172 & \databarorange{0.000052} & \databarorange{0.000119} & 2.91 & 8.25 & \databarbrown{28.84} \\
-820000 & 2023-12-06 & \databarred{0.89} & 4.39 & 19.81 & 585.5 & \databarblue{0.096} & \databarpurple{33} & 0.00172 & \databarorange{0.000052} & \databarorange{0.000112} & 2.91 & 8.79 & \databarbrown{29.19} \\
-840000 & 2024-04-20 & \databarred{0.88} & 3.86 & 21.14 & 598.4 & \databarblue{0.096} & \databarpurple{33} & 0.00168 & \databarorange{0.000051} & \databarorange{0.000136} & 3.28 & 10.46 & \databarbrown{35.38} \\
+360000 & 2015-06-08 & \databarred{7.01} & 16.51 & 26.61 & 586.1 & \databarblue{0.982} & \databarpurple{85} & 0.00171 & \databarorange1{0.000020} & \databarorange2{0.000060} & 3.85 & 14.96 & \databarbrown{19.34} \\
+380000 & 2015-10-22 & \databarred{7.11} & 18.03 & 27.73 & 546.2 & \databarblue{0.856} & \databarpurple{78} & 0.00185 & \databarorange1{0.000024} & \databarorange2{0.000078} & 4.09 & 16.87 & \databarbrown{22.88} \\
+400000 & 2016-02-25 & \databarred{5.87} & 15.68 & 27.24 & 583.3 & \databarblue{0.339} & \databarpurple{128} & 0.00172 & \databarorange1{0.000013} & \databarorange2{0.000059} & 5.68 & 34.34 & \databarbrown{24.44} \\
+420000 & 2016-07-09 & \databarred{4.09} & 12.33 & 25.67 & 584.8 & \databarblue{0.384} & \databarpurple{84} & 0.00172 & \databarorange1{0.000021} & \databarorange2{0.000055} & 3.42 & 12.02 & \databarbrown{17.80} \\
+440000 & 2016-11-22 & \databarred{3.11} & 10.49 & 24.24 & 566.5 & \databarblue{0.273} & \databarpurple{56} & 0.00177 & \databarorange1{0.000032} & \databarorange2{0.000058} & 2.32 & 5.12 & \databarbrown{14.12} \\
+460000 & 2017-04-02 & \databarred{1.96} & 10.13 & 23.63 & 565.0 & \databarblue{0.280} & \databarpurple{62} & 0.00179 & \databarorange1{0.000029} & \databarorange2{0.000052} & 2.20 & 4.18 & \databarbrown{12.55} \\
+480000 & 2017-08-10 & \databarred{1.09} & 7.39 & 19.98 & 560.7 & \databarblue{0.184} & \databarpurple{75} & 0.00183 & \databarorange1{0.000024} & \databarorange2{0.000053} & 2.73 & 6.70 & \databarbrown{12.80} \\
+500000 & 2017-12-18 & \databarred{0.54} & 4.06 & 16.25 & 555.9 & \databarblue{0.125} & \databarpurple{67} & 0.00180 & \databarorange1{0.000027} & \databarorange2{0.000068} & 3.76 & 15.91 & \databarbrown{22.42} \\
+520000 & 2018-04-26 & \databarred{0.41} & 2.08 & 13.33 & 569.1 & \databarblue{0.052} & \databarpurple{72} & 0.00177 & \databarorange1{0.000025} & \databarorange2{0.000060} & 3.22 & 10.47 & \databarbrown{17.90} \\
+540000 & 2018-09-05 & \databarred{0.47} & 2.27 & 14.77 & 613.4 & \databarblue{0.037} & \databarpurple{89} & 0.00165 & \databarorange1{0.000018} & \databarorange2{0.000050} & 3.45 & 11.99 & \databarbrown{16.75} \\
+560000 & 2019-01-25 & \databarred{0.57} & 3.84 & 18.10 & 586.2 & \databarblue{0.044} & \databarpurple{76} & 0.00172 & \databarorange1{0.000023} & \databarorange2{0.000053} & 3.40 & 12.08 & \databarbrown{17.21} \\
+580000 & 2019-06-09 & \databarred{0.46} & 3.22 & 17.83 & 566.5 & \databarblue{0.066} & \databarpurple{67} & 0.00178 & \databarorange1{0.000027} & \databarorange2{0.000060} & 3.34 & 11.90 & \databarbrown{18.39} \\
+600000 & 2019-10-19 & \databarred{0.40} & 2.15 & 14.41 & 590.2 & \databarblue{0.044} & \databarpurple{53} & 0.00171 & \databarorange1{0.000032} & \databarorange2{0.000061} & 2.56 & 6.76 & \databarbrown{16.89} \\
+620000 & 2020-03-03 & \databarred{0.49} & 3.19 & 15.78 & 599.2 & \databarblue{0.074} & \databarpurple{45} & 0.00169 & \databarorange1{0.000038} & \databarorange2{0.000065} & 2.58 & 7.26 & \databarbrown{18.34} \\
+640000 & 2020-07-20 & \databarred{0.60} & 3.89 & 17.15 & 595.1 & \databarblue{0.111} & \databarpurple{41} & 0.00170 & \databarorange1{0.000041} & \databarorange2{0.000070} & 1.87 & 2.75 & \databarbrown{16.30} \\
+660000 & 2020-12-05 & \databarred{0.75} & 4.44 & 19.22 & 593.3 & \databarblue{0.140} & \databarpurple{49} & 0.00170 & \databarorange1{0.000035} & \databarorange2{0.000069} & 2.25 & 4.15 & \databarbrown{16.81} \\
+680000 & 2021-04-21 & \databarred{0.46} & 2.32 & 13.70 & 616.7 & \databarblue{0.059} & \databarpurple{40} & 0.00165 & \databarorange1{0.000041} & \databarorange2{0.000073} & 1.92 & 2.48 & \databarbrown{15.92} \\
+700000 & 2021-09-11 & \databarred{0.38} & 1.58 & 14.13 & 579.3 & \databarblue{0.066} & \databarpurple{35} & 0.00174 & \databarorange1{0.000050} & \databarorange2{0.000084} & 1.78 & 1.98 & \databarbrown{16.16} \\
+720000 & 2022-01-23 & \databarred{0.40} & 1.72 & 14.32 & 591.6 & \databarblue{0.030} & \databarpurple{33} & 0.00170 & \databarorange1{0.000052} & \databarorange2{0.000091} & 1.77 & 2.08 & \databarbrown{19.38} \\
+740000 & 2022-06-09 & \databarred{0.34} & 1.26 & 11.30 & 589.8 & \databarblue{0.007} & \databarpurple{26} & 0.00171 & \databarorange1{0.000066} & \databarorange2{0.000110} & 1.90 & 3.10 & \databarbrown{24.06} \\
+760000 & 2022-10-23 & \databarred{0.43} & 1.95 & 13.28 & 590.7 & \databarblue{0.044} & \databarpurple{37} & 0.00171 & \databarorange1{0.000046} & \databarorange2{0.000109} & 3.05 & 9.62 & \databarbrown{29.75} \\
+780000 & 2023-03-09 & \databarred{0.86} & 4.65 & 20.23 & 590.3 & \databarblue{0.148} & \databarpurple{38} & 0.00171 & \databarorange1{0.000045} & \databarorange2{0.000111} & 3.31 & 11.43 & \databarbrown{31.38} \\
+800000 & 2023-07-24 & \databarred{0.87} & 4.46 & 21.92 & 584.6 & \databarblue{0.103} & \databarpurple{33} & 0.00172 & \databarorange1{0.000052} & \databarorange2{0.000119} & 2.91 & 8.25 & \databarbrown{28.84} \\
+820000 & 2023-12-06 & \databarred{0.89} & 4.39 & 19.81 & 585.5 & \databarblue{0.096} & \databarpurple{33} & 0.00172 & \databarorange1{0.000052} & \databarorange2{0.000112} & 2.91 & 8.79 & \databarbrown{29.19} \\
+840000 & 2024-04-20 & \databarred{0.88} & 3.86 & 21.14 & 598.4 & \databarblue{0.096} & \databarpurple{33} & 0.00168 & \databarorange1{0.000051} & \databarorange2{0.000136} & 3.28 & 10.46 & \databarbrown{35.38} \\
 \bottomrule
 \end{tabular}
