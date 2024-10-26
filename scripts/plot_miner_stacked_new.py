@@ -16,6 +16,7 @@ block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
 # country of origin of each selected mining pool.
 country_map = {
     # https://slashdot.org/software/mining-pools/ 
+    # https://glossary.bitbo.io/mining-pool/#
     "Foundry USA": "USA", 
     "Antpool": "Mainland China",
     "F2Pool": "Mainland China",
@@ -48,9 +49,6 @@ country_color_map = {
     "Sweden": "pink",
 }
 
-# define the country order to plot
-country_order = ["Mainland China", "USA", "Hong Kong", "British Virgin Islands", "Amsterdam", "Japan", "Sweden", "other"]
-
 # function to extract shades from selected colour palettes
 def sample_colormaps(cmap_names, num_intervals):
     return {name: [plt.get_cmap(name)(i) for i in np.linspace(0.26, 1, num_intervals)][::-1] for name in cmap_names}
@@ -65,17 +63,15 @@ sampled_colors = {
 # Assign shades to miners
 country_miner_shade = {
     country: {
-        miner: sampled_colors[country][i % len(sampled_colors[country])]
+        miner: sampled_colors[country][i]
         for i, miner in enumerate(
             sorted([m for m, c in country_map.items() if c == country])  # Alphabetical sorting of miner clusters
         )
     }
     for country in sampled_colors
 }
-print(country_miner_shade)
-        
 
-# list of bars to plot (periods on x-axis)
+# list of bars to plot (periods on the x-axis)
 period_grp = []
 for start_block in range(
     FIRST_START_BLOCK,
@@ -112,7 +108,6 @@ for start_block in range(
     miner_grouping = [
         miner if miner in country_map.keys() else "Other"
         for miner in value_counts.index
-
     ]
 
     # assign shades
@@ -124,7 +119,7 @@ for start_block in range(
     # Add normalized value counts (to make the stacked bars add up to 100%)
     total_blocks = value_counts.sum()
     normalized_counts = value_counts / total_blocks * 100
-        
+    
     # Create a DataFrame to track the period data
     period_df = pd.DataFrame({
         'normalized_count': normalized_counts,
@@ -142,14 +137,20 @@ combined_df = pd.concat(period_data, keys=period_grp, names=["Period"])
 # Create a pivot table to stack the miners based on their country and cluster
 pivot_df = combined_df.pivot_table(index="Period", columns=["country", "miner_cluster", "color"], values="normalized_count", fill_value=0, sort=True)
 
-# Manually sort the columns according to the custom country order
-country_col = pivot_df.columns.get_level_values(0)
+# Define the country order to plot 
+country_order = ["Mainland China", "Hong Kong", "Japan", "USA", "British Virgin Islands", "Amsterdam", "Sweden", "other"]
+miner_cluster_order = sorted(pivot_df.columns.get_level_values(1).astype(str))
 
-# Create a categorical variable for country with the defined order
-country_cat = pd.Categorical(country_col, categories=country_order, ordered=True)
+# sort according to country first, followed by miner_cluster 
+sorted_columns = sorted(
+    pivot_df.columns,
+    key=lambda x: (
+        country_order.index(x[0]) if x[0] in country_order else -1,
+        miner_cluster_order.index(x[1]) if x[1] in miner_cluster_order else -1
+    )
+)
 
-# Sort the DataFrame columns based on the custom order (if not the order would be alphabetically sorted by default)
-sorted_columns = pivot_df.columns[np.argsort(country_cat)]
+# apply sorted order to pivot_df
 pivot_df = pivot_df[sorted_columns]
 
 # Plotting the stacked bar graph
@@ -178,7 +179,7 @@ ax.legend(title="Miner Clusters and Countries", bbox_to_anchor=(1.05, 1), loc='u
 
 # save to file
 plt.savefig(
-    FIGURES_FOLDER / "Miner Clusters and Countries.pdf",
+    FIGURES_FOLDER / "plot_miner_stacked.pdf",
     bbox_inches="tight",
 )
 
