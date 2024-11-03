@@ -10,7 +10,7 @@ from fork_env.constants import (
     DIST_DICT,
 )
 
-from fork_env.utils import ccdf_p, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
+from fork_env.utils import ccdf_p, gen_ln_dist, gen_truncpl_dist
 import pandas as pd
 import numpy as np
 
@@ -89,7 +89,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     ax.plot(
         EMPFIT_X,
         EMPFIT_Y,
-        label="semi-empirical",
+        label="Bayesian, i.i.d.",
         color="black",
         # dashed line
         linestyle="--",
@@ -102,7 +102,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
         (1 - ecdf(miner_hash)).tolist(),
         color="black",
         alpha=0.2,
-        label="$\{\\frac{b_i}{\gamma}\}$ distribution",
+        label="frequentist",
         step="post",
     )
 

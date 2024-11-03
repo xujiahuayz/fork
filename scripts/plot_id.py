@@ -16,7 +16,7 @@ rates.columns = ["iid", "block_propagation_time", "sum_hash", "rate"]
 # increase font size of plots
 plt.rcParams.update({"font.size": 15})
 
-small_x = 180
+small_x = 190
 
 
 for i, sum_hash in enumerate(SUM_HASHES):
@@ -30,7 +30,7 @@ for i, sum_hash in enumerate(SUM_HASHES):
         plt.plot(
             df_iid["block_propagation_time"],
             df_iid["rate"],
-            label=["frequentist", "bayesian, independent", "bayesian, iid"][j],
+            label=["frequentist", "Bayesian, INID", "Bayesian, i.i.d."][j],
             color="black",
             alpha=0.4,
             linewidth=2,
@@ -44,13 +44,13 @@ for i, sum_hash in enumerate(SUM_HASHES):
             sum_hash * (1 - sum((b / BLOCK_WINDOW) ** 2 for b in BIS)) * small_x,
         ],
         color="red",
-        label="$p(0\\vert \\{\\lambda_i\\})$",
+        label="$\Delta_0 \cdot p(0\\vert \\{\\lambda_i\\})$",
     )
 
     plt.text(
-        850,
-        df_iid["rate"].iloc[-1] + [-0.05, 0.08, 0.11][i],
-        f"$\Lambda = {round(sum_hash,4)}$",
+        730,
+        df_iid["rate"].iloc[-1] + [-0.09, 0.08, 0.11][i],
+        f"$\Lambda = {round(sum_hash,4)}$ [s$^{{-1}}$]",
         horizontalalignment="left",
         verticalalignment="top",
     )
