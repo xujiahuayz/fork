@@ -100,6 +100,7 @@ for start_block in range(
     miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
     miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
     bis = list(miner_hash_share_count.sort_values())
+    hhi = sum((b / BLOCK_WINDOW) ** 2 for b in bis)
 
     # avg_logged_difficulty = df_in_scope["difficulty"].mean()
     # find out fork counts where date is in the range
@@ -170,6 +171,7 @@ for start_block in range(
                 n=num_miners,
                 sum_lambda=total_hash_rate,
                 bis=bis,
+                identical=None,
             ),
         }
         block_dict[percentile] = this_block_dict
@@ -214,6 +216,7 @@ for start_block in range(
         "truncpl_ell": truncpl_ell,
         "miner_hash": miner_hash,
         "bis": bis,
+        "hhi": hhi,
         "block_dict": block_dict,
         "distributions": {
             "exp": expon_dist,

@@ -1,34 +1,31 @@
 import pickle
 import time
+import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 
 from fork_env.constants import (
     DATA_FOLDER,
     BLOCK_PROP_TIMES,
-    hash_panel_last_row,
     N_MINER,
     SUM_HASHES,
 )
 
-from fork_env.integration_empirical import fork_rate_empirical, fork_rate_empirical_id
-
-import pandas as pd
+from fork_env.integration_empirical import fork_rate_empirical
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
-BIS = hash_panel_last_row["bis"]
+BIS = hash_panel["bis"].iloc[-1]
 
 
 def compute_rate_id(args) -> tuple[tuple, float]:
     iid, block_propagation_time, sum_hash = args
 
-    fork_rate_func = fork_rate_empirical if iid else fork_rate_empirical_id
-
-    the_rate = fork_rate_func(
+    the_rate = fork_rate_empirical(
         proptime=block_propagation_time,
         sum_lambda=sum_hash,
         n=N_MINER,
         bis=BIS,
+        identical=iid,
     )
 
     print(args, the_rate)
@@ -37,7 +34,7 @@ def compute_rate_id(args) -> tuple[tuple, float]:
 
 if __name__ == "__main__":
     combinations = product(
-        [True, False],
+        [None, True, False],
         BLOCK_PROP_TIMES,
         SUM_HASHES,
     )

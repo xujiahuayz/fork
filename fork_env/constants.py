@@ -44,7 +44,7 @@ DIST_DICT = {
         "color": "red",
     },
     "empirical": {
-        "label": "semi-empirical",
+        "label": "Bayesian, iid",
         "color": "black",
     },
 }

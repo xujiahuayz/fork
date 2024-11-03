@@ -56,31 +56,13 @@ for index, row in hash_panel.iterrows():
                 color=DIST_DICT[key]["color"],
             )
 
-    # # TODO: to clean up below
-
-    # from scripts.check import alpha, ell, scaling_c
-    # from scipy.integrate import quad_vec
-
-    # ax.plot(
-    #     x,
-    #     [
-    #         quad_vec(
-    #             lambda xx: scaling_c * xx ** (-alpha) * np.exp(-ell * xx), xx, np.inf
-    #         )[0]
-    #         for xx in x
-    #     ],
-    #     label="truncated power law",
-    #     color="black",
-    #     linewidth=2,
-    # )
-
     # plot empirical ccdf as volume plot with steps
     ax.fill_between(
         [0] + emp_x,
         [1] + (1 - ecdf(emp_x)).tolist(),
         color="black",
         alpha=0.2,
-        label="$\{\\frac{b_i}{c}\}$ distribution",
+        label="$\{\\frac{b_i}{\gamma}\}$ distribution",
         step="post",
     )
 
