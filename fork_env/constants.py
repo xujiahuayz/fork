@@ -1,4 +1,5 @@
 import pandas as pd
+import csv
 from fork_env.settings import PROJECT_ROOT
 
 
@@ -51,6 +52,42 @@ DIST_DICT = {
 
 DIST_KEYS = list(DIST_DICT.keys())
 
+'''# to obtain list of mining pool names 
+agg_df = pd.read_pickle(DATA_FOLDER / "agg_data.pkl")
+series = agg_df['miner_cluster'].value_counts()
+
+lst = [idx for idx in series.index if isinstance(idx, str)]'''
+
+# Initialize an empty dictionary
+MINER_COUNTRY = {}
+
+# Open the CSV file
+with open(DATA_FOLDER / 'Miner_country_mapping.csv', mode='r') as file:
+    reader = csv.DictReader(file)
+    
+    # Iterate over each row in the CSV file
+    for row in reader:
+        # Use the desired columns as key and value
+        if row['country_based'] != "Unknown":
+            MINER_COUNTRY[row['miner_cluster']] = row['country_based']
+
+country_counts = pd.Series(MINER_COUNTRY).value_counts()
+
+# assign each country to a colour palette
+COLOR_MAP = {
+    "China": "Reds",
+    "USA":"Blues", 
+    "India": "gist_yarg",
+    "Czech Republic": "YlOrBr",
+    "Netherlands": "Greens", 
+    "Sweden": "PuRd",
+    "Japan": "copper",
+    "Poland": "pink",
+    "Russia": "spring", 
+    "Canada": "winter", 
+    "Germany": "summer", 
+    "China other": "Reds",  
+}
 
 # hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 # # get the last row of hash panel
