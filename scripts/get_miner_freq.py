@@ -8,6 +8,7 @@ import pandas as pd
 from fork_env.constants import (
     CLUSTER_PATH,
     DATA_FOLDER,
+    MINER_COUNTRY,
     # DIST_KEYS,
 )
 
@@ -18,7 +19,7 @@ fork_df = pd.read_pickle(DATA_FOLDER / "forks.pkl")
 fork_df[["miner_main", "miner_orphan", "miner_subsequent"]] = pd.DataFrame.map(
     fork_df[["miner_main", "miner_orphan", "miner_subsequent"]],
     lambda x: x.replace('"', "")
-    .replace("Solo CKPool", "CKPool Fee")
+    .replace("Solo CKPool", "CKPool")
     .replace("SlushPool", "Braiins Pool")
     .replace("AntPool", "Antpool"),
 )
@@ -91,7 +92,6 @@ cluster_miner = pd.Series(
     }
 )
 
-
 block_time_df = (
     btc_tx_value_df.groupby("block_number")["block_timestamp"]
     .first()
@@ -99,6 +99,25 @@ block_time_df = (
 )
 # block_time_df["miner_addresses"] = btc_tx_value_series
 block_time_df["miner_cluster"] = cluster_miner
+
+# unpickle all dataframes
+agg_df = pd.read_pickle(DATA_FOLDER / "block_miners.pkl")
+agg_df_2 = pd.read_pickle(DATA_FOLDER / "block_miners_2.pkl")
+
+agg_df = pd.concat([agg_df, agg_df_2], ignore_index=True)
+
+
+agg_df.set_index("height", inplace=True)
+
+for idx in block_time_df.index:
+    value_A = block_time_df.loc[idx, 'miner_cluster']
+    if idx in agg_df.index: 
+        value_B = agg_df.loc[idx, 'miner_cluster']
+
+        # Check if value_A is in the dictionary and value_B is not
+        if value_B in MINER_COUNTRY.keys() and value_A not in MINER_COUNTRY.keys():
+            # Replace value in DataFrame B with value from DataFrame A
+            block_time_df.loc[idx, 'miner_cluster'] = value_B
 
 # pickle the block_time_df
 block_time_df.to_pickle(DATA_FOLDER / "block_time_df.pkl")
