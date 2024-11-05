@@ -18,7 +18,8 @@ hash_panel["fork_rate_std"] = (
 plt.rcParams.update({"font.size": 15})
 
 small_y = 1.18
-
+x_label_bin = 13
+handlelen = 0.8
 # Create the plot
 fig, ax1 = plt.subplots()  # Use ax3 for the first y-axis
 
@@ -76,7 +77,7 @@ for i, proptime in enumerate(["50", "90", "99"]):
     # Format the x-axis as dates
     fig.autofmt_xdate()
     ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax3.xaxis.set_major_locator(MaxNLocator(nbins=9))
+    ax3.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
     if i == 0:
         # two columns, no border
         ax1.legend(loc="upper center", frameon=False, handlelength=0.8)
@@ -95,7 +96,7 @@ plt.axhspan(0, small_y, color="grey", alpha=0.1)
 ax3 = ax1.twinx()
 
 tpl_label = "C(\\Delta_0)_{\\{\\lambda_i \\} \sim \\text{TPL}(\\alpha, \\beta)}"
-freq_label = "C(\\Delta_0 \\vert \\{\\lambda_i = \\frac{b_i}{B} \\})"
+freq_label = "C(\\Delta_0 \\vert \\{\\lambda_i = \\frac{b_i \cdot \Lambda}{B} \\})"
 key = "trunc_power_law"
 value = DIST_DICT[key]
 rates = [w["50"][key] * 100 for w in block_dicts]
@@ -162,10 +163,10 @@ ax1.set_ylim(0, small_y)
 # Format the x-axis as dates
 fig.autofmt_xdate()
 ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-ax3.xaxis.set_major_locator(MaxNLocator(nbins=9))
+ax3.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
 
-ax1.legend(loc="upper right", frameon=False)
-ax3.legend(loc="right", frameon=False)
+ax1.legend(loc="upper right", frameon=False, handlelength=handlelen)
+ax3.legend(loc="right", frameon=False, handlelength=handlelen)
 # # Display the legend for the second y-axis
 
 # Save the plot
@@ -215,10 +216,63 @@ ax1.axhline(y=1, color="black", linestyle="--", linewidth=0.5)
 ax1.set_ylim(0, 6.9)
 ax1.set_ylabel("ratio")
 
-ax1.legend(loc="upper left", frameon=False)
+ax1.legend(loc="upper left", frameon=False, handlelength=handlelen)
 
 fig.autofmt_xdate()
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-ax1.xaxis.set_major_locator(MaxNLocator(nbins=9))
+ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
+
+plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_ratio.pdf", bbox_inches="tight")
+
+
+# create a plot with two y-axes
+fig, ax1 = plt.subplots()
+
+ax1.plot(
+    end_times,
+    1 - hash_panel["fork_rate"] / 100 / (hash_panel["total_hash_rate"] * block_time_50),
+    color="purple",
+    label=f"implied with \nhistorically measured fork rate",
+    linewidth=3,
+    linestyle=":",
+)
+
+ax1.fill_between(
+    end_times,
+    1
+    - (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * 1.645).clip(0.0001)
+    / 100
+    / (hash_panel["total_hash_rate"] * block_time_50),
+    1
+    - (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * 1.645)
+    / 100
+    / (hash_panel["total_hash_rate"] * block_time_50),
+    color="purple",
+    alpha=0.1,
+    # label="90% confidence interval",
+)
+
+
+ax1.plot(
+    end_times,
+    hash_panel["hhi"],
+    color="red",
+    label="empirical with ${\lambda_i = \\frac{b_i}{B}}$",
+    linewidth=3,
+    # linestyle=":",
+)
+
+
+# horizontal line at 1
+ax1.axhline(y=1, color="black", linestyle="--", linewidth=0.5)
+
+ax1.set_ylim(0, 1)
+ax1.set_ylabel("$\it HHI$")
+
+ax1.legend(loc="upper left", frameon=False, handlelength=handlelen)
+
+fig.autofmt_xdate()
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
 
 plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_ratio.pdf", bbox_inches="tight")
