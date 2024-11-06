@@ -257,7 +257,7 @@ ax1.plot(
     end_times,
     hash_panel["hhi"],
     color="red",
-    label="empirical with ${\lambda_i = \\frac{b_i}{B}}$",
+    label="empirical with ${\lambda_i = \\frac{b_i \cdot \Lambda}{B}}$",
     linewidth=3,
     # linestyle=":",
 )
@@ -275,4 +275,4 @@ fig.autofmt_xdate()
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
 
-plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_ratio.pdf", bbox_inches="tight")
+plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_hhi.pdf", bbox_inches="tight")
