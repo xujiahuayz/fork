@@ -215,6 +215,12 @@ VAR_HEADER_UNIT_MAP = {
         "precision": 2,
         "subtab": 1,
     },
+    "hhi": {
+        "header": r"hhi",
+        "unit": "",
+        "precision": 2, 
+        "subtab": 1,
+    },
     "max_share": {
         "header": r"max share",
         "unit": r"[\%]",
