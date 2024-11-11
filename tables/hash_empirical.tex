@@ -1,10 +1,10 @@
 \begin{tabular}{@{}llrrrrrrrrrrrrr@{}}
 \toprule
-\multicolumn{2}{c}{period of blocks}  &  \multicolumn{3}{c}{propagation time} & & &  &  \multicolumn{6}{c}{empirical miner hash rate}\\
-\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){9-14}
+\multicolumn{2}{c}{period of blocks}  &  \multicolumn{3}{c}{propagation time} & & &  &  \multicolumn{7}{c}{empirical miner hash rate}\\
+\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){9-15}
 start \# & start time & 50\% & 90\% & 99\% & $\overline{\text{block time}}$ & fork rate & miners & $\sum(\text{hash rate})$ & mean & std & skewness & kurtosis & hhi & max share\\
  &  & [s] & [s] & [s] & $t_{\text {min }}$ [s] & [\%] & $N$ & $\Lambda$ [s$^{-1}$] & $m$ [s$^{-1}$] & $s$ [s$^{-1}$] &  &  &  & [\%]\\
-\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-14}
+\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-15}
 360000 & 2015-06-08 & \databarred{7.01} & 16.51 & 26.61 & 586.1 & \databarblue{0.982} & \databarpurple{85} & 0.00171 & \databarorangeone{0.000020} & \databarorangetwo{0.000060} & 3.82 & 14.73 & \databarbrown{0.12} & \databarbrown{19.34} \\
 380000 & 2015-10-22 & \databarred{7.11} & 18.03 & 27.73 & 546.2 & \databarblue{0.856} & \databarpurple{69} & 0.00185 & \databarorangeone{0.000027} & \databarorangetwo{0.000082} & 3.81 & 14.52 & \databarbrown{0.15} & \databarbrown{22.89} \\
 400000 & 2016-02-25 & \databarred{5.87} & 15.68 & 27.24 & 583.3 & \databarblue{0.339} & \databarpurple{35} & 0.00172 & \databarorangeone{0.000049} & \databarorangetwo{0.000106} & 2.71 & 6.98 & \databarbrown{0.16} & \databarbrown{24.44} \\
