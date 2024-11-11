@@ -57,11 +57,11 @@ with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
         + r"  &  "
         + r"\multicolumn{3}{c}{propagation time}"
         + r" & & &  &  "
-        + r"\multicolumn{6}{c}{empirical miner hash rate}"
+        + r"\multicolumn{7}{c}{empirical miner hash rate}"
         + r"\\"
         + "\n"
     )
-    f.write(r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){9-14}" + "\n")
+    f.write(r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){9-15}" + "\n")
 
     for row in ["header", "unit"]:
         f.write(
@@ -73,7 +73,7 @@ with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
         )
 
     f.write(
-        r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-14}"
+        r"\cmidrule(lr){1-2} \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-15}"
         + "\n"
     )
     f.write("\n".join(hash_panel_to_latex_subtab_1.split("\n")[3:]))
