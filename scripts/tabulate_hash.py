@@ -36,6 +36,7 @@ conditional_formatting("fork_rate", "blue")
 conditional_formatting("num_miners", "purple")
 conditional_formatting("hash_mean", "orangeone")
 conditional_formatting("hash_std", "orangetwo")
+conditional_formatting("hhi", "brown")
 conditional_formatting("max_share", "brown")
 
 
