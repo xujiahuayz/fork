@@ -52,41 +52,41 @@ DIST_DICT = {
 
 DIST_KEYS = list(DIST_DICT.keys())
 
-'''# to obtain list of mining pool names 
+"""# to obtain list of mining pool names 
 agg_df = pd.read_pickle(DATA_FOLDER / "agg_data.pkl")
 series = agg_df['miner_cluster'].value_counts()
 
-lst = [idx for idx in series.index if isinstance(idx, str)]'''
+lst = [idx for idx in series.index if isinstance(idx, str)]"""
 
 # Initialize an empty dictionary
 MINER_COUNTRY = {}
 
 # Open the CSV file
-with open(DATA_FOLDER / 'Miner_country_mapping.csv', mode='r') as file:
+with open(DATA_FOLDER / "Miner_country_mapping.csv", mode="r") as file:
     reader = csv.DictReader(file)
-    
+
     # Iterate over each row in the CSV file
     for row in reader:
         # Use the desired columns as key and value
-        if row['country_based'] != "Unknown":
-            MINER_COUNTRY[row['miner_cluster']] = row['country_based']
+        if row["country_based"] != "Unknown":
+            MINER_COUNTRY[row["miner_cluster"]] = row["country_based"]
 
 country_counts = pd.Series(MINER_COUNTRY).value_counts()
 
 # assign each country to a colour palette
 COLOR_MAP = {
     "China": "Reds",
-    "USA":"Blues", 
+    "USA": "Blues",
     "India": "gist_yarg",
     "Czech Republic": "YlOrBr",
-    "Netherlands": "Greens", 
+    "Netherlands": "Greens",
     "Sweden": "PuRd",
     "Japan": "copper",
     "Poland": "pink",
-    "Russia": "spring", 
-    "Canada": "winter", 
-    "Germany": "summer", 
-    "China other": "Reds",  
+    "Russia": "spring",
+    "Canada": "winter",
+    "Germany": "summer",
+    "China other": "Reds",
 }
 
 # hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
@@ -157,7 +157,7 @@ BLOCK_PROP_TIMES = list(
 BLOCK_PROP_TIMES.sort()
 
 
-SUM_HASHES = [1e-3, 5e-3, SUM_HASH_RATE]
+SUM_HASHES = [1e-3, 3e-3, SUM_HASH_RATE]
 SUM_HASHES.sort()
 
 VAR_HEADER_UNIT_MAP = {
@@ -218,7 +218,7 @@ VAR_HEADER_UNIT_MAP = {
     "hhi": {
         "header": r"hhi",
         "unit": "",
-        "precision": 2, 
+        "precision": 2,
         "subtab": 1,
     },
     "max_share": {

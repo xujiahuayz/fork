@@ -49,7 +49,7 @@ for i, sum_hash in enumerate(SUM_HASHES):
         df_iid = df[(df["iid"].isnull()) if id is None else (df["iid"] == id)]
 
         plt.plot(
-            df_iid["block_propagation_time"],
+            df_iid["block_propagation_time"] * sum_hash,
             df_iid["rate"],
             label=["empirical", "semi-empirical, INID", "semi-empirical, i.i.d."][j],
             color="black",
@@ -59,7 +59,7 @@ for i, sum_hash in enumerate(SUM_HASHES):
         )
 
     plt.plot(
-        [0, small_x],
+        [0, small_x * sum_hash],
         [
             0,
             sum_hash * (1 - sum((b / BLOCK_WINDOW) ** 2 for b in BIS)) * small_x,
@@ -76,7 +76,7 @@ for i, sum_hash in enumerate(SUM_HASHES):
             & (rates_analytical_df["distribution"] == key)
         ]
         plt.plot(
-            this_df["block_propagation_time"],
+            this_df["block_propagation_time"] * sum_hash,
             this_df["rate"],
             label=distribution["label"],
             color=distribution["color"],
@@ -90,14 +90,14 @@ for i, sum_hash in enumerate(SUM_HASHES):
     #     horizontalalignment="left",
     #     verticalalignment="top",
     # )
-    plt.xlabel("block propagation time $\\Delta_0$ [s]")
+    plt.xlabel("block propagation time $\\Delta_0$ $\\times$ total hash $\\Lambda$")
     plt.ylabel("fork rate $C(\\Delta_0)$")
-    plt.xlim(0, 1100)
+    # plt.xlim(0, 1)
     # plt.ylim(0, 1.19)
 
     # add legend only once, no border
-    if i == len(SUM_HASHES) - 1:
-        plt.legend(loc="lower right", frameon=False, handlelength=1, ncol=2)
+    # if i == len(SUM_HASHES) - 1:
+    plt.legend(loc="lower right", frameon=False, handlelength=1, ncol=2, fontsize=13)
 
     plt.tight_layout()
     plt.savefig(FIGURES_FOLDER / f"fork_rate_id_{i}.pdf")
