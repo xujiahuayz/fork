@@ -111,4 +111,17 @@ python scripts/plot_miner_freq.py
 python scripts/plot_miner_freq_zero.py
 ```
 
+## Set up the environmental variables
+
+put your APIs in `.env`:
+
+```
+CLOVERPOOL_API_1="t123"
+CLOVERPOOL_API_2='t456'
+```
+
+```
+export $(cat .env | xargs)
+```
+
 <!-- https://api.blockchain.info/charts/difficulty?timespan=all -->
