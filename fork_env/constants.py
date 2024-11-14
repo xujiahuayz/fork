@@ -14,6 +14,7 @@ SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.jsonl.gz"
 ANALYTICAL_FORK_RATES_PATH = DATA_FOLDER / "rates_analytical.pkl"
 ANALYTICAL_FORK_RATES_PATH_STD = DATA_FOLDER / "rates_analytical_std.pkl"
 SIMULATED_FORK_RATES_EMP_DIST = DATA_FOLDER / "rates_simulated_emp_dist.jsonl"
+BLOCK_MINER_CLOVERPOOL_PATH = DATA_FOLDER / "block_miners_clover.pkl"
 
 EMPRITICAL_FORK_RATE = 0.0041
 BLOCK_WINDOW = 20_000

@@ -1,57 +1,39 @@
-# import requests
 import time
+from datetime import datetime, timedelta
+
 import pandas as pd
-import http.client
-from datetime import timedelta, datetime
-import json
-from fork_env.settings import CLOVERPOOL_API_1, CLOVERPOOL_API_2
+import requests
 
-
-from fork_env.constants import DATA_FOLDER
-
-dates = ["2009-01-03", "2024-05-11", "2024-11-10"]
-
+from fork_env.constants import BLOCK_MINER_CLOVERPOOL_PATH
+from fork_env.settings import CLOVERPOOL_API_LIST
 
 full_list = []
 
+TODAY = datetime.today()
 
-# iterate through the required configurations
-for i, api in enumerate([CLOVERPOOL_API_1, CLOVERPOOL_API_2]):
+current_date = datetime.strptime("2009-01-03", "%Y-%m-%d")
+
+for i, api in enumerate(CLOVERPOOL_API_LIST):
     print(f"Processing API {i + 1}")
 
-    headers = {"X-API-TOKEN": api}
-
-    current_date = datetime.strptime(dates[i], "%Y-%m-%d")
-    while current_date <= datetime.strptime(dates[i + 1], "%Y-%m-%d"):
+    day_data = {"code": 0, "data": []}
+    while (current_date <= TODAY) and (day_data["code"] == 0):
+        full_list.extend(day_data["data"])
         # Format the date to match the API requirement (YYYYMMDD)
         date_str = current_date.strftime("%Y%m%d")
+        day_data = requests.get(
+            f"https://tools-gateway.api.cloverpool.com/rest/api/v1.0/nodeapi/block/date/{date_str}",
+            headers={"X-API-TOKEN": api},
+            timeout=10,
+        ).json()
 
-        conn = http.client.HTTPSConnection("tools-gateway.api.cloverpool.com")
-
-        # send data pull request. API Documentation: https://tools.api.cloverpool.com/docs/en/#get-block-list-by-daytime
-        conn.request(
-            "GET", f"/rest/api/v1.0/nodeapi/block/date/{date_str}", headers=headers
-        )
-
-        data = conn.getresponse().read()
-
-        # sleep for 2 seconds to avoid rate limiting
-        time.sleep(2)
-
-        day_data = json.loads(data.decode("utf-8"))
-
-        assert (
-            day_data.get("code") == 0 and "data" in day_data
-        ), f"Error in fetching data for {date_str}"
-
-        full_list.extend(day_data["data"])
-
-        # break loop
-
-        print(f"Processed {date_str}")
-
-        current_date += timedelta(days=1)
+        if day_data["code"] == 0:
+            print(f"Processed {date_str}")
+            current_date += timedelta(days=1)
+            time.sleep(0.83)
+        else:
+            print(f"Error in fetching data for {date_str}: {day_data}")
 
 
 block_miners_df = pd.DataFrame(full_list)
-block_miners_df.to_pickle(DATA_FOLDER / "block_miners.pkl")
+block_miners_df.to_pickle(BLOCK_MINER_CLOVERPOOL_PATH)

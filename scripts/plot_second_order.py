@@ -83,13 +83,6 @@ for i, sum_hash in enumerate(SUM_HASHES):
             # linestyle=distribution["linestyle"],
         )
 
-    # plt.text(
-    #     730,
-    #     df_iid["rate"].iloc[-1] + [-0.09, 0.08, 0.11][i],
-    #     f"$\Lambda = {round(sum_hash,4)}$ [s$^{{-1}}$]",
-    #     horizontalalignment="left",
-    #     verticalalignment="top",
-    # )
     plt.xlabel("block propagation time $\\Delta_0$ $\\times$ total hash $\\Lambda$")
     plt.ylabel("fork rate $C(\\Delta_0)$")
     # plt.xlim(0, 1)
