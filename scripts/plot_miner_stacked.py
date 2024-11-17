@@ -1,51 +1,27 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.patches as mpatches
-from datetime import datetime
-import re
+
+from scripts.get_miner_freq import MINER_COUNTRY
 
 from fork_env.constants import (
     DATA_FOLDER,
     BLOCK_WINDOW,
     FIRST_START_BLOCK,
     FIGURES_FOLDER,
-    MINER_COUNTRY,
+    COUNTRY_ORDER, 
     COLOR_MAP,
 )
 
 # unpickle all dataframes
-block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
-agg_df = pd.read_pickle(DATA_FOLDER / "block_miners.pkl")
-agg_df_2 = pd.read_pickle(DATA_FOLDER / "block_miners_2.pkl")
+merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 
-agg_df = pd.concat([agg_df, agg_df_2], ignore_index=True)
-
-agg_df.set_index("height", inplace=True)
-
-for idx in block_time_df.index:
-    value_A = block_time_df.loc[idx, 'miner_cluster']
-    if idx in agg_df.index: 
-        value_B = agg_df.loc[idx, 'miner_cluster']
-
-        # Check if value_A is in the dictionary and value_B is not
-        if value_B in MINER_COUNTRY.keys() and value_A not in MINER_COUNTRY.keys():
-            # Replace value in DataFrame B with value from DataFrame A
-            block_time_df.loc[idx, 'miner_cluster'] = value_B
-
-block_time_df['block_timestamp'] = block_time_df['block_timestamp'].dt.strftime('%Y-%m')
-
-# Update BTC.com with its latest name "Cloverpool"
-# Update SlushPool with its latest name "Braiins Pool"
-block_time_df.loc[block_time_df["miner_cluster"] == "BTC.com", "miner_cluster" ] = "Cloverpool"
-block_time_df.loc[block_time_df["miner_cluster"] == "SlushPool", "miner_cluster"] = "Braiins Pool"
-block_time_df.loc[block_time_df["miner_cluster"] == "BTCC Pool", "miner_cluster"] = "BTCC"
-block_time_df.loc[block_time_df["miner_cluster"] == "Huobi Pool", "miner_cluster"] = "Huobi"
+merged_df['block_timestamp'] = merged_df['block_timestamp'].dt.strftime('%Y-%m')
 
 # Label all unnamed miners as "other" for ease
-block_time_df.loc[~block_time_df["miner_cluster"].isin(MINER_COUNTRY.keys()), "miner_cluster"] = "other"
+merged_df.loc[~merged_df["miner_cluster"].isin(MINER_COUNTRY.keys()), "miner_cluster"] = "other"
 
-value_counts = block_time_df["miner_cluster"].value_counts()
+value_counts = merged_df["miner_cluster"].value_counts()
 
 # function to extract shades from selected colour palettes
 def sample_colormaps(cmap_names, num_intervals):
@@ -78,16 +54,13 @@ for start_block in range(
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
-    period_grp.append(f"{start_block}   \n({block_time_df.loc[start_block, 'block_timestamp']})")
+    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'block_timestamp']})")
 
 # To track where each bar stack starts
 block_bottom = np.zeros(len(period_grp))
 
 period_data = []
-China_other = ["Poolin", "BTC.TOP", "BW.COM", "Bixin", 
-               "1THash", "1Hash", "BTC M6","BTC M4", "58COIN", 
-               "Lubian", "BTC M7", "BTC M8", "BTC M1", "BTC M19", 
-               "Huobi", "BTC M2", "BTC M3", "BTC M5"]
+China_other = [key for key, value in MINER_COUNTRY.items() if value == 'China other']
 
 # traverse through each period from block_time_df with designated block window (20_000 in our case)
 for start_block in range(
@@ -97,25 +70,25 @@ for start_block in range(
 ):
     end_block = start_block + BLOCK_WINDOW - 1
 
-    df_in_scope = block_time_df.loc[start_block:end_block]
+    df_in_scope = merged_df.loc[start_block:end_block]
 
     # Get the value counts for each period and map colors using the color_map
-    value_counts = df_in_scope["miner_cluster"].value_counts()
+    counts = df_in_scope["miner_cluster"].value_counts()
 
     countries = [
         MINER_COUNTRY.get(miner, "other")
-        for miner in value_counts.index
+        for miner in counts.index
     ]
 
     # assign shades
     colors = [
         plt.get_cmap("Reds")(0.30) if miner in China_other else country_miner_shade.get(country, {}).get(miner, "gainsboro") 
-        for miner, country in zip(value_counts.index, countries)
+        for miner, country in zip(counts.index, countries)
     ]
     
     # Add normalized value counts (to make the stacked bars add up to 100%)
-    total_blocks = value_counts.sum() # - value_counts['other']
-    normalized_counts = value_counts / total_blocks * 100
+    total_blocks = counts.sum() # - value_counts['other']
+    normalized_counts = counts / total_blocks * 100
     
     # Create a DataFrame to track the period data
     period_df = pd.DataFrame({
@@ -132,15 +105,13 @@ combined_df = pd.concat(period_data, keys=period_grp, names=["Period"])
 # Create a pivot table to stack the miners based on their country and cluster
 pivot_df = combined_df.pivot_table(index="Period", columns=["country", "miner_cluster", "color"], values="normalized_count", fill_value=0, sort=True)
 
-# Define the country order to plot 
-country_order = ["China", "China other", "Japan", "India", "USA", "Canada", "Czech Republic", "Germany", "Netherlands", "Poland", "Russia", "Sweden", "other"]
 miner_cluster_order = sorted(pivot_df.columns.get_level_values(1).astype(str))
 
 # sort according to country first, followed by miner_cluster 
 sorted_columns = sorted(
     pivot_df.columns,
     key=lambda x: (
-        country_order.index(x[0]) if x[0] in country_order else -1,
+        COUNTRY_ORDER.index(x[0]) if x[0] in COUNTRY_ORDER else -1,
         miner_cluster_order.index(x[1]) if x[1] in miner_cluster_order else -1
     )
 )
@@ -200,6 +171,6 @@ ax.legend(title="miner (country)", bbox_to_anchor=(1.05, 1), loc='upper left', f
 
 # save to file
 plt.savefig(
-    FIGURES_FOLDER / "plot_miner_stacked.pdf", # "plot_miner_stacked_.pdf",
+    FIGURES_FOLDER / "plot_miner_stacked.pdf", # "plot_miner_stacked_ori.pdf",
     bbox_inches="tight",
 )
