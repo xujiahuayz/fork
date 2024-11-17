@@ -1,18 +1,15 @@
 import pandas as pd
 from scipy.stats import expon
-import pickle
 import json
 
 from fork_env.constants import (
     DATA_FOLDER,
-    # DIST_KEYS,
 )
 from fork_env.utils import (
     calc_ex_rate,
     gen_ln_dist,
     gen_lmx_dist,
     gen_truncpl_dist,
-    bits_to_difficulty,
 )
 from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
 from scripts.get_clusters import btc_tx_value_series
@@ -28,24 +25,11 @@ from scripts.get_fork import multiplier, final_fork
 merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 
 
-with open(DATA_FOLDER / "btc_tx_difficulty.pkl", "rb") as f:
-    difficulty_dict = pickle.load(f)
-
-# create a dataframe from the dict with number as index
-difficulty_df = pd.DataFrame(difficulty_dict).set_index("number")
-# convert the bits to difficulty, logged
-difficulty_df["difficulty"] = (
-    difficulty_df["bits"].apply(bits_to_difficulty)
-    # .apply(np.log)
-)
-
 # # merge the two dataframes
-merged_df = merged_df.merge(difficulty_df, left_index=True, right_index=True)
-# .merge(stale_blocks, left_index=True, right_index=True, how="left")
-merged_df["date"] = (
-    pd.to_datetime(merged_df["block_timestamp"].dt.date).astype(int) // 10**9
-)
+merged_df["difficulty"] *= 2**32
 
+# timestamp to the nearest date
+merged_df["date"] = merged_df["time"] // 86400 * 86400
 fork_counts = final_fork[["final_fork"]] * multiplier
 # change DatetimeIndex(['2009-01-03', '2009-01-09', '2009-01-12', '2009-01-15' to timestamp
 fork_counts["time_stamp"] = pd.to_datetime(fork_counts.index).astype(int) // 10**9
@@ -86,13 +70,13 @@ for start_block in range(
     end_block = start_block + BLOCK_WINDOW
 
     df_in_scope = merged_df.loc[start_block:end_block]
-    block_times = df_in_scope["block_timestamp"].to_list()
+    block_times = df_in_scope["time"].to_list()
     # time difference between the first and last block in seconds
     start_time = block_times[0]
     end_time = block_times[-1]
 
     # use miliseconds for time difference
-    average_block_time = (end_time - start_time).total_seconds() / BLOCK_WINDOW
+    average_block_time = (end_time - start_time) / BLOCK_WINDOW
     total_hash_rate = (
         df_in_scope["total_hash_rate"][:-1].sum() / df_in_scope["difficulty"][:-1].sum()
     )
@@ -106,8 +90,8 @@ for start_block in range(
     # find out fork counts where date is in the range
     fork_rate = (
         fork_counts[
-            (fork_counts["time_stamp"] >= start_time.timestamp())
-            & (fork_counts["time_stamp"] <= end_time.timestamp())
+            (fork_counts["time_stamp"] >= start_time)
+            & (fork_counts["time_stamp"] <= end_time)
         ]["final_fork"].sum()
         / BLOCK_WINDOW
     )
@@ -130,8 +114,7 @@ for start_block in range(
 
     # find the chunk of invstat_df that corresponds to the block times
     invstat_chunk = invstat_df[
-        (invstat_df["start_unix"] >= start_time.timestamp())
-        & (invstat_df["end_unix"] <= end_time.timestamp())
+        (invstat_df["start_unix"] >= start_time) & (invstat_df["end_unix"] <= end_time)
     ]
 
     block_dict = {}
@@ -196,8 +179,8 @@ for start_block in range(
     row = {
         "start_block": start_block,
         "end_block": end_block,
-        "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
+        "start_time": start_time,
+        "end_time": end_time,
         "average_block_time": average_block_time,
         "total_hash_rate": total_hash_rate,
         "fork_rate": fork_rate * 100,
