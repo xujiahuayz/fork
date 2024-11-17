@@ -2,7 +2,7 @@
 import pandas as pd
 from fork_env.constants import DATA_FOLDER, TABLE_FOLDER, VAR_HEADER_UNIT_MAP
 
-hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
+hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel_clover.pkl")
 
 # make start time exact to date
 hash_panel["start_time"] = pd.to_datetime(hash_panel["start_time"]).dt.date

@@ -25,7 +25,7 @@ from scripts.get_fork import multiplier, final_fork
 
 
 # unpickle block_time_df
-block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
+merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 
 
 with open(DATA_FOLDER / "btc_tx_difficulty.pkl", "rb") as f:
@@ -40,10 +40,10 @@ difficulty_df["difficulty"] = (
 )
 
 # # merge the two dataframes
-block_time_df = block_time_df.merge(difficulty_df, left_index=True, right_index=True)
+merged_df = merged_df.merge(difficulty_df, left_index=True, right_index=True)
 # .merge(stale_blocks, left_index=True, right_index=True, how="left")
-block_time_df["date"] = (
-    pd.to_datetime(block_time_df["block_timestamp"].dt.date).astype(int) // 10**9
+merged_df["date"] = (
+    pd.to_datetime(merged_df["block_timestamp"].dt.date).astype(int) // 10**9
 )
 
 fork_counts = final_fork[["final_fork"]] * multiplier
@@ -59,7 +59,7 @@ hash_rate_mean_df = (
 )
 
 # merge hash_rate_mean_df with block_time_df
-block_time_df = block_time_df.merge(
+merged_df = merged_df.merge(
     hash_rate_mean_df, left_on="date", right_on="t", how="left"
 ).drop(columns=["t"])
 
@@ -85,7 +85,7 @@ for start_block in range(
     print(start_block)
     end_block = start_block + BLOCK_WINDOW
 
-    df_in_scope = block_time_df.loc[start_block:end_block]
+    df_in_scope = merged_df.loc[start_block:end_block]
     block_times = df_in_scope["block_timestamp"].to_list()
     # time difference between the first and last block in seconds
     start_time = block_times[0]

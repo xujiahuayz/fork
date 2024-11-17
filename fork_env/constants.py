@@ -1,7 +1,4 @@
-import pandas as pd
-import csv
 from fork_env.settings import PROJECT_ROOT
-
 
 DATA_FOLDER = PROJECT_ROOT / "data"
 FIGURES_FOLDER = PROJECT_ROOT / "figures"
@@ -53,41 +50,41 @@ DIST_DICT = {
 
 DIST_KEYS = list(DIST_DICT.keys())
 
-"""# to obtain list of mining pool names 
-agg_df = pd.read_pickle(DATA_FOLDER / "agg_data.pkl")
-series = agg_df['miner_cluster'].value_counts()
+'''# to obtain list of mining pool names 
+merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
+series = merged_df['miner_cluster'].value_counts()
 
-lst = [idx for idx in series.index if isinstance(idx, str)]"""
+lst = [idx for idx in series.index if isinstance(idx, str)]
 
-# Initialize an empty dictionary
-MINER_COUNTRY = {}
+# Open the CSV file in write mode
+with open('Miner_country.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    
+    for item in lst:
+        writer.writerow([item])'''
 
-# Open the CSV file
-with open(DATA_FOLDER / "Miner_country_mapping.csv", mode="r") as file:
-    reader = csv.DictReader(file)
-
-    # Iterate over each row in the CSV file
-    for row in reader:
-        # Use the desired columns as key and value
-        if row["country_based"] != "Unknown":
-            MINER_COUNTRY[row["miner_cluster"]] = row["country_based"]
-
-country_counts = pd.Series(MINER_COUNTRY).value_counts()
+# Define the country order to plot 
+COUNTRY_ORDER = ["China", "China other", "Japan", "India", "USA", 
+                "Canada", "Norway", "Czech Republic", "Germany", 
+                "Netherlands", "Poland", "Georgia", "Russia", "Sweden", 
+                "other"]
 
 # assign each country to a colour palette
 COLOR_MAP = {
     "China": "Reds",
+    "China other": "Reds",
     "USA": "Blues",
-    "India": "gist_yarg",
-    "Czech Republic": "YlOrBr",
+    "Russia": "Purples",
     "Netherlands": "Greens",
+    "India": "gist_yarg",
+    "Canada": "winter",
+    "Czech Republic": "YlOrBr",
+    "Georgia": "summer", 
+    "Norway": "bone", 
     "Sweden": "PuRd",
     "Japan": "copper",
     "Poland": "pink",
-    "Russia": "spring",
-    "Canada": "winter",
-    "Germany": "summer",
-    "China other": "Reds",
+    "Germany": "GnBu",
 }
 
 # hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
