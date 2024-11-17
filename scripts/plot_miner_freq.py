@@ -62,7 +62,7 @@ for index, row in hash_panel.iterrows():
         [1] + (1 - ecdf(emp_x)).tolist(),
         color="black",
         alpha=0.2,
-        label="frequentist",
+        label="empirical",
         step="post",
     )
 

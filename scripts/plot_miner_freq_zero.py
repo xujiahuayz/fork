@@ -89,7 +89,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
     ax.plot(
         EMPFIT_X,
         EMPFIT_Y,
-        label="Bayesian, i.i.d.",
+        label="semi-empirical, i.i.d.",
         color="black",
         # dashed line
         linestyle="--",
@@ -102,7 +102,7 @@ for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
         (1 - ecdf(miner_hash)).tolist(),
         color="black",
         alpha=0.2,
-        label="frequentist",
+        label="empirical",
         step="post",
     )
 

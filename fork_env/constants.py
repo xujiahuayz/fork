@@ -1,12 +1,16 @@
+import csv
+
+import pandas as pd
+
 from fork_env.settings import PROJECT_ROOT
 
 DATA_FOLDER = PROJECT_ROOT / "data"
 FIGURES_FOLDER = PROJECT_ROOT / "figures"
 TABLE_FOLDER = PROJECT_ROOT / "tables"
 
-BITCOIN_MINER_PATH = DATA_FOLDER / "bitcoin_miner.pkl"
+BITCOIN_MINER_PATH = DATA_FOLDER / "bitcoin_miner_bigquery.pkl.gz"
 BITCOIN_MINER_JSON_PATH = DATA_FOLDER / "bitcoin_miner.json"
-CLUSTER_PATH = DATA_FOLDER / "clusters.pkl"
+CLUSTER_PATH = DATA_FOLDER / "clusters.pkl.gz"
 SIMULATED_FORK_RATES_PATH = DATA_FOLDER / "rates_simulated.jsonl.gz"
 ANALYTICAL_FORK_RATES_PATH = DATA_FOLDER / "rates_analytical.pkl"
 ANALYTICAL_FORK_RATES_PATH_STD = DATA_FOLDER / "rates_analytical_std.pkl"
@@ -43,14 +47,14 @@ DIST_DICT = {
         "color": "red",
     },
     "empirical": {
-        "label": "Bayesian, i.i.d.",
+        "label": "semi-empirical, i.i.d.",
         "color": "black",
     },
 }
 
 DIST_KEYS = list(DIST_DICT.keys())
 
-'''# to obtain list of mining pool names 
+"""# to obtain list of mining pool names 
 merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 series = merged_df['miner_cluster'].value_counts()
 
@@ -61,13 +65,26 @@ with open('Miner_country.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     
     for item in lst:
-        writer.writerow([item])'''
+        writer.writerow([item])"""
 
-# Define the country order to plot 
-COUNTRY_ORDER = ["China", "China other", "Japan", "India", "USA", 
-                "Canada", "Norway", "Czech Republic", "Germany", 
-                "Netherlands", "Poland", "Georgia", "Russia", "Sweden", 
-                "other"]
+# Define the country order to plot
+COUNTRY_ORDER = [
+    "China",
+    "China other",
+    "Japan",
+    "India",
+    "USA",
+    "Canada",
+    "Norway",
+    "Czech Republic",
+    "Germany",
+    "Netherlands",
+    "Poland",
+    "Georgia",
+    "Russia",
+    "Sweden",
+    "other",
+]
 
 # assign each country to a colour palette
 COLOR_MAP = {
@@ -79,8 +96,8 @@ COLOR_MAP = {
     "India": "gist_yarg",
     "Canada": "winter",
     "Czech Republic": "YlOrBr",
-    "Georgia": "summer", 
-    "Norway": "bone", 
+    "Georgia": "summer",
+    "Norway": "bone",
     "Sweden": "PuRd",
     "Japan": "copper",
     "Poland": "pink",

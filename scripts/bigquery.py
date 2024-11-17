@@ -1,5 +1,6 @@
-import pickle
+import gzip
 import os
+import pickle
 
 # run `pip install --upgrade google-cloud-bigquery` in the terminal first
 from google.cloud import bigquery
@@ -24,7 +25,7 @@ FROM
 WHERE 
   is_coinbase
 ORDER BY 
-  block_timestamp
+  block_number
 """
 
 query_job = client.query(query_btc)  # API request
@@ -34,6 +35,7 @@ rows = query_job.result()  # Waits for query to finish
 field_names = [f.name for f in rows.schema]
 # needs to be done in once, otherwise 'Iterator has already started' error
 btc_tx_coinbase = [{field: row[field] for field in field_names} for row in rows]
-# save the result to a pickle file
-with open(BITCOIN_MINER_PATH, "wb") as f:
+
+# save result to a pickle file gzipped
+with gzip.open(BITCOIN_MINER_PATH, "wb") as f:
     pickle.dump(btc_tx_coinbase, f)
