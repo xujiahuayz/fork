@@ -1,8 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
-from scripts.get_miner_freq import MINER_COUNTRY
+import csv
 
 from fork_env.constants import (
     DATA_FOLDER,
@@ -16,7 +15,33 @@ from fork_env.constants import (
 # unpickle all dataframes
 merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 
-merged_df['block_timestamp'] = merged_df['block_timestamp'].dt.strftime('%Y-%m')
+value_counts = merged_df["miner_cluster"].value_counts()
+
+# Extract MINER_COUNTRY from Miner_country.csv, and determine top5 largest China pools
+MINER_COUNTRY = {}
+
+# Open the CSV file
+with open(DATA_FOLDER / "Miner_country.csv", mode="r") as file:
+    reader = csv.DictReader(file)
+
+    for row in reader:
+        if row["country_based"] != "Unknown":
+            MINER_COUNTRY[row["miner_cluster"]] = row["country_based"]
+
+# Extract China pools with their counts
+china_pools = {miner: count for miner, count in value_counts.items() if MINER_COUNTRY.get(miner) == "China"}
+
+# Get the top 5 China pools by value counts
+top_6_china_pools = set(sorted(china_pools, key=china_pools.get, reverse=True)[:6])
+
+# Replace miners other than the top 5 China pools with "China other"
+MINER_COUNTRY = {
+    miner: ("China other" if miner not in top_6_china_pools and country == 'China' else country)
+    for miner, country in MINER_COUNTRY.items()
+}
+
+# merged_df['time'] = datetime.date.fromtimestamp(merged_df['time']).dt.strftime('%Y-%m')
+merged_df['time'] = pd.to_datetime(merged_df['time'], unit='s').dt.strftime('%Y-%m')
 
 # Label all unnamed miners as "other" for ease
 merged_df.loc[~merged_df["miner_cluster"].isin(MINER_COUNTRY.keys()), "miner_cluster"] = "other"
@@ -54,7 +79,7 @@ for start_block in range(
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
-    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'block_timestamp']})")
+    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'time']})")
 
 # To track where each bar stack starts
 block_bottom = np.zeros(len(period_grp))
