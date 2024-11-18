@@ -2,7 +2,7 @@
 import pandas as pd
 from fork_env.constants import DATA_FOLDER, TABLE_FOLDER, VAR_HEADER_UNIT_MAP
 
-hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel_clover.pkl")
+hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 # make start time exact to date
 hash_panel["start_time"] = pd.to_datetime(hash_panel["start_time"]).dt.date
@@ -36,8 +36,8 @@ conditional_formatting("fork_rate", "blue")
 conditional_formatting("num_miners", "purple")
 conditional_formatting("hash_mean", "orangeone")
 conditional_formatting("hash_std", "orangetwo")
-conditional_formatting("hhi", "brown")
-conditional_formatting("max_share", "brown")
+conditional_formatting("hhi", "brownone")
+conditional_formatting("max_share", "browntwo")
 
 
 hash_panel_to_latex_subtab_1 = hash_panel[
