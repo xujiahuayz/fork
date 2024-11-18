@@ -73,7 +73,7 @@ country_miner_shade = {
 period_grp = []
 for start_block in range(
     FIRST_START_BLOCK,
-    840_000,
+    860_000,
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
@@ -88,7 +88,7 @@ China_other = [key for key, value in MINER_COUNTRY.items() if value == 'China ot
 # traverse through each period from block_time_df with designated block window (20_000 in our case)
 for start_block in range(
     FIRST_START_BLOCK,
-    840_000,
+    860_000,
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
