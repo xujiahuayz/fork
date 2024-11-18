@@ -39,8 +39,6 @@ MINER_COUNTRY = {
     miner: ("China other" if miner not in top_6_china_pools and country == 'China' else country)
     for miner, country in MINER_COUNTRY.items()
 }
-
-# merged_df['time'] = datetime.date.fromtimestamp(merged_df['time']).dt.strftime('%Y-%m')
 merged_df['time'] = pd.to_datetime(merged_df['time'], unit='s').dt.strftime('%Y-%m')
 
 # Label all unnamed miners as "other" for ease
