@@ -6,7 +6,7 @@ from fork_env.constants import DATA_FOLDER, DIST_DICT, FIGURES_FOLDER, BLOCK_WIN
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 block_dicts = hash_panel["block_dict"]
-end_times = pd.to_datetime(hash_panel["end_time"])
+end_times = pd.to_datetime(hash_panel["end_time"] * 1e9)
 
 max_time = 33
 # calculate the standard deviation of fork rate, (p*(1-p)/Block_window)^0.5
