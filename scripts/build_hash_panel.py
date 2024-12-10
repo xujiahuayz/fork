@@ -70,7 +70,7 @@ for start_block in range(
     end_block = start_block + BLOCK_WINDOW
 
     df_in_scope = merged_df.loc[start_block:end_block]
-    block_times = df_in_scope["time"].to_list() * 1e9
+    block_times = df_in_scope["time"].to_list()
     # time difference between the first and last block in seconds
     start_time = block_times[0]
     end_time = block_times[-1]
@@ -179,8 +179,8 @@ for start_block in range(
     row = {
         "start_block": start_block,
         "end_block": end_block,
-        "start_time": start_time,
-        "end_time": end_time,
+        "start_time": start_time * 1e9,
+        "end_time": end_time * 1e9,
         "average_block_time": average_block_time,
         "total_hash_rate": total_hash_rate,
         "fork_rate": fork_rate * 100,
