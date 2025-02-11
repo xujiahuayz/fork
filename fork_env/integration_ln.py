@@ -101,7 +101,45 @@ def fork_rate_ln(
     )
 
 
+def waste_ln(
+    n: int,
+    sum_lambda: float | None = None,
+    hash_mean: float | None = None,
+    std: float = HASH_STD,
+    **kwargs,
+) -> float:
+    if hash_mean is None:
+        hash_mean = sum_lambda / n
+
+    sigma = calc_ln_sig(hash_mean, std)
+    ddlog = n * np.log(np.sqrt(2 * np.pi) * sigma)
+
+    def pdelta_integrand(x: float) -> float:
+        return np.exp(
+            2 * np.log(az(x, hash_mean, sigma, **kwargs))
+            + (n - 2) * np.log(cz(x, 0, hash_mean, sigma, **kwargs))
+            - ddlog
+        )
+
+    return (
+        n
+        * (n - 1)
+        * quad_vec(
+            pdelta_integrand,
+            0,
+            np.inf,
+        )[0]
+    )
+
+
 if __name__ == "__main__":
+    waste = waste_ln(
+        hash_mean=0.05 / 38,
+        n=38,
+        std=0.02,
+    )
+    print(waste)
+
     res = fork_rate_ln(
         proptime=14,
         hash_mean=0.05 / 38,
