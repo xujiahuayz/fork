@@ -24,6 +24,13 @@ std_values = [
 plt.rcParams.update({"font.size": 15})
 # fix y axis range
 ylim_range = [0, 0.0016]
+# conversion factor to kWh
+conversion = (
+    109.7821 * 23.01
+)  # difficulty [hash per block] * efficiency [Joule per hash] on 01/01/2025
+# weighted average of the energy efficiency of bitcoin mining hardware obtained from https://ccaf.io/cbnsi/cbeci
+# difficulty obtained from https://www.coinwarz.com/mining/bitcoin/difficulty-chart
+
 for key, waste_func in {
     "log_normal": waste_ln,
     "trunc_power_law": waste_tpl,
@@ -49,6 +56,17 @@ for key, waste_func in {
     plt.xlabel("standard deviation $s$ [s$^{-1}$]")
     plt.ylabel("wasted hash $\sum_{i \\neq k}\lambda_i$ [s$^{-1}$]")
     plt.legend(title="number of miners $N$")
+
+    # secondary axis on the right
+    energy_ax = plt.gca().secondary_yaxis(
+        "right",
+        functions=(
+            lambda x: x * conversion,
+            lambda x: x / conversion,
+        ),
+    )
+    energy_ax.set_ylabel("wasted power [J/s]")
+
     # tight layout
     plt.tight_layout()
     # save to file
