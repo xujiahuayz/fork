@@ -274,7 +274,7 @@ VAR_HEADER_UNIT_MAP = {
     },
     "difficulty": {
         "header": r"average difficulty",
-        "unit": r"T",
+        "unit": r"[T]",
         "precision": 2,
         "subtab": 3,
     },
