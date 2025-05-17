@@ -48,6 +48,12 @@ hash_panel_to_latex_subtab_2 = hash_panel[
     [k for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 2]
 ].to_latex(index=False, header=False)
 
+
+hash_panel_to_latex_subtab_3 = hash_panel[
+    [k for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 3]
+].to_latex(index=False, header=False)
+
+
 # first subtable
 with open(TABLE_FOLDER / "hash_empirical.tex", "w", encoding="utf-8") as f:
     f.write(r"\begin{tabular}{@{}llrrrrrrrrrrrrr@{}}" + "\n")
@@ -106,3 +112,22 @@ with open(TABLE_FOLDER / "hash_dis.tex", "w", encoding="utf-8") as f:
         )
     f.write(r"\cmidrule(lr){1-1} \cmidrule(lr){2-3} \cmidrule(lr){4-5}" + "\n")
     f.write("\n".join(hash_panel_to_latex_subtab_2.split("\n")[3:]))
+
+# third subtable
+with open(TABLE_FOLDER / "wasted_power.tex", "w", encoding="utf-8") as f:
+    f.write(r"\begin{tabular}{@{}llrr@{}}" + "\n")
+    f.write(r"\toprule" + "\n")
+    f.write(r" & " + r"\multicolumn{2}{c}{Wasted power} \\" + "\n")
+    f.write(r"\cmidrule(lr){3-4} " + "\n")
+
+    for row in ["header", "unit"]:
+        f.write(
+            r" & ".join(
+                [v[row] for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 3]
+            )
+            + r"\\"
+            + "\n"
+        )
+
+    f.write(r"\cmidrule(lr){1-4}" + "\n")
+    f.write("\n".join(hash_panel_to_latex_subtab_3.split("\n")[3:]))

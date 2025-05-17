@@ -272,4 +272,28 @@ VAR_HEADER_UNIT_MAP = {
         "precision": 0,
         "subtab": 2,
     },
+    "difficulty": {
+        "header": r"average difficulty",
+        "unit": r"T",
+        "precision": 2,
+        "subtab": 3,
+    },
+    "efficiency": {
+        "header": r"average efficiency",
+        "unit": r"[J/THash]",
+        "precision": 2,
+        "subtab": 3,
+    },
+    "wasted_power_ln": {
+        "header": r"wasted power ln",
+        "unit": r"[GJ/s]",
+        "precision": 6,
+        "subtab": 3,
+    },
+    "wasted_power_tpl": {
+        "header": r"wasted power tpl",
+        "unit": r"[GJ/s]",
+        "precision": 6,
+        "subtab": 3,
+    },
 }

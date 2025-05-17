@@ -1,4 +1,4 @@
-from fork_env.constants import SUM_HASH_RATE
+from fork_env.constants import SUM_HASH_RATE, DATA_FOLDER
 from fork_env.integration_ln import waste_ln
 from fork_env.integration_tpl import waste_tpl
 from matplotlib import pyplot as plt
@@ -20,16 +20,18 @@ std_values = [
     0.0009,
     0.001,
 ]
-# start a plot
+
+# plot wasted hash and wasted power for different standard deviations at a snapshot of time: 2025-01-01
 plt.rcParams.update({"font.size": 15})
 # fix y axis range
 ylim_range = [0, 0.0016]
 # conversion factor to kWh
 conversion = (
-    109.7821 * 23.01
-)  # difficulty [hash per block] * efficiency [Joule per hash] on 01/01/2025
+    (109.7821 * 1e12) * 2**32 * (23.01 / 1e12) / 1e9
+)  # difficulty [Tera hash per block] * efficiency [Joule per Tera hash] on 01/01/2025
 # weighted average of the energy efficiency of bitcoin mining hardware obtained from https://ccaf.io/cbnsi/cbeci
-# difficulty obtained from https://www.coinwarz.com/mining/bitcoin/difficulty-chart
+# difficulty obtained from https://www.coinwarz.com/mining/bitcoin/difficulty-chart, times 2**32 to convert the unit to hash per block
+# divide by 1e9 to convert to GJ/s
 
 for key, waste_func in {
     "log_normal": waste_ln,
@@ -65,7 +67,7 @@ for key, waste_func in {
             lambda x: x / conversion,
         ),
     )
-    energy_ax.set_ylabel("wasted power [J/s]")
+    energy_ax.set_ylabel("wasted power [GJ/s]")
 
     # tight layout
     plt.tight_layout()

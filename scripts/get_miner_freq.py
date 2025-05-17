@@ -128,7 +128,7 @@ cluster_miner_subset = {
 # for each block, find out which cluster the miner belongs to
 cluster_miner = pd.Series(
     {
-        i: (list(cluster[1] - {-1}) + list(cluster[0] - {-1}))[0]
+        i: (list(cluster[1] - {-1}) + list(cluster[0] - {-1}) or [None])[0]
         for i, cluster in cluster_miner_full.items()
     }
 )
