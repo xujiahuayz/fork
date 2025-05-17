@@ -117,7 +117,7 @@ with open(TABLE_FOLDER / "hash_dis.tex", "w", encoding="utf-8") as f:
 with open(TABLE_FOLDER / "wasted_power.tex", "w", encoding="utf-8") as f:
     f.write(r"\begin{tabular}{@{}llrr@{}}" + "\n")
     f.write(r"\toprule" + "\n")
-    f.write(r" & " + r"\multicolumn{2}{c}{Wasted power} \\" + "\n")
+    f.write(r" &  & " + r"\multicolumn{2}{c}{Wasted power} \\" + "\n")
     f.write(r"\cmidrule(lr){3-4} " + "\n")
 
     for row in ["header", "unit"]:
