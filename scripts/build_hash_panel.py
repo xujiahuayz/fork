@@ -188,19 +188,24 @@ for start_block in range(
         hash_mean=hash_mean, hash_std=hash_std
     )
 
+    waste_hash_ln = waste_ln(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+
     wasted_power_ln = (
-        waste_ln(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+        waste_hash_ln
         * avg_logged_difficulty
         * avg_logged_efficiency
         / 1e12  # efficiency is in J/THash
-        / 1e9  # convert to GJ/s
+        / 1e6  # convert to MW
     )
+
+    waste_hash_tpl = waste_tpl(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+
     wasted_power_tpl = (
-        waste_tpl(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+        waste_hash_tpl
         * avg_logged_difficulty
         * avg_logged_efficiency
         / 1e12  # efficiency is in J/THash
-        / 1e9  # convert to GJ/s
+        / 1e6  # convert to MW
     )
 
     # add a row to hash_panel
@@ -235,10 +240,11 @@ for start_block in range(
             "lomax": lomax_dist,
             "trunc_power_law": truncpl_dist,
         },
-        "difficulty": avg_logged_difficulty
-        / (2**32 * 1e12),  # convert to MAX_TARGET / target, in unit Tera
+        "difficulty": avg_logged_difficulty / 1e12,  # in unit Tera
         "efficiency": avg_logged_efficiency,
+        "waste_hash_ln": waste_hash_ln,
         "wasted_power_ln": wasted_power_ln,
+        "waste_hash_tpl": waste_hash_tpl,
         "wasted_power_tpl": wasted_power_tpl,
     }
     hash_panel.append(row)

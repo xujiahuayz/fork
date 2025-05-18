@@ -115,10 +115,16 @@ with open(TABLE_FOLDER / "hash_dis.tex", "w", encoding="utf-8") as f:
 
 # third subtable
 with open(TABLE_FOLDER / "wasted_power.tex", "w", encoding="utf-8") as f:
-    f.write(r"\begin{tabular}{@{}llrr@{}}" + "\n")
+    f.write(r"\begin{tabular}{@{}rrrrrr@{}}" + "\n")
     f.write(r"\toprule" + "\n")
-    f.write(r" &  & " + r"\multicolumn{2}{c}{Wasted power} \\" + "\n")
-    f.write(r"\cmidrule(lr){3-4} " + "\n")
+    f.write(
+        r" &  & "
+        + r"\multicolumn{2}{c}{log normal}"
+        + r" & "
+        + r"\multicolumn{2}{c}{truncated power law}\\"
+        + "\n"
+    )
+    f.write(r"\cmidrule(lr){3-4} \cmidrule(lr){5-6} " + "\n")
 
     for row in ["header", "unit"]:
         f.write(
@@ -129,5 +135,5 @@ with open(TABLE_FOLDER / "wasted_power.tex", "w", encoding="utf-8") as f:
             + "\n"
         )
 
-    f.write(r"\cmidrule(lr){1-4}" + "\n")
+    f.write(r"\cmidrule(lr){1-6}" + "\n")
     f.write("\n".join(hash_panel_to_latex_subtab_3.split("\n")[3:]))

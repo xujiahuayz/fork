@@ -274,8 +274,8 @@ VAR_HEADER_UNIT_MAP = {
     },
     "difficulty": {
         "header": r"average difficulty",
-        "unit": r"$[T]$",
-        "precision": 2,
+        "unit": r"$[T$Hash/block]",
+        "precision": 0,
         "subtab": 3,
     },
     "efficiency": {
@@ -284,16 +284,28 @@ VAR_HEADER_UNIT_MAP = {
         "precision": 2,
         "subtab": 3,
     },
+    "waste_hash_ln": {
+        "header": r"waste hash ln",
+        "unit": r"[block/s]",
+        "precision": 6,
+        "subtab": 3,
+    },
     "wasted_power_ln": {
         "header": r"wasted power ln",
-        "unit": r"[$G$J/s]",
+        "unit": r"[MW]",
+        "precision": 0,
+        "subtab": 3,
+    },
+    "waste_hash_tpl": {
+        "header": r"waste hash tpl",
+        "unit": r"[block/s]",
         "precision": 6,
         "subtab": 3,
     },
     "wasted_power_tpl": {
         "header": r"wasted power tpl",
-        "unit": r"[$G$J/s]",
-        "precision": 6,
+        "unit": r"[MW]",
+        "precision": 0,
         "subtab": 3,
     },
 }
