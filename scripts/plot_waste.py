@@ -27,11 +27,11 @@ plt.rcParams.update({"font.size": 15})
 ylim_range = [0, 0.0016]
 # conversion factor to kWh
 conversion = (
-    (109.7821 * 1e12) * 2**32 * (23.01 / 1e12) / 1e9
+    (109.7821 * 1e12) * 2**32 * (23.01 / 1e12) / 1e6
 )  # difficulty [Tera hash per block] * efficiency [Joule per Tera hash] on 01/01/2025
 # weighted average of the energy efficiency of bitcoin mining hardware obtained from https://ccaf.io/cbnsi/cbeci
 # difficulty obtained from https://www.coinwarz.com/mining/bitcoin/difficulty-chart, times 2**32 to convert the unit to hash per block
-# divide by 1e9 to convert to GJ/s
+# divide by 1e6 to convert to MW
 
 for key, waste_func in {
     "log_normal": waste_ln,
@@ -67,7 +67,7 @@ for key, waste_func in {
             lambda x: x / conversion,
         ),
     )
-    energy_ax.set_ylabel("wasted power [GJ/s]")
+    energy_ax.set_ylabel("wasted power [MW]")
 
     # tight layout
     plt.tight_layout()

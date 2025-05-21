@@ -188,6 +188,10 @@ for start_block in range(
         hash_mean=hash_mean, hash_std=hash_std
     )
 
+    total_hash_power = (
+        total_hash_rate * avg_logged_efficiency * avg_logged_difficulty / (1e12 * 1e6)
+    )  # efficiency is in J/THash, convert to MW
+
     waste_hash_ln = waste_ln(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
 
     wasted_power_ln = (
@@ -242,6 +246,7 @@ for start_block in range(
         },
         "difficulty": avg_logged_difficulty / 1e12,  # in unit Tera
         "efficiency": avg_logged_efficiency,
+        "total_hash_power": total_hash_power,
         "waste_hash_ln": waste_hash_ln,
         "wasted_power_ln": wasted_power_ln,
         "waste_hash_tpl": waste_hash_tpl,
