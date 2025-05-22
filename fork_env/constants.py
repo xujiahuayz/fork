@@ -287,7 +287,7 @@ VAR_HEADER_UNIT_MAP = {
     "total_hash_power": {
         "header": r"total hash power",
         "unit": r"[MW]",
-        "precision": 2,
+        "precision": 0,
         "subtab": 3,
     },
     "waste_hash_ln": {
