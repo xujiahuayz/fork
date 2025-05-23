@@ -293,7 +293,7 @@ VAR_HEADER_UNIT_MAP = {
     "waste_hash_ln": {
         "header": r"wasted hash",
         "unit": r"[block/s]",
-        "precision": 6,
+        "precision": 5,
         "subtab": 3,
     },
     "wasted_power_ln": {
@@ -305,7 +305,7 @@ VAR_HEADER_UNIT_MAP = {
     "waste_hash_tpl": {
         "header": r"wasted hash",
         "unit": r"[block/s]",
-        "precision": 6,
+        "precision": 5,
         "subtab": 3,
     },
     "wasted_power_tpl": {

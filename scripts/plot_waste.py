@@ -55,8 +55,8 @@ for key, waste_func in {
         )
     plt.ylim(ylim_range)
 
-    plt.xlabel("standard deviation $s$ [s$^{-1}$]")
-    plt.ylabel("wasted hash $\sum_{i \\neq k}\lambda_i$ [s$^{-1}$]")
+    plt.xlabel("standard deviation $s$ [block/s]")
+    plt.ylabel("wasted hash $\sum_{i \\neq k}\lambda_i$ [block/s]")
     plt.legend(title="number of miners $N$")
 
     # secondary axis on the right
