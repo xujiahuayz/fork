@@ -14,9 +14,9 @@ from fork_env.utils import (
 from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
 from scripts.get_clusters import btc_tx_value_series
 from fork_env.integration_exp import fork_rate_exp
-from fork_env.integration_ln import fork_rate_ln
+from fork_env.integration_ln import fork_rate_ln, waste_ln
 from fork_env.integration_lomax import fork_rate_lomax
-from fork_env.integration_tpl import fork_rate_tpl
+from fork_env.integration_tpl import fork_rate_tpl, waste_tpl
 from fork_env.integration_empirical import fork_rate_empirical
 from scripts.get_fork import multiplier, final_fork
 
@@ -24,10 +24,8 @@ from scripts.get_fork import multiplier, final_fork
 # unpickle block_time_df
 merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
 
-
-# # merge the two dataframes
+# merge the two dataframes
 merged_df["difficulty"] *= 2**32
-
 # timestamp to the nearest date
 merged_df["date"] = merged_df["time"] // 86400 * 86400
 fork_counts = final_fork[["final_fork"]] * multiplier
@@ -47,6 +45,17 @@ merged_df = merged_df.merge(
     hash_rate_mean_df, left_on="date", right_on="t", how="left"
 ).drop(columns=["t"])
 
+
+# read mining_hardware_efficiency.csv and convert to a dataframe
+efficiency_df = pd.read_csv(DATA_FOLDER / "mining_hardware_efficiency.csv", skiprows=1)
+efficiency_df = efficiency_df.rename(
+    columns={"Date": "calender_date", "Estimated efficiency, J/Th": "efficiency"}
+)
+efficiency_df["calender_date"] = pd.to_datetime(efficiency_df["calender_date"])
+efficiency_df["date"] = efficiency_df["calender_date"].astype(int) // 10**9
+
+# merge efficiency_df with block_time_df
+merged_df = pd.merge(merged_df, efficiency_df, on="date", how="left")
 
 # read invstat.pickle
 invstat_df = pd.read_pickle(DATA_FOLDER / "invstat.pkl")
@@ -79,14 +88,18 @@ for start_block in range(
     average_block_time = (end_time - start_time) / BLOCK_WINDOW
     total_hash_rate = (
         df_in_scope["total_hash_rate"][:-1].sum() / df_in_scope["difficulty"][:-1].sum()
-    )
+    )  # unit: blocks per second
+
     # 1 / average_block_time
     miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
     miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
     bis = list(miner_hash_share_count.sort_values())
     hhi = sum((b / BLOCK_WINDOW) ** 2 for b in bis)
 
-    # avg_logged_difficulty = df_in_scope["difficulty"].mean()
+    avg_logged_difficulty = df_in_scope["difficulty"].mean()
+
+    avg_logged_efficiency = df_in_scope["efficiency"].mean()
+
     # find out fork counts where date is in the range
     fork_rate = (
         fork_counts[
@@ -175,6 +188,30 @@ for start_block in range(
         hash_mean=hash_mean, hash_std=hash_std
     )
 
+    total_hash_power = (
+        total_hash_rate * avg_logged_efficiency * avg_logged_difficulty / (1e12 * 1e6)
+    )  # efficiency is in J/THash, convert to MW
+
+    waste_hash_ln = waste_ln(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+
+    wasted_power_ln = (
+        waste_hash_ln
+        * avg_logged_difficulty
+        * avg_logged_efficiency
+        / 1e12  # efficiency is in J/THash
+        / 1e6  # convert to MW
+    )
+
+    waste_hash_tpl = waste_tpl(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
+
+    wasted_power_tpl = (
+        waste_hash_tpl
+        * avg_logged_difficulty
+        * avg_logged_efficiency
+        / 1e12  # efficiency is in J/THash
+        / 1e6  # convert to MW
+    )
+
     # add a row to hash_panel
     row = {
         "start_block": start_block,
@@ -207,6 +244,13 @@ for start_block in range(
             "lomax": lomax_dist,
             "trunc_power_law": truncpl_dist,
         },
+        "difficulty": avg_logged_difficulty / 1e12,  # in unit Tera
+        "efficiency": avg_logged_efficiency,
+        "total_hash_power": total_hash_power,
+        "waste_hash_ln": waste_hash_ln,
+        "wasted_power_ln": wasted_power_ln,
+        "waste_hash_tpl": waste_hash_tpl,
+        "wasted_power_tpl": wasted_power_tpl,
     }
     hash_panel.append(row)
 
