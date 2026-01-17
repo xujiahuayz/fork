@@ -12,19 +12,19 @@ with gzip.open(BITCOIN_MINER_PATH, "rb") as f:
 btc_tx_value_df = pd.DataFrame(btc_tx_value)
 
 # Ensure block_number is integer and block_timestamp is datetime
-btc_tx_value_df["block_number"] = btc_tx_value_df["block_number"].astype(int)
+btc_tx_value_df["block_number"] = btc_tx_value_df["number"].astype(int)
 btc_tx_value_df["block_timestamp"] = pd.to_datetime(btc_tx_value_df["block_timestamp"])
 
 # Explode addresses to separate rows for grouping
-btc_tx_value_df = btc_tx_value_df.explode("addresses")
+btc_tx_value_df_exploded = btc_tx_value_df.explode("addresses")
 
 # # Filter out addresses that start with 'nonstandard'
-# btc_tx_value_df = btc_tx_value_df[
-#     ~btc_tx_value_df["addresses"].str.startswith("nonstandard")
+# btc_tx_value_df_exploded = btc_tx_value_df_exploded[
+#     ~btc_tx_value_df_exploded["addresses"].str.startswith("nonstandard")
 # ]
 
 # Group by block_number, convert addresses to set to eliminate duplicates within a block
-btc_tx_value_series = btc_tx_value_df.groupby("block_number")["addresses"].agg(set)
+btc_tx_value_series = btc_tx_value_df_exploded.groupby("block_number")["addresses"].agg(set)
 
 
 if __name__ == "__main__":

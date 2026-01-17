@@ -7,17 +7,16 @@ from fork_env.constants import (
 
 
 # unpickle block_time_df
-block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
+block_time_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")[['block_timestamp', "miner_cluster"]]
 
 fork_df = pd.read_pickle(DATA_FOLDER / "forks.pkl")
 
 fork_df["block_number"] = fork_df["block_number"].astype(int)
 
-
 # read stale blocks from stale-blocks.csv from data folder
-stale_blocks = pd.read_csv(DATA_FOLDER / "stale-blocks.csv", header=None)
+stale_blocks = pd.read_csv(DATA_FOLDER / "stale-blocks.csv")
 # group by the block number and count the number of stale blocks
-stale_blocks = stale_blocks[[0, 1]].groupby(0).count()
+stale_blocks = stale_blocks[['height','hash']].groupby('height').count()
 # rename the column to stale_blocks
 stale_blocks.columns = ["stale_blocks"]
 fork_blocks = fork_df[["block_number", "miner_orphan"]].groupby("block_number").count()

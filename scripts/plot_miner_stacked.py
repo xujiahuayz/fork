@@ -39,7 +39,7 @@ MINER_COUNTRY = {
     miner: ("China other" if miner not in top_6_china_pools and country == 'China' else country)
     for miner, country in MINER_COUNTRY.items()
 }
-merged_df['time'] = pd.to_datetime(merged_df['time'], unit='s').dt.strftime('%Y-%m')
+# merged_df['time'] = pd.to_datetime(merged_df['time'], unit='s').dt.strftime('%Y-%m')
 
 # Label all unnamed miners as "other" for ease
 merged_df.loc[~merged_df["miner_cluster"].isin(MINER_COUNTRY.keys()), "miner_cluster"] = "other"
@@ -77,7 +77,7 @@ for start_block in range(
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
-    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'time']})")
+    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'block_timestamp']})")
 
 # To track where each bar stack starts
 block_bottom = np.zeros(len(period_grp))

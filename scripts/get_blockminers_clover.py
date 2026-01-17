@@ -1,3 +1,8 @@
+"""
+This script is used to get the block miners from Cloverpool.
+The API is deprecated - do not run this script.
+"""
+
 import time
 from datetime import datetime, timedelta
 

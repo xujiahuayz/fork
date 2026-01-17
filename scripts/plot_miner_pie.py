@@ -9,7 +9,7 @@ from fork_env.constants import (
 )
 
 # unpickle block_time_df
-block_time_df = pd.read_pickle(DATA_FOLDER / "block_time_df.pkl")
+block_time_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")[['block_timestamp', "miner_cluster"]]
 
 # Create a color map for each unique miner_cluster
 color_map = {

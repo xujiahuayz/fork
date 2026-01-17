@@ -16,17 +16,22 @@ client = bigquery.Client()
 # Perform a query.
 query_btc = """
 SELECT 
-  block_number,
-  block_timestamp, 
+  b.number, 
+  b.bits,
+  t.block_timestamp, 
   output.addresses AS addresses
 FROM 
-  bigquery-public-data.crypto_bitcoin.transactions,
-  UNNEST(outputs) AS output
+  `bigquery-public-data.crypto_bitcoin.blocks` AS b
+JOIN 
+  `bigquery-public-data.crypto_bitcoin.transactions` AS t 
+  ON b.number = t.block_number,
+  UNNEST(t.outputs) AS output
 WHERE 
-  is_coinbase
+  t.is_coinbase
 ORDER BY 
-  block_number
+  b.number
 """
+
 
 query_job = client.query(query_btc)  # API request
 rows = query_job.result()  # Waits for query to finish

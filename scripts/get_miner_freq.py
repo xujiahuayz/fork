@@ -2,13 +2,14 @@ import gzip
 import json
 import pickle
 import re
+import numpy as np
 
 import pandas as pd
 
 from fork_env.constants import BLOCK_MINER_CLOVERPOOL_PATH, CLUSTER_PATH, DATA_FOLDER
 
 # from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
-from scripts.get_clusters import btc_tx_value_series
+from scripts.get_clusters import btc_tx_value_df_exploded, btc_tx_value_series
 
 REPLACEMENTS = [
     (r'"', ""),  # Remove quotes
@@ -54,7 +55,7 @@ fork_df[["miner_main", "miner_orphan", "miner_subsequent"]] = pd.DataFrame.map(
 fork_df["block_number"] = fork_df["block_number"].astype(int)
 
 
-cloverpool_df = pd.read_pickle(BLOCK_MINER_CLOVERPOOL_PATH)
+cloverpool_df = pd.read_pickle(BLOCK_MINER_CLOVERPOOL_PATH)[["height", "extras"]]
 
 # Name replacement in cloverpool dataframe
 cloverpool_df["miner_main"] = cloverpool_df["extras"].apply(
@@ -71,14 +72,27 @@ check_df = fork_df[["block_number", "miner_main"]].merge(
 # find all miner_main_x is unequal to miner_main_y
 assert (
     len(check_df[check_df["miner_main_x"] != check_df["miner_main_y"]]) == 0
-), "Not all values are in cloverpool_df"  # no need to use fork_df as all info is in cloverpool_df
+), "Not all values are in cloverpool_df"  # if true, then no need to use fork_df as all info is in cloverpool_df
 
+# merge cloverpool_df[['height', 'miner_main']] where miner_main is not unknown with btc_tx_value_df_exploded[['block_number', 'addresses']]
+address_miner_df = btc_tx_value_df_exploded[['block_number', 'addresses']].merge(
+    cloverpool_df[['height', 'miner_main']][cloverpool_df['miner_main'] != 'unknown'],
+    left_on="block_number",
+    right_on="height",
+    how="inner",
+)
+
+# make dict out of address_miner_df; later rows replace earlier rows if there are duplicate addresses
+pool_dict = {address: miner for address, miner in zip(address_miner_df['addresses'], address_miner_df['miner_main'])}
 
 # read pool json file as dict
 with open(DATA_FOLDER / "pools.json", "r") as f:
-    pool_dict = json.load(f)["payout_addresses"]
+    address_miner = json.load(f)["payout_addresses"]
 
-pool_dict = {key: clean_pool_name(value["name"]) for key, value in pool_dict.items()}
+address_miner = {key: clean_pool_name(value["name"]) for key, value in address_miner.items()}
+# update pool_dict with address_miner_dict
+pool_dict.update(address_miner)
+
 
 with gzip.open(CLUSTER_PATH, "rb") as f:
     clusters = pickle.load(f)
@@ -111,19 +125,16 @@ sum([-1 in cluster[0] for cluster in cluster_miner_full.values()])  # 0
 
 
 # check if all blocks's cluster length is 1
-sum([len(cluster[1]) >= 3 for cluster in cluster_miner_full.values()])  # 0
+sum([len(cluster[1]) >= 3 for cluster in cluster_miner_full.values()]) 
 
 # find out which cluster has more than 3 pools
 cluster_miner_subset = {
     block: cluster
     for block, cluster in cluster_miner_full.items()
     if len(cluster[1]) >= 3
-}
+} # 2586 - not too bad
 
-# {493496: [{14}, {-1, 'CKPool', 'Eobot'}],
-#  499241: [{14}, {-1, 'CKPool', 'Eobot'}],
-#  513974: [{14}, {-1, 'CKPool', 'Eobot'}],
-#  519311: [{14}, {-1, 'CKPool', 'Eobot'}]}
+
 
 # for each block, find out which cluster the miner belongs to
 cluster_miner = pd.Series(
@@ -133,15 +144,29 @@ cluster_miner = pd.Series(
     }
 )
 
-merged_df = cloverpool_df[
-    ["height", "time", "difficulty", "bits", "miner_main"]
-].set_index("height")
+
+# find unique rows in btc_tx_value_df_exploded[['block_number', 'block_timestamp', 'bits']]
+merged_df = btc_tx_value_df_exploded[['block_number', 'block_timestamp', 'bits']].drop_duplicates().reset_index(drop=True)
 merged_df["miner"] = cluster_miner
+
+merged_df = merged_df.merge(
+    cloverpool_df[["height", "miner_main"]],
+    left_on="block_number",
+    right_on="height",
+    how="left",
+)
+# "miner_main" missing values are replaced with "unknown"
+merged_df["miner_main"] = merged_df["miner_main"].fillna("unknown")
+
 # for each row, if miner_main is "unknown", replace it with miner_cluster
 merged_df["miner_cluster"] = merged_df.apply(
-    lambda row: (row["miner"] if row["miner_main"] == "unknown" else row["miner_main"]),
+    lambda row: (row["miner"] if row["miner_main"] == "unknown"  else row["miner_main"]),
     axis=1,
 )
+# find out rows where merged_df['miner'] is not equal to merged_df['miner_cluster']
+merged_df_check = merged_df[merged_df["miner"] != merged_df["miner_cluster"]]
+
+
 # check if miner_main is not unkown, and miner is not digit, whether the two values are the same, else return true
 merged_df_check = merged_df[
     (merged_df["miner_main"] != "unknown")
@@ -150,6 +175,6 @@ merged_df_check = merged_df[
 ]
 # check merged_df['difficulty']* (2**32) equivalent to merged_df['bits'].apply(bits_to_difficulty)
 
-merged_df[["time", "difficulty", "miner_cluster"]].to_pickle(
+merged_df[['block_number', 'block_timestamp', 'bits', "miner_cluster"]].to_pickle(
     DATA_FOLDER / "merged_df.pkl"
 )

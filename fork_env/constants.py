@@ -1,7 +1,3 @@
-import csv
-
-import pandas as pd
-
 from fork_env.settings import PROJECT_ROOT
 
 DATA_FOLDER = PROJECT_ROOT / "data"
@@ -18,16 +14,9 @@ SIMULATED_FORK_RATES_EMP_DIST = DATA_FOLDER / "rates_simulated_emp_dist.jsonl"
 BLOCK_MINER_CLOVERPOOL_PATH = DATA_FOLDER / "block_miners_clover.pkl"
 
 EMPRITICAL_FORK_RATE = 0.0041
-BLOCK_WINDOW = 20_000
+BLOCK_WINDOW = 2_016  # 2016 blocks - difficulty adjustment interval
 FIRST_START_BLOCK = 360_000  # 500_000
 
-
-# DIST_KEYS = [
-#     "exp",
-#     #  "log_normal",
-#     "lomax",
-#     "trunc_power_law",
-# ]
 
 DIST_DICT = {
     "exp": {
@@ -38,10 +27,6 @@ DIST_DICT = {
         "label": "$\\text{LN}(\\mu, \\sigma^2)$",
         "color": "orange",
     },
-    # "lomax": {
-    #     "label": "$\\text{Lomax}(c, \\ell)$",
-    #     "color": "green",
-    # },
     "trunc_power_law": {
         "label": "$\\text{TPL}(\\alpha, \\beta)$",
         "color": "red",
@@ -187,12 +172,6 @@ VAR_HEADER_UNIT_MAP = {
         "precision": 1,
         "subtab": 1,
     },
-    # "avg_logged_difficulty": {
-    #     "header": r"$\overline{\ln(\text{difficulty})}$",
-    #     "unit": "",
-    #     "precision": 2,
-    #     "subtab": 1,
-    # },
     "fork_rate": {
         "header": r"fork rate",
         "unit": r"[\%]",
