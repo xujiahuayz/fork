@@ -1,61 +1,56 @@
 import pandas as pd
 from scipy.stats import expon
-import json
 
-from fork_env.constants import (
-    DATA_FOLDER,
-)
-from fork_env.utils import (
-    calc_ex_rate,
-    gen_ln_dist,
-    gen_lmx_dist,
-    gen_truncpl_dist,
-)
-from fork_env.constants import BLOCK_WINDOW, FIRST_START_BLOCK
-from scripts.get_clusters import btc_tx_value_series
+from fork_env.constants import BLOCK_WINDOW, DATA_FOLDER, FIRST_START_BLOCK
+from fork_env.integration_empirical import fork_rate_empirical
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_ln import fork_rate_ln, waste_ln
 from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_tpl import fork_rate_tpl, waste_tpl
-from fork_env.integration_empirical import fork_rate_empirical
-from scripts.get_fork import multiplier, final_fork
+from fork_env.utils import (calc_ex_rate, gen_lmx_dist, gen_ln_dist,
+                            gen_truncpl_dist)
+from scripts.get_clusters import btc_tx_value_series
+from scripts.get_fork import final_fork, multiplier
 
+def bits_to_difficulty(bits_hex_str: str) -> float:
+    # Ensure the input is 8 characters long
+    if len(bits_hex_str) != 8:
+        raise ValueError("Invalid bits string. It should be exactly 8 characters long.")
+
+    # Convert the first two characters to the exponent
+    exponent = int(bits_hex_str[:2], 16)  # First byte is the exponent
+    # Convert the next six characters to the coefficient
+    coefficient = int(bits_hex_str[2:], 16)  # Next 6 characters are the coefficient
+
+    # Calculate the target value
+    target = coefficient * (256 ** (exponent - 3))
+
+    # Maximum possible target (for difficulty 1)
+    max_target = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+
+    # Difficulty is the ratio of max_target to target
+    return max_target / target * (2**32)
 
 # unpickle block_time_df
 merged_df = pd.read_pickle(DATA_FOLDER / "merged_df.pkl")
+merged_df["date"] = merged_df["block_timestamp"].dt.strftime('%Y-%m-%d')
+merged_df['timestamp'] = merged_df['block_timestamp'].astype(int) / 1e9
+merged_df["difficulty"] = merged_df["bits"].apply(bits_to_difficulty)
 
-# merge the two dataframes
-merged_df["difficulty"] *= 2**32
-# timestamp to the nearest date
-merged_df["date"] = merged_df["time"] // 86400 * 86400
-fork_counts = final_fork[["final_fork"]] * multiplier
-# change DatetimeIndex(['2009-01-03', '2009-01-09', '2009-01-12', '2009-01-15' to timestamp
-fork_counts["time_stamp"] = pd.to_datetime(fork_counts.index).astype(int) // 10**9
-
-# read hash_rate_mean.json and convert to a dataframe
-with open(DATA_FOLDER / "hash_rate_mean.json", "r") as f:
-    hash_rate_mean = json.load(f)
-
-hash_rate_mean_df = (
-    pd.DataFrame(hash_rate_mean).dropna().rename(columns={"v": "total_hash_rate"})
-)
-
-# merge hash_rate_mean_df with block_time_df
+# open btc.csv to get hash
+with open(DATA_FOLDER / "btc.csv", "r") as f:
+    btc_data = pd.read_csv(f)
+btc_data['total_hash_rate'] = btc_data['HashRate'] * 1e12
 merged_df = merged_df.merge(
-    hash_rate_mean_df, left_on="date", right_on="t", how="left"
-).drop(columns=["t"])
-
+    btc_data[['time', 'total_hash_rate']], left_on="date", right_on="time", how="left"
+).drop(columns=['time'])
 
 # read mining_hardware_efficiency.csv and convert to a dataframe
-efficiency_df = pd.read_csv(DATA_FOLDER / "mining_hardware_efficiency.csv", skiprows=1)
-efficiency_df = efficiency_df.rename(
-    columns={"Date": "calender_date", "Estimated efficiency, J/Th": "efficiency"}
+efficiency_df = pd.read_csv(DATA_FOLDER / "mining_hardware_efficiency.csv", skiprows=1).rename(
+    columns={"Date": "date", "Estimated efficiency, J/Th": "efficiency"}
 )
-efficiency_df["calender_date"] = pd.to_datetime(efficiency_df["calender_date"])
-efficiency_df["date"] = efficiency_df["calender_date"].astype(int) // 10**9
-
 # merge efficiency_df with block_time_df
-merged_df = pd.merge(merged_df, efficiency_df, on="date", how="left")
+merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date", how="left")
 
 # read invstat.pickle
 invstat_df = pd.read_pickle(DATA_FOLDER / "invstat.pkl")
@@ -67,8 +62,10 @@ for proptime in [50, 90, 99]:
     invstat_df[f"block{proptime}"] = invstat_df[f"block{proptime}"].astype(float) / 1000
 
 
-hash_panel = []
+fork_counts = (final_fork[["final_fork"]] * multiplier)
+fork_counts['date'] = fork_counts.index.astype(int) / 1e9
 
+hash_panel = []
 
 for start_block in range(
     FIRST_START_BLOCK,
@@ -78,33 +75,33 @@ for start_block in range(
     print(start_block)
     end_block = start_block + BLOCK_WINDOW
 
-    df_in_scope = merged_df.loc[start_block:end_block]
-    block_times = df_in_scope["time"].to_list()
-    # time difference between the first and last block in seconds
-    start_time = block_times[0]
-    end_time = block_times[-1]
+    start_time = merged_df.loc[start_block, "timestamp"]
+    end_time = merged_df.loc[end_block, "timestamp"]
 
     # use miliseconds for time difference
     average_block_time = (end_time - start_time) / BLOCK_WINDOW
+
+    df_in_scope = merged_df.iloc[start_block:end_block]
+
     total_hash_rate = (
-        df_in_scope["total_hash_rate"][:-1].sum() / df_in_scope["difficulty"][:-1].sum()
-    )  # unit: blocks per second
+        df_in_scope["total_hash_rate"].sum() / df_in_scope["difficulty"].sum()
+    ) # unit: blocks per second
 
     # 1 / average_block_time
-    miner_hash_share_count = df_in_scope["miner_cluster"][:-1].value_counts()
+    miner_hash_share_count = df_in_scope["miner_cluster"].value_counts()
     miner_hash_share = miner_hash_share_count / BLOCK_WINDOW
     bis = list(miner_hash_share_count.sort_values())
     hhi = sum((b / BLOCK_WINDOW) ** 2 for b in bis)
 
-    avg_logged_difficulty = df_in_scope["difficulty"].mean()
+    avg_difficulty = df_in_scope["difficulty"].mean()
 
-    avg_logged_efficiency = df_in_scope["efficiency"].mean()
+    avg_efficiency = df_in_scope["efficiency"].mean()
 
     # find out fork counts where date is in the range
     fork_rate = (
         fork_counts[
-            (fork_counts["time_stamp"] >= start_time)
-            & (fork_counts["time_stamp"] <= end_time)
+            (fork_counts["date"] >= start_time)
+            & (fork_counts["date"] <= end_time)
         ]["final_fork"].sum()
         / BLOCK_WINDOW
     )
@@ -189,15 +186,15 @@ for start_block in range(
     )
 
     total_hash_power = (
-        total_hash_rate * avg_logged_efficiency * avg_logged_difficulty / (1e12 * 1e6)
+        total_hash_rate * avg_efficiency * avg_difficulty / (1e12 * 1e6)
     )  # efficiency is in J/THash, convert to MW
 
     waste_hash_ln = waste_ln(n=num_miners, sum_lambda=total_hash_rate, std=hash_std)
 
     wasted_power_ln = (
         waste_hash_ln
-        * avg_logged_difficulty
-        * avg_logged_efficiency
+        * avg_difficulty
+        * avg_efficiency
         / 1e12  # efficiency is in J/THash
         / 1e6  # convert to MW
     )
@@ -206,8 +203,8 @@ for start_block in range(
 
     wasted_power_tpl = (
         waste_hash_tpl
-        * avg_logged_difficulty
-        * avg_logged_efficiency
+        * avg_difficulty
+        * avg_efficiency
         / 1e12  # efficiency is in J/THash
         / 1e6  # convert to MW
     )
@@ -244,8 +241,8 @@ for start_block in range(
             "lomax": lomax_dist,
             "trunc_power_law": truncpl_dist,
         },
-        "difficulty": avg_logged_difficulty / 1e12,  # in unit Tera
-        "efficiency": avg_logged_efficiency,
+        "difficulty": avg_difficulty / 1e12,  # in unit Tera
+        "efficiency": avg_efficiency,
         "total_hash_power": total_hash_power,
         "waste_hash_ln": waste_hash_ln,
         "wasted_power_ln": wasted_power_ln,
