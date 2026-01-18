@@ -7,6 +7,24 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 # make start time exact to date
 hash_panel["start_time"] = pd.to_datetime(hash_panel["start_time"]).dt.date
 
+for proptime in ["50", "90", "99"]:
+    hash_panel[f"proptime_{proptime}"] = [
+        w[proptime]["proptime"] for w in hash_panel["block_dict"]
+    ]
+
+# save to xlsx
+hash_panel[[
+    'start_block',
+    'start_time',
+    'proptime_50',
+    'proptime_90',
+    'proptime_99',
+    'average_block_time',
+    'total_hash_rate',
+    'fork_rate',
+    'num_miners',
+    'hash_mean'
+]].to_excel(DATA_FOLDER / "hash_panel.xlsx", index=False)
 
 def manipulate_precision(col_ame: str, precision: int) -> None:
     hash_panel[col_ame] = hash_panel[col_ame].apply(
@@ -18,12 +36,6 @@ def conditional_formatting(col_name: str, color: str) -> None:
     hash_panel[col_name] = hash_panel[col_name].apply(
         lambda x: f"\\databar{color}{{{x}}}"
     )
-
-
-for proptime in ["50", "90", "99"]:
-    hash_panel[f"proptime_{proptime}"] = [
-        w[proptime]["proptime"] for w in hash_panel["block_dict"]
-    ]
 
 
 for var, header_unit in VAR_HEADER_UNIT_MAP.items():

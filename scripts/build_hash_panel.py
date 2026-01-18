@@ -7,7 +7,6 @@ from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_ln import fork_rate_ln, waste_ln
 from fork_env.integration_tpl import fork_rate_tpl, waste_tpl
 from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_truncpl_dist
-from scripts.get_clusters import btc_tx_value_series
 from scripts.get_fork import final_fork, multiplier
 
 
@@ -49,7 +48,7 @@ efficiency_df = pd.read_csv(DATA_FOLDER / "mining_hardware_efficiency.csv", skip
     columns={"Date": "date", "Estimated efficiency, J/Th": "efficiency"}
 )
 # merge efficiency_df with block_time_df
-merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date", how="inner")
+merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date", how="left")
 
 # read invstat.pickle
 invstat_df = pd.read_pickle(DATA_FOLDER / "invstat.pkl")
@@ -68,7 +67,8 @@ hash_panel = []
 
 for start_block in range(
     FIRST_START_BLOCK,
-    max(btc_tx_value_series.index) - BLOCK_WINDOW + 1,
+    # max(merged_df['block_number']) - BLOCK_WINDOW,
+    896_327- BLOCK_WINDOW,
     BLOCK_WINDOW,
 ):
     print(start_block)

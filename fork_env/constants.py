@@ -1,4 +1,3 @@
-from math import ceil
 from fork_env.settings import PROJECT_ROOT
 
 DATA_FOLDER = PROJECT_ROOT / "data"
@@ -16,7 +15,7 @@ BLOCK_MINER_CLOVERPOOL_PATH = DATA_FOLDER / "block_miners_clover.pkl"
 
 EMPRITICAL_FORK_RATE = 0.0041
 BLOCK_WINDOW = 2_016  # 2016 blocks - difficulty adjustment interval
-FIRST_START_BLOCK = 200 * BLOCK_WINDOW  # 500_000
+FIRST_START_BLOCK = 180 * BLOCK_WINDOW  # 500_000
 
 
 DIST_DICT = {
