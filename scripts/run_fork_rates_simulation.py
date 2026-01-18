@@ -8,7 +8,7 @@ from fork_env.constants import (
     N_MINER,
 )
 from fork_env.simulate import simulate_fork_repeat
-from fork_env.utils import expon_dist, lognorm_dist, lomax_dist, truncpl_dist
+from fork_env.utils import expon_dist, lognorm_dist, truncpl_dist
 import gzip
 
 HASH_MEAN = SUM_HASH_RATE / N_MINER
@@ -43,7 +43,6 @@ with gzip.open(SIMULATED_FORK_RATES_PATH, "wt") as f:
         for dist, dist_func in {
             "truncate_power_law": truncpl_dist,
             "log_normal": lognorm_dist,
-            # "lomax": lomax_dist,
             "exp": expon_dist,
         }.items():
             print(f"n: {n}, dist: {dist}")

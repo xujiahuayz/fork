@@ -5,21 +5,13 @@ from itertools import product
 
 import numpy as np
 
-from fork_env.constants import (
-    EMPIRICAL_PROP_DELAY,
-    # SUM_HASHES,
-    DATA_FOLDER,
-    HASH_STD,
-    N_MINER,
-    SUM_HASH_RATE,
-)
+from fork_env.constants import (DATA_FOLDER,  # SUM_HASHES,
+                                EMPIRICAL_PROP_DELAY, HASH_STD, N_MINER,
+                                SUM_HASH_RATE)
 from fork_env.integration_ln import fork_rate_ln
-
-# from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_tpl import fork_rate_tpl
 
 dist_dict = {
-    # "lomax": fork_rate_lomax,
     "log_normal": fork_rate_ln,
     "trunc_power_law": fork_rate_tpl,
 }

@@ -2,13 +2,11 @@ import gzip
 import json
 import pickle
 import re
-import numpy as np
 
 import pandas as pd
 
-from fork_env.constants import BLOCK_MINER_CLOVERPOOL_PATH, CLUSTER_PATH, DATA_FOLDER
-
-# from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_lmx_dist, gen_truncpl_dist
+from fork_env.constants import (BLOCK_MINER_CLOVERPOOL_PATH, CLUSTER_PATH,
+                                DATA_FOLDER)
 from scripts.get_clusters import btc_tx_value_df_exploded, btc_tx_value_series
 
 REPLACEMENTS = [
@@ -173,7 +171,6 @@ merged_df_check = merged_df[
     & (merged_df["miner"].apply(lambda x: not str(x).isdigit()))
     & (merged_df["miner_main"] != merged_df["miner"])
 ]
-# check merged_df['difficulty']* (2**32) equivalent to merged_df['bits'].apply(bits_to_difficulty)
 
 merged_df[['block_number', 'block_timestamp', 'bits', "miner_cluster"]].to_pickle(
     DATA_FOLDER / "merged_df.pkl"

@@ -8,10 +8,6 @@ from fork_env.constants import (
     DIST_DICT,
 )
 from matplotlib import pyplot as plt
-from fork_env.integration_ln import fork_rate_ln
-from fork_env.integration_exp import fork_rate_exp
-from fork_env.integration_tpl import fork_rate_tpl
-
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 BIS = hash_panel["bis"].iloc[-1]

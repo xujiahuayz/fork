@@ -16,7 +16,6 @@ from fork_env.constants import (
 )
 from fork_env.integration_empirical import fork_rate_empirical
 from fork_env.integration_ln import fork_rate_ln
-from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_tpl import fork_rate_tpl
 
@@ -61,13 +60,6 @@ def compute_rate(args) -> tuple[tuple, float]:
                 # hash_mean=HASH_MEAN,
                 std=HASH_STD,
             )
-        # elif distribution == "lomax":
-        #     the_rate = fork_rate_lomax(
-        #         proptime=block_propagation_time,
-        #         n=n,
-        #         hash_mean=HASH_MEAN,
-        #         std=HASH_STD,
-        #     )
         elif distribution == "trunc_power_law":
             the_rate = fork_rate_tpl(
                 proptime=block_propagation_time,

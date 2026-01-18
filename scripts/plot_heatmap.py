@@ -1,25 +1,17 @@
-import json
 import pickle
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from fork_env.constants import (
-    DATA_FOLDER,
-    EMPIRICAL_PROP_DELAY,
-    FIGURES_FOLDER,
-    SUM_HASH_RATE,
-    N_MINER,
-    HASH_STD,
-)
+from fork_env.constants import (DATA_FOLDER, EMPIRICAL_PROP_DELAY,
+                                FIGURES_FOLDER, HASH_STD, N_MINER,
+                                SUM_HASH_RATE)
+from fork_env.integration_ln import fork_rate_ln
+from fork_env.integration_tpl import fork_rate_tpl
 
 # from scripts.get_confidence import ps
 
-# from fork_env.integration_lomax import fork_rate_lomax
-
-from fork_env.integration_ln import fork_rate_ln
-from fork_env.integration_tpl import fork_rate_tpl
 
 # with open(DATA_FOLDER / "rates_confidence.jsonl", "r") as f:
 #     rates_confidence = [json.loads(line) for line in f]

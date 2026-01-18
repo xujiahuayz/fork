@@ -5,12 +5,11 @@ from fork_env.constants import BLOCK_WINDOW, DATA_FOLDER, FIRST_START_BLOCK
 from fork_env.integration_empirical import fork_rate_empirical
 from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_ln import fork_rate_ln, waste_ln
-from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_tpl import fork_rate_tpl, waste_tpl
-from fork_env.utils import (calc_ex_rate, gen_lmx_dist, gen_ln_dist,
-                            gen_truncpl_dist)
+from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_truncpl_dist
 from scripts.get_clusters import btc_tx_value_series
 from scripts.get_fork import final_fork, multiplier
+
 
 def bits_to_difficulty(bits_hex_str: str) -> float:
     # Ensure the input is 8 characters long
@@ -50,7 +49,7 @@ efficiency_df = pd.read_csv(DATA_FOLDER / "mining_hardware_efficiency.csv", skip
     columns={"Date": "date", "Estimated efficiency, J/Th": "efficiency"}
 )
 # merge efficiency_df with block_time_df
-merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date", how="left")
+merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date", how="inner")
 
 # read invstat.pickle
 invstat_df = pd.read_pickle(DATA_FOLDER / "invstat.pkl")
@@ -145,13 +144,6 @@ for start_block in range(
                 hash_mean=hash_mean,
                 std=hash_std,
             ),
-            "lomax": fork_rate_lomax(
-                proptime=proptime,
-                n=num_miners,
-                sum_lambda=total_hash_rate,
-                hash_mean=hash_mean,
-                std=hash_std,
-            ),
             "trunc_power_law": fork_rate_tpl(
                 proptime=proptime,
                 n=num_miners,
@@ -174,11 +166,6 @@ for start_block in range(
 
     # fit a lognormal distribution to miner_hash using moments
     lognorm_loc, lognorm_sigma, lognorm_dist = gen_ln_dist(hash_mean, hash_std)
-
-    # fit a lomax distribution  using moments
-    lomax_shape, lomax_scale, lomax_dist = gen_lmx_dist(
-        hash_mean=hash_mean, hash_std=hash_std
-    )
 
     # # fit a truncated power law distribution using moments
     truncpl_alpha, truncpl_ell, truncpl_dist = gen_truncpl_dist(
@@ -227,8 +214,6 @@ for start_block in range(
         "exp_rate": expon_rate,
         "log_normal_loc": lognorm_loc,
         "log_normal_sigma": lognorm_sigma,
-        "lomax_c": lomax_shape,
-        "lomax_scale": lomax_scale,
         "truncpl_alpha": truncpl_alpha,
         "truncpl_ell": truncpl_ell,
         "miner_hash": miner_hash,
@@ -238,7 +223,6 @@ for start_block in range(
         "distributions": {
             "exp": expon_dist,
             "log_normal": lognorm_dist,
-            "lomax": lomax_dist,
             "trunc_power_law": truncpl_dist,
         },
         "difficulty": avg_difficulty / 1e12,  # in unit Tera

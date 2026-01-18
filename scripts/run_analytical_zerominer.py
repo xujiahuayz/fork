@@ -60,13 +60,6 @@ def compute_rate_zerominer(args) -> tuple[tuple, float]:
                 hash_mean=mean,
                 std=std,
             )
-        elif distribution == "lomax":
-            the_rate = fork_rate_lomax(
-                proptime=block_propagation_time,
-                n=n,
-                hash_mean=mean,
-                std=std,
-            )
 
     print(args, the_rate)
     return args, the_rate
