@@ -6,7 +6,7 @@ from fork_env.constants import DATA_FOLDER, DIST_DICT, FIGURES_FOLDER, BLOCK_WIN
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 block_dicts = hash_panel["block_dict"]
-end_times = pd.to_datetime(hash_panel["end_time"] * 1e9)
+end_times = pd.to_datetime(hash_panel["end_time"])
 
 max_time = 33
 # calculate the standard deviation of fork rate, (p*(1-p)/Block_window)^0.5
@@ -18,7 +18,7 @@ hash_panel["fork_rate_std"] = (
 plt.rcParams.update({"font.size": 15})
 
 small_y = 1.18
-x_label_bin = 13
+x_label_bin = 15
 handlelen = 0.8
 # Create the plot
 fig, ax1 = plt.subplots()  # Use ax3 for the first y-axis
@@ -78,6 +78,7 @@ for i, proptime in enumerate(["50", "90", "99"]):
     fig.autofmt_xdate()
     ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax3.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
+    # make xaxis ticker label vertical
     if i == 0:
         # two columns, no border
         ax1.legend(loc="upper center", frameon=False, handlelength=0.8)
@@ -128,12 +129,13 @@ ax1.plot(
     color="purple",
 )
 
-# plot 90% confidence interval
+# plot 99% confidence interval
+STD_MULTIPLIER = 2.576
 
 ax1.fill_between(
     end_times,
-    hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * 1.645,
-    hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * 1.645,
+    hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER,
+    hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER,
     color="purple",
     alpha=0.1,
     # label="90% confidence interval",
@@ -191,11 +193,11 @@ ax1.plot(
 ax1.fill_between(
     end_times,
     1
-    - (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * 1.645).clip(0.0001)
+    - (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER).clip(0.0001)
     / 100
     / (hash_panel["total_hash_rate"] * block_time_50),
     1
-    - (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * 1.645)
+    - (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER)
     / 100
     / (hash_panel["total_hash_rate"] * block_time_50),
     color="purple",
@@ -273,11 +275,11 @@ ax1.plot(
 
 ax1.fill_between(
     end_times,
-    (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * 1.645).clip(0.0001)
+    (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER).clip(0.0001)
     / 100
     / (1 - hash_panel["hhi"])
     / hash_panel["total_hash_rate"],
-    (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * 1.645)
+    (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER)
     / 100
     / (1 - hash_panel["hhi"])
     / hash_panel["total_hash_rate"],

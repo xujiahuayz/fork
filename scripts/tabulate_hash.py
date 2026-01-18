@@ -12,19 +12,9 @@ for proptime in ["50", "90", "99"]:
         w[proptime]["proptime"] for w in hash_panel["block_dict"]
     ]
 
+# extract dictionary entry names from VAR_HEADER_UNIT_MAP
 # save to xlsx
-hash_panel[[
-    'start_block',
-    'start_time',
-    'proptime_50',
-    'proptime_90',
-    'proptime_99',
-    'average_block_time',
-    'total_hash_rate',
-    'fork_rate',
-    'num_miners',
-    'hash_mean'
-]].to_excel(DATA_FOLDER / "hash_panel.xlsx", index=False)
+hash_panel[list(VAR_HEADER_UNIT_MAP.keys())].to_excel(DATA_FOLDER / "hash_panel.xlsx", index=False)
 
 def manipulate_precision(col_ame: str, precision: int) -> None:
     hash_panel[col_ame] = hash_panel[col_ame].apply(

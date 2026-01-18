@@ -7,7 +7,7 @@ from fork_env.integration_exp import fork_rate_exp
 from fork_env.integration_ln import fork_rate_ln, waste_ln
 from fork_env.integration_tpl import fork_rate_tpl, waste_tpl
 from fork_env.utils import calc_ex_rate, gen_ln_dist, gen_truncpl_dist
-from scripts.get_fork import final_fork, multiplier
+from scripts.get_fork import final_fork
 
 
 def bits_to_difficulty(bits_hex_str: str) -> float:
@@ -60,8 +60,7 @@ for proptime in [50, 90, 99]:
     invstat_df[f"block{proptime}"] = invstat_df[f"block{proptime}"].astype(float) / 1000
 
 
-fork_counts = (final_fork[["final_fork"]] * multiplier)
-fork_counts['date'] = fork_counts.index.astype(int) / 1e9
+final_fork['date'] = final_fork.index.astype(int) / 1e9
 
 hash_panel = []
 
@@ -98,18 +97,14 @@ for start_block in range(
 
     # find out fork counts where date is in the range
     fork_rate = (
-        fork_counts[
-            (fork_counts["date"] >= start_time)
-            & (fork_counts["date"] <= end_time)
+        final_fork[
+            (final_fork["date"] >= start_time)
+            & (final_fork["date"] <= end_time)
         ]["final_fork"].sum()
         / BLOCK_WINDOW
     )
 
-    # orphan_rate = df_in_scope["orphan_blocks"].sum() / BLOCK_WINDOW
-    # stale_rate = df_in_scope["stale_blocks"].sum() / BLOCK_WINDOW
-
     max_share = miner_hash_share.max()
-    min_share = miner_hash_share.min()
 
     miner_hash = miner_hash_share * total_hash_rate
 

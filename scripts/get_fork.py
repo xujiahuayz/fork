@@ -67,30 +67,31 @@ final_fork["final_fork"] = final_fork.apply(
 )
 
 
-N_3day = 40
 
-final_fork_moving_sum = (
-    final_fork.drop(columns=["date_3"])
-    .fillna(0)
-    .rolling(window=N_3day, center=True)
-    .sum()
-)
-
-N_block = N_3day * 3 * 24 * 60 / 10
-
-
-fork_rate = final_fork_moving_sum / N_block * 100
-
-# fork_rate["date"] = pd.to_datetime(fork_rate.index, unit="s")
-key_date = "2016-02-29"
-# locate value of key date
-multiplier = 0.41 / fork_rate[fork_rate.index == key_date]["final_fork"].values[0]
-
-# if main is name
 
 if __name__ == "__main__":
     # plot line chart for the moving sum of 30 days, with x axis as date
     import matplotlib.pyplot as plt
+
+    N_3day = 71
+
+    final_fork_moving_sum = (
+        final_fork.drop(columns=["date_3"])
+        .fillna(0)
+        .rolling(window=N_3day, center=True)
+        .sum()
+    )
+
+    N_block = N_3day * 3 * 24 * 60 / 10
+
+
+    fork_rate = final_fork_moving_sum / N_block * 100
+
+    # fork_rate["date"] = pd.to_datetime(fork_rate.index, unit="s")
+    key_date = "2016-02-29"
+    # locate value of key date
+    multiplier = 0.41 / fork_rate[fork_rate.index == key_date]["final_fork"].values[0]
+
 
     # plot time series
     plt.plot(
