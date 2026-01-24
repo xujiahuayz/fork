@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # plot line chart for the moving sum of 30 days, with x axis as date
     import matplotlib.pyplot as plt
 
-    N_3day = 71
+    N_3day = 7*4*2+1
 
     final_fork_moving_sum = (
         final_fork.drop(columns=["date_3"])

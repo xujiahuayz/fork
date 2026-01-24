@@ -53,12 +53,19 @@ merged_df = pd.merge(merged_df, efficiency_df[['date', 'efficiency']], on="date"
 # read invstat.pickle
 invstat_df = pd.read_pickle(DATA_FOLDER / "invstat.pkl")
 
+
 # start_unix and end_unix are in milliseconds, convert to seconds
 invstat_df["start_unix"] = invstat_df["start_unix"].astype(int) / 1000
 invstat_df["end_unix"] = invstat_df["end_unix"].astype(int) / 1000
-for proptime in [50, 90, 99]:
-    invstat_df[f"block{proptime}"] = invstat_df[f"block{proptime}"].astype(float) / 1000
 
+
+for proptime in [50, 90, 99]:
+    col_name = f"block{proptime}"
+    invstat_df[col_name] = invstat_df[col_name].astype(float) / 1000
+    invstat_df[col_name] = invstat_df[col_name].replace(0, pd.NA)
+    invstat_df[col_name] = invstat_df[col_name].interpolate(method='linear', limit_direction='both')
+
+invstat_df = invstat_df.fillna(method='ffill').fillna(method='bfill')
 
 final_fork['date'] = final_fork.index.astype(int) / 1e9
 

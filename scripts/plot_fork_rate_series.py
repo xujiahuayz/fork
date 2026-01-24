@@ -4,22 +4,36 @@ import matplotlib.dates as mdates
 from matplotlib.ticker import MaxNLocator
 from fork_env.constants import DATA_FOLDER, DIST_DICT, FIGURES_FOLDER, BLOCK_WINDOW
 
+def final_touch(title:str, ax1:plt.Axes) -> None:
+    # Format the x-axis as dates
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
+    # Make x-axis labels vertical and centered on ticks
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=90, ha='center')
+
+    plt.savefig(FIGURES_FOLDER / f"{title}.pdf", bbox_inches="tight")
+    plt.show()
+
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 block_dicts = hash_panel["block_dict"]
 end_times = pd.to_datetime(hash_panel["end_time"])
 
-max_time = 33
-# calculate the standard deviation of fork rate, (p*(1-p)/Block_window)^0.5
-hash_panel["fork_rate_std"] = (
-    (hash_panel["fork_rate"] / 100 * (1 - hash_panel["fork_rate"] / 100)) / BLOCK_WINDOW
-).pow(0.5) * 100
+# fill out na
+block_time_50 = pd.Series(w["50"]["proptime"] for w in block_dicts).fillna(method='ffill').fillna(method='bfill').tolist()
+block_time_90 = pd.Series(w["90"]["proptime"] for w in block_dicts).fillna(method='ffill').fillna(method='bfill').tolist()
+block_time_99 = pd.Series(w["99"]["proptime"] for w in block_dicts).fillna(method='ffill').fillna(method='bfill').tolist()
 
+max_time = 33
+
+ROLLING_WINDOW = 3
+
+fork_rate_ma = hash_panel["fork_rate"].rolling(window=ROLLING_WINDOW, center=True).mean()
 
 plt.rcParams.update({"font.size": 15})
 
-small_y = 1.18
-x_label_bin = 15
-handlelen = 0.8
+small_y = 1.39
+x_label_bin = 20
+handlelen = 0.6
 # Create the plot
 fig, ax1 = plt.subplots()  # Use ax3 for the first y-axis
 
@@ -27,12 +41,10 @@ fig, ax1 = plt.subplots()  # Use ax3 for the first y-axis
 # small_x =
 plt.axhspan(0, small_y, color="grey", alpha=0.1)
 
-
 # Create the second y-axis
 ax3 = ax1.twinx()
-
-ax3.set_ylabel("block propagation time $\Delta_0$ (s)", color="olive")
-
+ax3.set_ylabel("block propagation time $\Delta_0$ [s]", color="olive")
+ax3.set_ylim(0, max_time)
 
 for i, proptime in enumerate(["50", "90", "99"]):
 
@@ -40,7 +52,7 @@ for i, proptime in enumerate(["50", "90", "99"]):
         end_times,
         [w[proptime]["proptime"] for w in block_dicts],
         color="olive",
-        linewidth=5,
+        linewidth=4,
         alpha=0.4,
     )
     ax3.tick_params(axis="y", colors="olive")  # Make y-axis ticks cyan
@@ -49,7 +61,7 @@ for i, proptime in enumerate(["50", "90", "99"]):
 
     plt.text(
         0.02,
-        [0.13, 0.43, 0.72][i],
+        [0.08, 0.35, 0.65][i],
         f"{proptime}%",
         horizontalalignment="left",
         verticalalignment="bottom",
@@ -57,9 +69,6 @@ for i, proptime in enumerate(["50", "90", "99"]):
         rotation=0,
         color="olive",
     )
-
-    # Set y-axis limits
-    ax3.set_ylim(0, max_time)
 
     for key, value in DIST_DICT.items():
         if key != "empirical":
@@ -71,21 +80,16 @@ for i, proptime in enumerate(["50", "90", "99"]):
                 color=value["color"],
                 linestyle="--" if key == "empirical" else "-",
             )
-    ax1.set_ylabel("fork rate $C(\Delta_0)$ [%]")
-    ax1.set_ylim(0, 5)
 
-    # Format the x-axis as dates
-    fig.autofmt_xdate()
-    ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax3.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
-    # make xaxis ticker label vertical
     if i == 0:
-        # two columns, no border
-        ax1.legend(loc="upper center", frameon=False, handlelength=0.8)
+        # move upper center even a bit further up
+        ax1.legend(loc="upper center", frameon=False, handlelength=0.7, ncol=3, bbox_to_anchor=(0.56, 1.05))
 
+ax1.set_ylabel("fork rate $C(\Delta_0)$ [%]")
+ax1.set_ylim(0, 5.2)
 
-plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_full.pdf", bbox_inches="tight")
-plt.show()
+final_touch("fork_rate_time_series_all", ax1)
+
 
 
 # Create the plot
@@ -122,34 +126,32 @@ ax1.set_ylabel("fork rate $C(\Delta_0)$ [%]")
 ax1.plot(
     end_times,
     hash_panel["fork_rate"],
-    linestyle=":",
-    linewidth=3,
-    alpha=0.8,
+    linewidth=4,
+    alpha=0.15,
     label="historically measured fork rate",
     color="purple",
 )
 
-# plot 99% confidence interval
-STD_MULTIPLIER = 2.576
-
-ax1.fill_between(
+# plot the same as above again but with centered moving average of hash_panel["fork_rate"]
+ax1.plot(
     end_times,
-    hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER,
-    hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER,
+    fork_rate_ma,
     color="purple",
-    alpha=0.1,
-    # label="90% confidence interval",
+    linestyle=":",
+    # alpha=0.7,
+    # label="historically measured fork rate \n(5-period centered moving average)",
+    linewidth=1,
 )
 
-ax3.set_ylabel("block propagation time $\Delta_0$ (s)", color="olive")
+ax3.set_ylabel("block propagation time $\Delta_0$ [s]", color="olive")
 
 # for i, proptime in enumerate(["50", "90", "99"]):
-block_time_50 = [w["50"]["proptime"] for w in block_dicts]
+
 ax3.plot(
     end_times,
     block_time_50,
     color="olive",
-    linewidth=5,
+    linewidth=4,
     alpha=0.4,
     label="$\Delta_0$ to propagate \n50% of network",
 )
@@ -157,25 +159,14 @@ ax3.tick_params(axis="y", colors="olive")  # Make y-axis ticks cyan
 
 
 # Set y-axis limits
-ax3.set_ylim(0, small_y / 5 * max_time)
-
-
+ax3.set_ylim(0, small_y / 5.2 * max_time)
 ax1.set_ylim(0, small_y)
-
-# Format the x-axis as dates
-fig.autofmt_xdate()
-ax3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-ax3.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
 
 ax1.legend(loc="upper right", frameon=False, handlelength=handlelen)
 ax3.legend(loc="right", frameon=False, handlelength=handlelen)
-# # Display the legend for the second y-axis
 
-# Save the plot
-plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_small.pdf", bbox_inches="tight")
+final_touch("fork_rate_time_series_small", ax1)
 
-# Show the plot
-plt.show()
 
 
 # create a plot with two y-axes
@@ -186,25 +177,17 @@ ax1.plot(
     1 - hash_panel["fork_rate"] / 100 / (hash_panel["total_hash_rate"] * block_time_50),
     color="purple",
     label=f"implied with \nhistorically measured fork rate",
-    linewidth=3,
+    linewidth=4,
+    alpha=0.15,
+)
+
+ax1.plot(
+    end_times,
+    1 - hash_panel["fork_rate"].rolling(window=ROLLING_WINDOW, center=True).mean() / 100 / (hash_panel["total_hash_rate"].rolling(window=ROLLING_WINDOW, center=True).mean() * pd.Series(block_time_50).rolling(window=ROLLING_WINDOW, center=True).mean()),
+    linewidth=1,
+    color="purple",
     linestyle=":",
 )
-
-ax1.fill_between(
-    end_times,
-    1
-    - (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER).clip(0.0001)
-    / 100
-    / (hash_panel["total_hash_rate"] * block_time_50),
-    1
-    - (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER)
-    / 100
-    / (hash_panel["total_hash_rate"] * block_time_50),
-    color="purple",
-    alpha=0.1,
-    # label="90% confidence interval",
-)
-
 
 ax1.plot(
     end_times,
@@ -215,28 +198,25 @@ ax1.plot(
     # linestyle=":",
 )
 
-
 # horizontal line at 1
-ax1.axhline(y=1, color="black", linestyle="--", linewidth=0.5)
+# ax1.axhline(y=1, color="black", linestyle="--", linewidth=0.5)
+ax1.axhline(y=0, color="black", linestyle="--", linewidth=0.5)
 
-ax1.set_ylim(0, 1)
+
+ax1.set_ylim(-0.09, 1.09)
 ax1.set_ylabel("$\it HHI$")
-
 ax1.legend(loc="upper left", frameon=False, handlelength=handlelen)
 
-fig.autofmt_xdate()
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
+final_touch("fork_rate_time_series_hhi", ax1)
 
-plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_hhi.pdf", bbox_inches="tight")
+
 
 
 fig, ax1 = plt.subplots()
 
 # fill bands for block propagation time
 # different shades of grey for 0-50%, 50-90%, 90-99%, 99-100%
-block_time_90 = [w["90"]["proptime"] for w in block_dicts]
-block_time_99 = [w["99"]["proptime"] for w in block_dicts]
+
 ax1.fill_between(end_times, 0, block_time_50, color="grey", alpha=0.9)
 ax1.fill_between(
     end_times,
@@ -269,29 +249,24 @@ ax1.plot(
     / hash_panel["total_hash_rate"],
     color="purple",
     label=f"implied with \nhistorically measured fork rate",
-    linewidth=3,
-    linestyle=":",
+    linewidth=4,
+    alpha=0.15,
 )
 
-ax1.fill_between(
+ax1.plot(
     end_times,
-    (hash_panel["fork_rate"] - hash_panel["fork_rate_std"] * STD_MULTIPLIER).clip(0.0001)
+    (hash_panel["fork_rate"]
     / 100
     / (1 - hash_panel["hhi"])
-    / hash_panel["total_hash_rate"],
-    (hash_panel["fork_rate"] + hash_panel["fork_rate_std"] * STD_MULTIPLIER)
-    / 100
-    / (1 - hash_panel["hhi"])
-    / hash_panel["total_hash_rate"],
+    / hash_panel["total_hash_rate"]).rolling(window=ROLLING_WINDOW, center=True).mean(),
     color="purple",
-    alpha=0.1,
-    # label="90% confidence interval",
+    linestyle=":",
 )
 
 for i, proptime in enumerate(["50", "90", "99"]):
     plt.text(
         0.01,
-        [0.2, 0.5, 0.8][i],
+        [0.25, 0.55, 0.85][i],
         f"{proptime}%",
         horizontalalignment="left",
         verticalalignment="bottom",
@@ -304,9 +279,4 @@ ax1.set_ylim(0, max_time)
 ax1.set_ylabel("block propagation time $\Delta_0$ [s]")
 
 ax1.legend(loc="upper right", frameon=False, handlelength=handlelen)
-
-fig.autofmt_xdate()
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-ax1.xaxis.set_major_locator(MaxNLocator(nbins=x_label_bin))
-
-plt.savefig(FIGURES_FOLDER / f"fork_rate_time_series_delta0.pdf", bbox_inches="tight")
+final_touch("fork_rate_time_series_delta0", ax1)
