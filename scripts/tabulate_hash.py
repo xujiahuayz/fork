@@ -42,16 +42,16 @@ conditional_formatting("hhi", "brownone")
 conditional_formatting("max_share", "browntwo")
 
 
-hash_panel_to_latex_subtab_1 = hash_panel[
+hash_panel_to_latex_subtab_1 = hash_panel.loc[1::10,
     [k for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 1]
 ].to_latex(index=False, header=False)
 
-hash_panel_to_latex_subtab_2 = hash_panel[
+hash_panel_to_latex_subtab_2 = hash_panel.loc[1::10,
     [k for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 2]
 ].to_latex(index=False, header=False)
 
 
-hash_panel_to_latex_subtab_3 = hash_panel[
+hash_panel_to_latex_subtab_3 = hash_panel.loc[1::10,
     [k for k, v in VAR_HEADER_UNIT_MAP.items() if v["subtab"] == 3]
 ].to_latex(index=False, header=False)
 

@@ -35,6 +35,12 @@ merged_df["date"] = merged_df["block_timestamp"].dt.strftime('%Y-%m-%d')
 merged_df['timestamp'] = merged_df['block_timestamp'].astype(int) / 1e9
 merged_df["difficulty"] = merged_df["bits"].apply(bits_to_difficulty)
 
+# # find out unique number of miners in merged_df['miner_cluster']
+# merged_df["miner_cluster"].nunique()
+# merged_df["miner_cluster"][362880:(893088+2016)].nunique()
+
+# print number of unique miners
+
 # open btc.csv to get hash
 with open(DATA_FOLDER / "btc.csv", "r") as f:
     btc_data = pd.read_csv(f)

@@ -73,11 +73,16 @@ country_miner_shade = {
 period_grp = []
 for start_block in range(
     FIRST_START_BLOCK,
-    860_000,
+    932_640,
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
-    period_grp.append(f"{start_block}   \n({merged_df.loc[start_block, 'block_timestamp']})")
+    # make merged_df.loc[start_block, 'block_timestamp'] to yyyy-mm
+    period_grp.append(
+        f"{start_block}   \n({
+            pd.to_datetime(merged_df.loc[start_block, 'block_timestamp'], unit='s').strftime('%Y-%m')
+            })"
+    )
 
 # To track where each bar stack starts
 block_bottom = np.zeros(len(period_grp))
@@ -88,7 +93,7 @@ China_other = [key for key, value in MINER_COUNTRY.items() if value == 'China ot
 # traverse through each period from block_time_df with designated block window (20_000 in our case)
 for start_block in range(
     FIRST_START_BLOCK,
-    860_000,
+    932_640,
     BLOCK_WINDOW,
 ):
     end_block = start_block + BLOCK_WINDOW - 1
@@ -180,12 +185,12 @@ for (country, miner_cluster, color), data in pivot_df.items():
                 label=label
             )
 
-# rotate x-axis labels to be visible
-ax.set_xticks(np.arange(len(period_grp)))  # Set ticks at each period position
-ax.set_xticklabels(
-    [label if i % 2 == 0 else "" for i, label in enumerate(period_grp)],
-    rotation=45, ha='right', fontsize=13
-)
+ticks = [i for i in range(len(period_grp)) if (i + 10) % 15 == 0]
+labels = [period_grp[i] for i in ticks]
+
+ax.set_xticks(ticks)
+ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=13)
+
 
 # Customize the plot
 ax.set_ylabel("percentage of blocks mined [%]", fontsize=18)

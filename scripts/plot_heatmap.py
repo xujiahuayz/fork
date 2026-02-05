@@ -30,7 +30,6 @@ x_ticks = np.logspace(
 isoline_levels = 0.001
 
 for key, dict_items in {
-    # "lomax": fork_rate_lomax,
     "log_normal": fork_rate_ln,
     "trunc_power_law": fork_rate_tpl,
 }.items():

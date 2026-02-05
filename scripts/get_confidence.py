@@ -16,9 +16,10 @@ from fork_env.constants import (
     # hash_panel_last_row,
     BLOCK_WINDOW,
 )
-from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
 import numpy as np
+
+from fork_env.integration_tpl import fork_rate_tpl
 
 hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     with open(DATA_FOLDER / "rates_confidence.jsonl", "a") as f:
         for dist_key, dist in {
             "log_normal": fork_rate_ln,
-            "lomax": fork_rate_lomax,
+            "trunc_power_law": fork_rate_tpl,
         }.items():
             for sumhash in [SUM_HASH_RATE]:
                 hash_mean = sumhash / N_MINER

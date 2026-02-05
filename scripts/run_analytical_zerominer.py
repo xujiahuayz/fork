@@ -11,7 +11,6 @@ from fork_env.constants import (
     hash_panel_last_row,
 )
 from fork_env.integration_exp import fork_rate_exp
-from fork_env.integration_lomax import fork_rate_lomax
 from fork_env.integration_ln import fork_rate_ln
 from fork_env.integration_empirical import fork_rate_empirical, fork_rate_empirical_id
 

@@ -88,7 +88,7 @@ for i, proptime in enumerate(["50", "90", "99"]):
 ax1.set_ylabel("fork rate $C(\Delta_0)$ [%]")
 ax1.set_ylim(0, 5.2)
 
-final_touch("fork_rate_time_series_all", ax1)
+final_touch("fork_rate_time_series_full", ax1)
 
 
 

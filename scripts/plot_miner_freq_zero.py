@@ -22,14 +22,15 @@ hash_panel = pd.read_pickle(DATA_FOLDER / "hash_panel.pkl")
 
 # get the last number of total hash rate
 FACTOR = BLOCK_WINDOW / SUM_HASH_RATE
-MINER_HASH_EMP = hash_panel["miner_hash"].iloc[-1].sort_values()
-BIS = hash_panel["bis"].iloc[-1]
+SELECTED_ROW = hash_panel[hash_panel["start_block"] == 868896]
+MINER_HASH_EMP = SELECTED_ROW["miner_hash"].iloc[0].sort_values()
+BIS = SELECTED_ROW["bis"].iloc[0]
 
 
 x = [10**i for i in np.linspace(-8, -3, 100)]
 EMPFIT_X = [0, 4e-8] + list(MINER_HASH_EMP) + [SUM_HASH_RATE / 3, SUM_HASH_RATE / 2]
 
-for n_zerominers in [1, 10, 20, 50, 100, 150, 200, 300]:
+for n_zerominers in [20, 100, 200]:
     bis_with_zero_miners = [0] * n_zerominers + BIS
     n = len(bis_with_zero_miners)
 
